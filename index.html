@@ -462,11 +462,11 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
         <svg id="sb-toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 19l-7-7 7-7M18 19l-7-7 7-7"/></svg>
         <span id="sb-toggle-label">Close sidebar</span>
       </div>
-      <div class="sb-toggle admin-only" onclick="pullFromCloud()" title="Pull latest from Google Sheets" style="color:var(--blue);">
+      <div class="sb-toggle admin-only" onclick="pullFromCloud()" title="Pull latest from Firebase" style="color:var(--blue);">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         <span>Sync now</span>
       </div>
-      <div class="sb-toggle admin-only" onclick="pushAllToCloud()" title="Push all local data to Google Sheets" style="color:var(--green);">
+      <div class="sb-toggle admin-only" onclick="pushAllToCloud()" title="Push all data to Firebase" style="color:var(--green);">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
         <span>Push all data</span>
       </div>
@@ -973,8 +973,8 @@ function enterApp(){
   renderTechDropdowns();
   loadRepairs();
   // If API is set and online, pull latest from cloud
-  if(getApi()&&navigator.onLine){setTimeout(()=>pullFromCloud(),800);}
-  window.addEventListener('online',()=>{toast('Back online — syncing…','ok');setTimeout(()=>pullFromCloud(),1000);});
+  if(hasCloud()){setTimeout(()=>pullFromCloud(),1200);}
+  window.addEventListener('online',()=>{toast('Back online — syncing with Firebase…','ok');setTimeout(()=>pullFromCloud(),1000);});
   window.addEventListener('offline',()=>{toast('Offline — saving locally','warn');});
   // Restore sidebar state
   if(lsLoad('lt_sb_collapsed',false)){
@@ -1185,7 +1185,7 @@ async function qStatus(id,status,secId){
   if(status==='Completed'){r.CompletedDate=new Date().toISOString();}
   logAct(r,`Status: ${old} → ${status} by ${cu.name}`);
   lsSave(LS_R,repairs);renderRepairs();toast(`Moved to ${status}`,'ok');
-  syncRepairToCloud(r);
+  schedulePush();
 }
 
 // ── AUTOCOMPLETE (customer) ──
@@ -1515,7 +1515,7 @@ async function saveRepair(){
       Object.assign(repairs[idx],data);
     }
     lsSave(LS_R,repairs);renderRepairs();closePanel();toast('Repair updated','ok');
-    syncRepairToCloud(repairs.find(x=>x.ID===editId));
+    schedulePush();
   } else {
     const newId=genId(loc);
     const nr={ID:newId,...data,CreatedAt:new Date().toISOString(),Notes:'',HandoffNotes:'',ActivityLog:[],_local:true};
@@ -1523,7 +1523,7 @@ async function saveRepair(){
     if(stat==='Completed')nr.CompletedDate=new Date().toISOString();
     logAct(nr,`Created by ${cu.name}`);
     repairs.unshift(nr);lsSave(LS_R,repairs);renderRepairs();closePanel();toast(`Repair ${newId} created`,'ok');
-    syncRepairToCloud(nr);
+    schedulePush();
   }
 }
 
@@ -1557,6 +1557,7 @@ async function confirmDelete(){
     closeM('delete-modal');
     toast(`${count} repair${count>1?'s':''} deleted · logged for 30 days`,'ok');
     const nbd2=document.getElementById('nb-deleted');if(nbd2){const del2=lsLoad(LS_DEL,[]);nbd2.textContent=del2.filter(x=>x.DeletedAt>new Date(Date.now()-30*86400000).toISOString()).length;}
+    schedulePush();
     return;
   }
 
@@ -1570,7 +1571,7 @@ async function confirmDelete(){
   lsSave(LS_R,repairs);renderRepairs();updateStats();
   closeM('delete-modal');closePanel();
   toast('Repair deleted · logged for 30 days','ok');
-  syncDeleteToCloud(editId,reason);
+  schedulePush();
 }
 
 // ── SELECTION FUNCTIONS ──
@@ -2430,71 +2431,125 @@ document.getElementById('l-user').addEventListener('keydown',e=>{if(e.key==='Ent
 //    localStorage.setItem('lt_api_v5', 'YOUR_WEB_APP_URL_HERE')
 // 6. Reload the app — it will sync automatically
 // ═══════════════════════════════════════
-// ── CLOUD SYNC ──
-let lastSync=0;
+// ── FIREBASE SYNC ──
+// Setup: open app → F12 → Console → paste:
+//   localStorage.setItem('lt_fb_url','YOUR_DATABASE_URL')
+//   localStorage.setItem('lt_fb_key','YOUR_DATABASE_SECRET')
+// See setup instructions below for how to get these values.
 
-async function apiCall(body){
-  const url=getApi();if(!url)throw new Error('No API');
-  const r=await fetch(url,{method:'POST',mode:'cors',body:JSON.stringify(body),headers:{'Content-Type':'text/plain'}});
+let lastSync=0,syncInProgress=false,syncTimer=null;
+
+function getFbUrl(){return(localStorage.getItem('lt_fb_url')||'').replace(/\/$/,'');}
+function getFbKey(){return localStorage.getItem('lt_fb_key')||'';}
+function hasCloud(){return getFbUrl()&&getFbKey();}
+function fbRef(path){return`${getFbUrl()}/${path}.json?auth=${getFbKey()}`;}
+
+async function fbRead(path){
+  const r=await fetch(fbRef(path));
+  if(!r.ok)throw new Error('Firebase read failed: '+r.status);
   return r.json();
 }
 
-async function syncRepairToCloud(repair){
-  if(!getApi()||!navigator.onLine)return;
-  try{await apiCall({action:'saveRepair',repair});}
-  catch(e){console.warn('Sync failed',e);}
+async function fbWrite(path,data){
+  const r=await fetch(fbRef(path),{
+    method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(data)
+  });
+  if(!r.ok)throw new Error('Firebase write failed: '+r.status);
+  return r.json();
 }
 
-async function syncDeleteToCloud(id,reason){
-  if(!getApi()||!navigator.onLine)return;
-  try{await apiCall({action:'deleteRepair',id,deletedBy:cu?.name||'Unknown',reason});}
-  catch(e){console.warn('Delete sync failed',e);}
+async function fbPatch(path,data){
+  const r=await fetch(fbRef(path),{
+    method:'PATCH',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(data)
+  });
+  if(!r.ok)throw new Error('Firebase patch failed: '+r.status);
+  return r.json();
 }
 
 async function pullFromCloud(){
-  if(!getApi()||!navigator.onLine)return;
+  if(!hasCloud())return;
+  if(syncInProgress)return;
+  syncInProgress=true;
   try{
     document.getElementById('loader').classList.add('on');
-    document.getElementById('lmsg').textContent='Syncing with Google Sheets…';
-    const res=await apiCall({action:'getAll'});
-    if(res.success){
-      if(res.repairs?.length){repairs=res.repairs;lsSave(LS_R,repairs);}
-      if(res.techs?.length){
-        const mapped=res.techs.map(t=>({name:t.Name||t.name,fullName:t.FullName||t.fullName,pin:t.PIN||t.pin,role:t.Role||t.role,active:String(t.Active||t.active)==='true'}));
-        lsSave(LS_TEC,mapped);renderTechDropdowns();
-      }
-      if(res.templates?.length){
-        const mapped=res.templates.map(t=>({label:t.Label||t.label,device:t.Device||t.device,category:t.Category||t.category,quality:t.Quality||t.quality,quote:t.Quote||t.quote,tech:t.Tech||t.tech,miscDesc:t.MiscDesc||t.miscDesc}));
-        lsSave(LS_TPL,mapped);
-      }
-      autoPastDue();renderRepairs();updateStats();renderStatusBar();renderRecentBar();
-      lastSync=Date.now();toast('Synced ✓','ok');
+    document.getElementById('lmsg').textContent='Syncing with Firebase…';
+    const data=await fbRead('lopeztechrepairs');
+    if(!data){syncInProgress=false;document.getElementById('loader').classList.remove('on');return;}
+    if(data.repairs){
+      // Firebase stores arrays as objects with numeric keys — convert back
+      const rep=Array.isArray(data.repairs)?data.repairs:Object.values(data.repairs);
+      repairs=rep.filter(Boolean);
+      lsSave(LS_R,repairs);
     }
-  }catch(e){toast('Working offline','warn');}
-  finally{document.getElementById('loader').classList.remove('on');}
+    if(data.techs){
+      const tecs=Array.isArray(data.techs)?data.techs:Object.values(data.techs);
+      lsSave(LS_TEC,tecs.filter(Boolean));
+      renderTechDropdowns();
+    }
+    if(data.templates){
+      const tpls=Array.isArray(data.templates)?data.templates:Object.values(data.templates);
+      lsSave(LS_TPL,tpls.filter(Boolean));
+    }
+    if(data.deleted){
+      const del=Array.isArray(data.deleted)?data.deleted:Object.values(data.deleted);
+      lsSave(LS_DEL,del.filter(Boolean));
+    }
+    autoPastDue();renderRepairs();updateStats();renderStatusBar();renderRecentBar();
+    lastSync=Date.now();
+    toast('Synced ✓','ok');
+  }catch(e){
+    toast('Working offline','warn');
+    console.warn('Firebase pull failed:',e);
+  }finally{
+    syncInProgress=false;
+    document.getElementById('loader').classList.remove('on');
+  }
 }
 
 async function pushAllToCloud(){
-  if(!getApi()||!navigator.onLine){toast('No internet','warn');return;}
+  if(!hasCloud()){
+    toast('Firebase not configured yet — see setup instructions','warn');
+    return;
+  }
   try{
     document.getElementById('loader').classList.add('on');
-    document.getElementById('lmsg').textContent='Pushing to Google Sheets…';
-    const res=await apiCall({action:'fullSync',repairs,techs:getTechs(),templates:getTpls()});
-    if(res.success)toast(`Full sync done — ${res.synced?.repairs||0} repairs`,'ok');
-    else toast('Sync error','err');
-  }catch(e){toast('Push failed','err');}
-  finally{document.getElementById('loader').classList.remove('on');}
+    document.getElementById('lmsg').textContent='Saving to Firebase…';
+    await fbWrite('lopeztechrepairs',{
+      repairs,
+      techs:getTechs(),
+      templates:getTpls(),
+      deleted:lsLoad(LS_DEL,[]),
+      meta:{lastUpdated:new Date().toISOString(),updatedBy:cu?.name||'Unknown'}
+    });
+    lastSync=Date.now();
+    toast('All data saved to Firebase ✓','ok');
+  }catch(e){
+    toast('Firebase save failed — saved locally','err');
+    console.error('Push failed:',e);
+  }finally{
+    document.getElementById('loader').classList.remove('on');
+  }
 }
 
-// Auto pull every 2 min when online
+// Debounced push — fires 3 seconds after last change
+function schedulePush(){
+  if(!hasCloud())return;
+  clearTimeout(syncTimer);
+  syncTimer=setTimeout(()=>pushAllToCloud(),3000);
+}
+
+// Auto pull every 2 minutes when online
 setInterval(async()=>{
-  if(cu&&getApi()&&navigator.onLine&&Date.now()-lastSync>120000){
+  if(cu&&hasCloud()&&Date.now()-lastSync>120000){
     try{
-      const res=await apiCall({action:'getAll'});
-      if(res.success&&res.repairs?.length){
-        repairs=res.repairs;lsSave(LS_R,repairs);
-        autoPastDue();renderRepairs();updateStats();renderStatusBar();renderRecentBar();
-        lastSync=Date.now();
+      const meta=await fbRead('lopeztechrepairs/meta');
+      if(meta?.lastUpdated){
+        const cloudTime=new Date(meta.lastUpdated).getTime();
+        if(cloudTime>lastSync){await pullFromCloud();}
       }
     }catch(e){}
   }
