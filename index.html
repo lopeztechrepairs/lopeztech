@@ -4668,6 +4668,7 @@ function printPhoneLabelFromInventory(id){
 function buildPhoneLabelHTML(p){
   const price='$'+parseFloat(p.price||0).toFixed(2);
   const titleLine=(p.model||'—')+' '+(p.storage||'');
+  const titleSize=titleLine.length>30?'9.5pt':titleLine.length>24?'10.5pt':'11pt';
   const grade=p.condition==='New'||p.condition==='Excellent'?'A+':p.condition==='Good'?'A':'B';
   const repairAbbr={'Display':'Displ.','Battery':'Bat.','Charging Port':'Chg. Port',
     'Rear Camera':'R.Cam','Front Camera':'F.Cam','Back Glass':'Bk.Glass','Motherboard':'MB'};
@@ -4676,38 +4677,26 @@ function buildPhoneLabelHTML(p){
   const carrierText=p.carrier==='Unlocked'?'Factory Unlocked':p.carrier||'—';
   const batteryLine=(p.battery||'—')+'%'+(p.cycles?'  CC: '+p.cycles:'');
 
-  const html=`<div style="font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;padding:4px 6px;width:2.4in;box-sizing:border-box;">
-    <div style="text-align:center;font-size:11pt;font-weight:900;line-height:1.1;margin-bottom:3px;">${titleLine}</div>
-    <table style="width:100%;border-collapse:collapse;line-height:1;">
-      <tr>
-        <td style="font-size:6.5pt;font-weight:600;padding:0;white-space:nowrap;width:46%;">● Color :</td>
-        <td style="font-size:6.5pt;font-weight:700;padding:0 3px;">${p.color||'—'}</td>
-      </tr>
-      <tr>
-        <td style="font-size:6.5pt;font-weight:600;padding:0;white-space:nowrap;">● Bat. Health:</td>
-        <td style="font-size:6.5pt;font-weight:700;padding:0 3px;">${batteryLine}</td>
-      </tr>
-      <tr>
-        <td style="font-size:6.5pt;font-weight:600;padding:0;white-space:nowrap;">● Carrier Status:</td>
-        <td style="font-size:6.5pt;font-weight:700;padding:0 3px;">${carrierText}</td>
-      </tr>
-      <tr>
-        <td style="font-size:6.5pt;font-weight:600;padding:0;white-space:nowrap;">● SN / IMEI:</td>
-        <td style="font-size:6pt;font-weight:700;padding:0 3px;font-family:monospace;">${p.imei||'—'}</td>
-      </tr>
-      <tr>
-        <td style="font-size:6.5pt;font-weight:600;padding:0;white-space:nowrap;">● Repair History:</td>
-        <td style="font-size:6.5pt;font-weight:700;padding:0 3px;">${repairText}</td>
-      </tr>
+  const html=`<div style="font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;padding:3px 5px;width:2.4in;max-width:2.4in;box-sizing:border-box;overflow:hidden;">
+    <div style="text-align:center;font-size:${titleSize};font-weight:900;line-height:1.15;margin-bottom:2px;word-break:break-word;">${titleLine}</div>
+    <table style="width:100%;border-collapse:collapse;line-height:1.25;">
+      <tr><td style="font-size:6.5pt;font-weight:600;padding:0;white-space:nowrap;width:46%;">● Color :</td><td style="font-size:6.5pt;font-weight:700;padding:0 3px;">${p.color||'—'}</td></tr>
+      <tr><td style="font-size:6.5pt;font-weight:600;padding:0;white-space:nowrap;">● Bat. Health:</td><td style="font-size:6.5pt;font-weight:700;padding:0 3px;">${batteryLine}</td></tr>
+      <tr><td style="font-size:6.5pt;font-weight:600;padding:0;white-space:nowrap;">● Carrier Status:</td><td style="font-size:6.5pt;font-weight:700;padding:0 3px;">${carrierText}</td></tr>
+      <tr><td style="font-size:6.5pt;font-weight:600;padding:0;white-space:nowrap;">● SN / IMEI:</td><td style="font-size:6pt;font-weight:700;padding:0 3px;font-family:monospace;">${p.imei||'—'}</td></tr>
+      <tr><td style="font-size:6.5pt;font-weight:600;padding:0;white-space:nowrap;">● Repair History:</td><td style="font-size:6.5pt;font-weight:700;padding:0 3px;">${repairText}</td></tr>
     </table>
-    <div style="margin-top:3px;border-top:1px solid #000;padding-top:2px;">
-      <div style="font-size:6.5pt;font-weight:700;text-align:center;letter-spacing:.5px;">LISTING PRICE:</div>
+    <div style="margin-top:2px;border-top:1.5px solid #000;padding-top:2px;">
+      <div style="font-size:6.5pt;font-weight:700;text-align:center;letter-spacing:.5px;">LISTING PRICE</div>
       <div style="font-size:18pt;font-weight:900;text-align:center;text-decoration:underline;line-height:1;letter-spacing:-1px;">${price}</div>
-      <div style="font-size:7pt;font-weight:700;font-style:italic;text-align:right;text-decoration:underline;">GRADE: ${grade}</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:1px;">
+        <div style="font-size:6.5pt;font-weight:600;color:#333;">${p.loc||''} · Lopez Tech</div>
+        <div style="font-size:7pt;font-weight:900;font-style:italic;text-decoration:underline;">GRADE: ${grade}</div>
+      </div>
     </div>
   </div>`;
 
-  doPrint(html,`@page{size:2.4in auto;margin:2mm 3mm;}body{margin:0;padding:0;font-family:Arial,sans-serif;background:#fff;width:2.4in;}*{color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}`);
+  doPrint(html,`@page{size:2.4in auto;margin:1mm 2mm;}body{margin:0;padding:0;font-family:Arial,sans-serif;background:#fff;width:2.4in;max-width:2.4in;}*{color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}`);
 }
 
 function completePhoneReceiving(){
