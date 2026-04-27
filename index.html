@@ -3282,8 +3282,7 @@ function phoneCard(p){
     ${p.status==='Available'?`<div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;">
       <button class="btn sm green" onclick="startPhoneSale('${p.id}')" style="flex:1;">Sell</button>
       <button class="btn sm" onclick="printPhoneLabelFromInventory('${p.id}')" title="Print Label" style="padding:4px 8px;">🖨</button>
-      <button class="btn sm amber" onclick="setPhoneStatus('${p.id}','On Hold')">Hold</button>
-      <button class="btn sm red" onclick="removePhone('${p.id}')">✕</button>
+      ${cu?.role==='admin'?`<button class="btn sm amber" onclick="setPhoneStatus('${p.id}','On Hold')">Hold</button><button class="btn sm red" onclick="removePhone('${p.id}')">✕</button>`:''}
     </div>`:`<div style="font-size:10px;color:var(--text3);margin-top:4px;">Sold ${p.soldDate||''} · ${p.soldTo||''}</div>`}
   </div>`;
 }
