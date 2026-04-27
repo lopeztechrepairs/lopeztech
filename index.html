@@ -2725,6 +2725,7 @@ function applyWarrantyCheck(origId,fee){
 function showView(id){
   const adminOnlyViews=['daily','perf','techs'];
   if(adminOnlyViews.includes(id)&&!checkRole('admin')){toast('Admin access required','err');return;}
+  if((id==='phones')&&!checkRole('user')){toast('Access denied','err');return;}
   document.querySelectorAll('.ni').forEach(el=>el.classList.remove('active'));
   const ni=document.getElementById('ni-'+id);if(ni)ni.classList.add('active');
   document.getElementById('view-repairs').style.display='none';
