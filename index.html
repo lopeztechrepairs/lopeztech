@@ -4114,7 +4114,6 @@ function updatePartsBadge(){
 }
 
 function renderPartsInventory(pg){
-  if(!checkRole('admin')){pg.innerHTML='<div style="color:var(--red);">Admin access required.</div>';return;}
   const parts=getParts();
   const locFilter=pg.dataset.loc||'all';
   const searchQ=(pg.dataset.search||'').toLowerCase();
