@@ -3930,7 +3930,7 @@ function getPartFreq(){return lsLoad('lt_parts_freq',{});}
 function incPartFreq(key){const f=getPartFreq();f[key]=(f[key]||0)+1;lsSave('lt_parts_freq',f);}
 
 function getParts(){return lsLoad(LS_PARTS,[]);}
-function saveParts(p){lsSave(LS_PARTS,p);schedulePush();}
+function saveParts(p){lsSave(LS_PARTS,p);}
 
 // Build flat searchable list of all devices
 function getAllDevices(){
