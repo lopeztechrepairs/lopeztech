@@ -4852,6 +4852,14 @@ async function pullFromCloud(){
       const del=Array.isArray(data.deleted)?data.deleted:Object.values(data.deleted);
       lsSave(LS_DEL,del.filter(Boolean));
     }
+    if(data.parts){
+      const pts=Array.isArray(data.parts)?data.parts:Object.values(data.parts);
+      saveParts(pts.filter(Boolean));
+    }
+    if(data.phones){
+      const phs=Array.isArray(data.phones)?data.phones:Object.values(data.phones);
+      savePhones(phs.filter(Boolean));
+    }
     autoPastDue();renderRepairs();updateStats();renderStatusBar();renderRecentBar();
     lastSync=Date.now();
     toast('Synced ✓','ok');
@@ -4877,6 +4885,8 @@ async function pushAllToCloud(){
       techs:getTechs(),
       templates:getTpls(),
       deleted:lsLoad(LS_DEL,[]),
+      parts:getParts(),
+      phones:getPhones(),
       meta:{lastUpdated:new Date().toISOString(),updatedBy:cu?.name||'Unknown'}
     });
     lastSync=Date.now();
