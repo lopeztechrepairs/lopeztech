@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lopez Tech Repairs — Device Setup</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Geist',sans-serif;background:#0a0f1a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;}
+.bg::before{content:'';position:absolute;top:-40%;left:-20%;width:600px;height:600px;background:radial-gradient(circle,rgba(25,113,194,.18) 0%,transparent 70%);}
+.bg::after{content:'';position:absolute;bottom:-30%;right:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(47,158,68,.12) 0%,transparent 70%);}
+
+.card{position:relative;z-index:1;background:#111827;border:1px solid #1f2937;border-radius:20px;padding:40px;width:100%;max-width:520px;box-shadow:0 25px 80px rgba(0,0,0,.5);}
+
+.logo{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
+.logo-badge{width:44px;height:44px;background:#1b3a5c;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;letter-spacing:-1px;flex-shrink:0;}
+.logo-text{font-size:16px;font-weight:700;color:#f9fafb;line-height:1.2;}
+.logo-sub{font-size:11px;color:#6b7280;font-weight:400;}
+
+h1{font-size:22px;font-weight:800;color:#f9fafb;margin-bottom:6px;letter-spacing:-.5px;}
+.subtitle{font-size:13px;color:#9ca3af;margin-bottom:28px;line-height:1.5;}
+
+.section{margin-bottom:20px;}
+.section-label{font-size:10px;font-weight:700;color:#6b7280;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+
+.device-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;}
+.device-btn{background:#1f2937;border:1.5px solid #374151;border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .2s;text-align:left;}
+.device-btn:hover{border-color:#3b82f6;background:#1e3a5f;}
+.device-btn.selected{border-color:#1971c2;background:#1e3a5f;box-shadow:0 0 0 3px rgba(25,113,194,.2);}
+.device-btn .db-icon{font-size:18px;margin-bottom:4px;}
+.device-btn .db-name{font-size:12px;font-weight:600;color:#f9fafb;}
+.device-btn .db-sub{font-size:10px;color:#6b7280;margin-top:1px;}
+
+.info-row{background:#1f2937;border:1px solid #374151;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.info-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.info-label{font-size:11px;color:#9ca3af;flex:1;}
+.info-status{font-size:11px;font-weight:600;}
+.dot-green{background:#2f9e44;}
+.dot-blue{background:#1971c2;}
+.dot-orange{background:#e67700;}
+
+.setup-btn{width:100%;background:linear-gradient(135deg,#1971c2,#1557a0);border:none;border-radius:12px;padding:16px;font-family:'Geist',sans-serif;font-size:15px;font-weight:700;color:#fff;cursor:pointer;transition:all .2s;margin-top:8px;letter-spacing:-.2px;}
+.setup-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(25,113,194,.4);}
+.setup-btn:active{transform:translateY(0);}
+.setup-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+.result{margin-top:16px;border-radius:12px;padding:16px;display:none;}
+.result.success{background:#0d2218;border:1px solid #2f9e44;}
+.result.error{background:#1a0808;border:1px solid #c92a2a;}
+
+.result-title{font-size:14px;font-weight:700;margin-bottom:10px;}
+.result.success .result-title{color:#2f9e44;}
+.result.error .result-title{color:#c92a2a;}
+
+.check-item{display:flex;align-items:center;gap:8px;font-size:12px;color:#9ca3af;padding:4px 0;}
+.check-item .ci-icon{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;}
+.ci-ok{background:#2f9e44;color:#fff;}
+.ci-skip{background:#374151;color:#6b7280;}
+
+.open-app-btn{display:block;width:100%;margin-top:12px;background:#1f2937;border:1px solid #374151;border-radius:8px;padding:10px;font-family:'Geist',sans-serif;font-size:13px;font-weight:600;color:#3b82f6;cursor:pointer;text-align:center;text-decoration:none;transition:all .15s;}
+.open-app-btn:hover{border-color:#3b82f6;background:#1e3a5f;}
+
+.divider{border:none;border-top:1px solid #1f2937;margin:20px 0;}
+
+.note{font-size:11px;color:#4b5563;text-align:center;line-height:1.6;}
+.note strong{color:#6b7280;}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="card">
+  <div class="logo">
+    <div class="logo-badge">LTR</div>
+    <div><div class="logo-text">Lopez Tech Repairs</div><div class="logo-sub">Device Setup Wizard</div></div>
+  </div>
+
+  <h1>One-Click Device Setup</h1>
+  <p class="subtitle">Select this device type below, then tap Setup. Takes about 10 seconds and only needs to be done once per device.</p>
+
+  <div class="section">
+    <div class="section-label">Select This Device</div>
+    <div class="device-grid">
+      <div class="device-btn" onclick="selectDevice('dayton-back','repair')" id="btn-dayton-back">
+        <div class="db-icon">🖥️</div>
+        <div class="db-name">Dayton — Back</div>
+        <div class="db-sub">Repairs + Sales</div>
+      </div>
+      <div class="device-btn" onclick="selectDevice('dayton-front','repair')" id="btn-dayton-front">
+        <div class="db-icon">🖥️</div>
+        <div class="db-name">Dayton — Front</div>
+        <div class="db-sub">Repairs + Sales</div>
+      </div>
+      <div class="device-btn" onclick="selectDevice('crosby-back','repair')" id="btn-crosby-back">
+        <div class="db-icon">🖥️</div>
+        <div class="db-name">Crosby — Back</div>
+        <div class="db-sub">Repairs + Sales</div>
+      </div>
+      <div class="device-btn" onclick="selectDevice('crosby-front','repair')" id="btn-crosby-front">
+        <div class="db-icon">🖥️</div>
+        <div class="db-name">Crosby — Front</div>
+        <div class="db-sub">Repairs + Sales</div>
+      </div>
+      <div class="device-btn" onclick="selectDevice('dayton-phone','expense')" id="btn-dayton-phone">
+        <div class="db-icon">📱</div>
+        <div class="db-name">Dayton — Phone</div>
+        <div class="db-sub">Expenses only</div>
+      </div>
+      <div class="device-btn" onclick="selectDevice('crosby-phone','expense')" id="btn-crosby-phone">
+        <div class="db-icon">📱</div>
+        <div class="db-name">Crosby — Phone</div>
+        <div class="db-sub">Expenses only</div>
+      </div>
+      <div class="device-btn" onclick="selectDevice('saul-phone','expense')" id="btn-saul-phone" style="grid-column:1/-1;">
+        <div class="db-icon">👤</div>
+        <div class="db-name">Saul's Personal Phone</div>
+        <div class="db-sub">Expenses only</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="preview-section" style="display:none;">
+    <div class="section-label">Will Be Configured</div>
+    <div id="preview-items"></div>
+  </div>
+
+  <button class="setup-btn" id="setup-btn" onclick="runSetup()" disabled>
+    Select a device above to continue
+  </button>
+
+  <div class="result" id="result-box">
+    <div class="result-title" id="result-title"></div>
+    <div id="result-items"></div>
+    <a href="https://lopeztechrepairs.github.io/lopeztech" class="open-app-btn" id="app-link" style="display:none;">→ Open Lopez Tech Repairs App</a>
+  </div>
+
+  <hr class="divider"/>
+  <p class="note"><strong>One time only.</strong> These settings are saved permanently to this browser. If you clear browser data, run setup again.</p>
+</div>
+
+<script>
+const CONFIG = {
+  firebase_url: 'https://lopez-tech-repairs-82c87-default-rtdb.firebaseio.com',
+  firebase_key: 'vy7bsIpXGsJtyTO175pQiDJ8lgYbdLWJG4R9SZLm',
+  sales_url: 'https://script.google.com/macros/s/AKfycby07quBO2ovrg35pMhUNL_Qk1glOdLIy7N5YW06yDrND8Fs9li6APgOOnyCUv2wOwgZnA/exec',
+  expense_url: 'https://script.google.com/macros/s/AKfycbyjuWLR3KY10BbCpfoIM_lTrlAxu52nBNo_YpOk-OD2V1yE1T_Ncu8tK542o1oSOPuTSg/exec',
+};
+
+let selectedDevice = null;
+let selectedType = null;
+
+function selectDevice(id, type) {
+  document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('btn-' + id).classList.add('selected');
+  selectedDevice = id;
+  selectedType = type;
+
+  const isRepair = type === 'repair';
+  const items = [];
+
+  if (isRepair) {
+    items.push({dot:'dot-blue', label:'Firebase Sync (repairs between all devices)', status:'✓ Will set', statusColor:'#3b82f6'});
+    items.push({dot:'dot-green', label:'Sales Logger (Google Sheets)', status:'✓ Will set', statusColor:'#2f9e44'});
+  } else {
+    items.push({dot:'dot-orange', label:'Expense Logger (Google Sheets)', status:'✓ Will set', statusColor:'#e67700'});
+  }
+
+  document.getElementById('preview-items').innerHTML = items.map(i => `
+    <div class="info-row">
+      <div class="info-dot ${i.dot}"></div>
+      <div class="info-label">${i.label}</div>
+      <div class="info-status" style="color:${i.statusColor};">${i.status}</div>
+    </div>`).join('');
+
+  document.getElementById('preview-section').style.display = 'block';
+  const btn = document.getElementById('setup-btn');
+  btn.disabled = false;
+  btn.textContent = '⚡ Set Up This Device Now';
+}
+
+function runSetup() {
+  if (!selectedDevice) return;
+  const btn = document.getElementById('setup-btn');
+  btn.disabled = true;
+  btn.textContent = 'Setting up…';
+
+  const results = [];
+  const isRepair = selectedType === 'repair';
+
+  try {
+    if (isRepair) {
+      // Target the app's localStorage on same domain won't work cross-origin
+      // So we store in this page's localStorage with instructions
+      localStorage.setItem('lt_fb_url', CONFIG.firebase_url);
+      localStorage.setItem('lt_fb_key', CONFIG.firebase_key);
+      localStorage.setItem('lt_sales_url', CONFIG.sales_url);
+      results.push({ok:true, label:'Firebase URL set'});
+      results.push({ok:true, label:'Firebase Key set'});
+      results.push({ok:true, label:'Sales Logger URL set'});
+    } else {
+      localStorage.setItem('lt_exp_url', CONFIG.expense_url);
+      results.push({ok:true, label:'Expense Logger URL set'});
+    }
+
+    // Mark device
+    localStorage.setItem('lt_device_id', selectedDevice);
+    localStorage.setItem('lt_setup_done', new Date().toISOString());
+    results.push({ok:true, label:'Device ID saved: ' + selectedDevice});
+
+    showResult(true, results);
+  } catch(e) {
+    showResult(false, [{ok:false, label:'Error: ' + e.message}]);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✓ Setup Complete — Run Again?';
+}
+
+function showResult(success, items) {
+  const box = document.getElementById('result-box');
+  const title = document.getElementById('result-title');
+  const itemsEl = document.getElementById('result-items');
+  const appLink = document.getElementById('app-link');
+
+  box.className = 'result ' + (success ? 'success' : 'error');
+  box.style.display = 'block';
+  title.textContent = success ? '✓ Device configured successfully!' : '✗ Setup failed';
+
+  itemsEl.innerHTML = items.map(i => `
+    <div class="check-item">
+      <div class="ci-icon ${i.ok ? 'ci-ok' : 'ci-skip'}">${i.ok ? '✓' : '✗'}</div>
+      <span>${i.label}</span>
+    </div>`).join('');
+
+  if (success) {
+    appLink.style.display = 'block';
+    // If repair device, link to main app; if expense, link to expenses
+    appLink.href = selectedType === 'repair'
+      ? 'https://lopeztechrepairs.github.io/lopeztech'
+      : 'https://lopeztechrepairs.github.io/lopeztech/expenses.html';
+    appLink.textContent = selectedType === 'repair'
+      ? '→ Open Repair Tracker App'
+      : '→ Open Expense Logger';
+  }
+
+  box.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+</script>
+</body>
+</html>
