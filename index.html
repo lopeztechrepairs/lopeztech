@@ -4825,13 +4825,13 @@ async function fbPatch(path,data){
   return r.json();
 }
 
-async function pullFromCloud(){
+async function pullFromCloud(silent=false){
   if(!hasCloud())return;
   if(syncInProgress)return;
   syncInProgress=true;
   try{
-    document.getElementById('loader').classList.add('on');
-    document.getElementById('lmsg').textContent='Syncing with Firebase…';
+    if(!silent){document.getElementById('loader').classList.add('on');
+    document.getElementById('lmsg').textContent='Syncing with Firebase…';}
     const data=await fbRead('lopeztechrepairs');
     if(!data){syncInProgress=false;document.getElementById('loader').classList.remove('on');return;}
     if(data.repairs){
@@ -4864,13 +4864,13 @@ async function pullFromCloud(){
     }
     autoPastDue();renderRepairs();updateStats();renderStatusBar();renderRecentBar();
     lastSync=Date.now();
-    toast('Synced ✓','ok');
+    if(!silent)toast('Synced ✓','ok');
   }catch(e){
-    toast('Working offline','warn');
+    if(!silent)toast('Working offline','warn');
     console.warn('Firebase pull failed:',e);
   }finally{
     syncInProgress=false;
-    document.getElementById('loader').classList.remove('on');
+    if(!silent)document.getElementById('loader').classList.remove('on');
   }
 }
 
@@ -4912,7 +4912,7 @@ function schedulePush(){
 setInterval(async()=>{
   if(cu&&hasCloud()){
     try{
-      await pullFromCloud();
+      await pullFromCloud(true);
     }catch(e){}
   }
 },5000);
