@@ -4911,13 +4911,7 @@ function schedulePush(){
 setInterval(async()=>{
   if(cu&&hasCloud()){
     try{
-      const meta=await fbRead('lopeztechrepairs/meta');
-      if(meta?.lastUpdated){
-        const cloudTime=new Date(meta.lastUpdated).getTime();
-        if(cloudTime>lastSync){
-          await pullFromCloud();
-        }
-      }
+      await pullFromCloud();
     }catch(e){}
   }
 },5000);
