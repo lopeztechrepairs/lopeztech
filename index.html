@@ -4851,7 +4851,7 @@ async function pullFromCloud(){
     if(data.deleted){
       const del=Array.isArray(data.deleted)?data.deleted:Object.values(data.deleted);
       lsSave(LS_DEL,del.filter(Boolean));
-    }
+    } 
     if(data.parts){
       const pts=Array.isArray(data.parts)?data.parts:Object.values(data.parts);
       saveParts(pts.filter(Boolean));
