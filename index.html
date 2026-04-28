@@ -4101,6 +4101,7 @@ function deletePart(id){
   if(!confirm('Remove this part from inventory?'))return;
   saveParts(getParts().filter(p=>p.id!==id));
   updatePartsBadge();
+  pushAllToCloud();
   const pg=document.getElementById('view-parts');
   if(pg&&pg.classList.contains('active'))renderPartsInventory(pg);
   toast('Part removed','ok');
