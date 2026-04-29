@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revenue Dashboard — Lopez Tech Repairs</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#f0f2f6; --surface:#fff; --border:#e2e8f0; --border2:#cbd5e1;
+  --text:#0f172a; --text2:#475569; --text3:#94a3b8;
+  --navy:#0f1f3d; --navy2:#162847; --accent:#1a6fc4; --accent2:#2b8ef0;
+  --green:#16a34a; --amber:#d48000; --red:#dc2626; --purple:#7c3aed;
+  --teal:#0c8599; --orange:#c2410c;
+  --shadow:0 1px 4px rgba(0,0,0,.07); --shadow2:0 4px 20px rgba(0,0,0,.1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'Geist',sans-serif;font-size:13px;background:var(--bg);color:var(--text);}
+
+/* ── LOGIN ── */
+#login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f1f3d 0%,#1a3a6e 60%,#0d2a58 100%);z-index:999;}
+#login::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,.025) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,.025) 40px);}
+.lcard{position:relative;z-index:1;background:#fff;border-radius:16px;padding:38px 42px;width:340px;box-shadow:0 40px 80px rgba(0,0,0,.4);}
+.lbadge{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#0a4a8c);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;margin:0 auto 12px;}
+.lcard h2{text-align:center;font-size:18px;font-weight:600;margin-bottom:4px;}
+.lcard p{text-align:center;font-size:12px;color:var(--text3);margin-bottom:24px;}
+.lf{margin-bottom:14px;}
+.lf label{display:block;font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;}
+.lf input{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border2);background:#f8fafc;color:var(--text);font-family:inherit;font-size:13px;transition:border-color .2s;}
+.lf input:focus{outline:none;border-color:var(--accent);}
+.lbtn{width:100%;padding:11px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--accent),#0a4a8c);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;}
+.lbtn:hover{opacity:.9;}
+.lerr{margin-top:12px;padding:9px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:7px;color:var(--red);font-size:12px;text-align:center;display:none;}
+
+/* ── APP ── */
+#app{display:none;min-height:100vh;}
+#app.on{display:block;}
+
+/* ── TOPBAR ── */
+.topbar{background:linear-gradient(90deg,var(--navy),var(--navy2));border-bottom:2px solid rgba(26,111,196,.35);padding:0 28px;height:56px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.2);}
+.tb-badge{width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,var(--accent),#0a4a8c);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+.tb-name{font-weight:600;font-size:15px;color:#fff;}
+.tb-sub{font-size:10px;color:rgba(255,255,255,.5);display:block;letter-spacing:.8px;}
+.tb-spacer{flex:1;}
+.pill-admin{background:rgba(240,165,0,.18);border:1px solid rgba(240,165,0,.4);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;color:#fbbf24;}
+.tb-btn{padding:7px 16px;border-radius:7px;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;transition:all .18s;}
+.tb-export{background:linear-gradient(135deg,var(--green),#0d7a3a);color:#fff;box-shadow:0 2px 10px rgba(22,163,74,.3);}
+.tb-export:hover{opacity:.9;}
+.tb-signout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8);}
+.tb-signout:hover{background:rgba(220,38,38,.2);border-color:rgba(220,38,38,.4);color:#fca5a5;}
+
+/* ── FILTERS ── */
+.filters{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.filters label{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);}
+.filters select,.filters input[type=number]{padding:7px 12px;border-radius:7px;border:1.5px solid var(--border);background:#f8fafc;color:var(--text);font-family:inherit;font-size:12px;cursor:pointer;transition:border-color .2s;}
+.filters select:focus,.filters input:focus{outline:none;border-color:var(--accent);}
+.filters input[type=number]{width:70px;}
+.f-sep{width:1px;height:20px;background:var(--border);}
+.last-sync{margin-left:auto;font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── MAIN ── */
+main{padding:24px 28px 40px;max-width:1400px;margin:0 auto;}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;}
+.kpi{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;box-shadow:var(--shadow);transition:transform .18s,box-shadow .18s;}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow2);}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;}
+.kpi.k-rev::after{background:var(--accent);}
+.kpi.k-tips::after{background:var(--teal);}
+.kpi.k-cnt::after{background:var(--green);}
+.kpi.k-avg::after{background:var(--amber);}
+.kpi.k-cash::after{background:#16a34a;}
+.kpi-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.kpi-value{font-size:28px;font-weight:700;line-height:1;}
+.kpi.k-rev .kpi-value{color:var(--accent);}
+.kpi.k-tips .kpi-value{color:var(--teal);}
+.kpi.k-cnt .kpi-value{color:var(--green);}
+.kpi.k-avg .kpi-value{color:var(--amber);}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:5px;}
+
+/* ── TWO COL ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:900px){.two-col{grid-template-columns:1fr;}}
+
+/* ── PANELS ── */
+.panel{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+.panel-hdr{padding:14px 18px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.panel-hdr h3{font-size:13px;font-weight:600;color:var(--text);}
+.panel-hdr span{font-size:11px;color:var(--text3);}
+.panel-body{padding:16px 18px;}
+
+/* ── PAY BARS ── */
+.pay-row{margin-bottom:14px;}
+.pay-row:last-child{margin-bottom:0;}
+.pay-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.pay-name{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500;}
+.pay-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.pay-amt{font-size:12px;font-weight:600;}
+.pay-bar-bg{height:6px;background:#f1f5f9;border-radius:3px;overflow:hidden;}
+.pay-bar-fill{height:100%;border-radius:3px;transition:width .6s ease;}
+
+/* ── TECH TIPS ── */
+.tech-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.tech-row:last-child{margin-bottom:0;}
+.tech-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;}
+.tech-info{flex:1;}
+.tech-name-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.tech-name-lbl{font-size:12px;font-weight:500;}
+.tech-tip-amt{font-size:12px;font-weight:700;color:var(--teal);}
+.tech-bar-bg{height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden;}
+.tech-bar-fill{height:100%;border-radius:3px;transition:width .6s ease;}
+
+/* ── SALES TABLE ── */
+.sales-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead th{padding:9px 12px;text-align:left;background:#f8fafc;border-bottom:1.5px solid var(--border);font-weight:600;font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--text2);white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
+tbody tr:hover{background:#f8fafc;}
+tbody td{padding:9px 12px;color:var(--text);vertical-align:middle;}
+tbody tr:last-child{border-bottom:none;}
+.t-date{font-family:'Geist Mono',monospace;font-size:11px;color:var(--text3);white-space:nowrap;}
+.t-repair{font-weight:500;max-width:280px;}
+.t-repair .sub{font-size:10px;color:var(--text3);margin-top:1px;}
+.t-amt{font-weight:700;text-align:right;white-space:nowrap;}
+.t-tip{text-align:right;font-size:11px;color:var(--teal);}
+.pay-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;}
+.tech-chip{display:inline-flex;align-items:center;gap:5px;padding:2px 8px 2px 4px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;}
+.tech-chip .dot{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;}
+.loc-badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600;}
+.loc-dayton{background:#dbeafe;color:#1e40af;}
+.loc-crosby{background:#fef3c7;color:#92400e;}
+
+/* ── EMPTY / LOADING ── */
+.empty{text-align:center;padding:40px;color:var(--text3);}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;right:24px;z-index:9999;padding:11px 18px;border-radius:9px;font-size:13px;font-weight:500;pointer-events:none;transform:translateY(20px);opacity:0;transition:all .3s;box-shadow:var(--shadow2);}
+#toast.show{transform:none;opacity:1;}
+#toast.ok{background:#f0fdf4;border:1.5px solid rgba(22,163,74,.3);color:var(--green);}
+#toast.err{background:#fef2f2;border:1.5px solid rgba(220,38,38,.3);color:var(--red);}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login">
+  <div class="lcard">
+    <div class="lbadge">LTR</div>
+    <h2>Revenue Dashboard</h2>
+    <p>Admin access only</p>
+    <div class="lf">
+      <label>Username</label>
+      <input id="l-user" type="text" placeholder="Enter username" autocomplete="off"
+             onkeydown="if(event.key==='Enter')document.getElementById('l-pin').focus()">
+    </div>
+    <div class="lf">
+      <label>PIN</label>
+      <input id="l-pin" type="password" placeholder="••••" maxlength="8"
+             onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="lbtn" onclick="doLogin()">Sign In</button>
+    <div class="lerr" id="lerr">Incorrect credentials or insufficient access</div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app">
+  <div class="topbar">
+    <div class="tb-badge">LTR</div>
+    <div>
+      <span class="tb-name">Lopez Tech Repairs</span>
+      <span class="tb-sub">REVENUE DASHBOARD</span>
+    </div>
+    <div class="tb-spacer"></div>
+    <span class="pill-admin">ADMIN</span>
+    <button class="tb-btn tb-export" onclick="exportExcel()">⬇ Export Excel</button>
+    <a href="index.html"><button class="tb-btn tb-signout" style="cursor:pointer;">← Back to App</button></a>
+    <button class="tb-btn tb-signout" onclick="doSignOut()">Sign Out</button>
+  </div>
+
+  <div class="filters">
+    <label>Location</label>
+    <select id="f-loc" onchange="render()">
+      <option value="both">Both Locations</option>
+      <option value="Dayton">Dayton</option>
+      <option value="Crosby">Crosby</option>
+    </select>
+    <div class="f-sep"></div>
+    <label>Month</label>
+    <select id="f-month" onchange="render()">
+      <option value="1">January</option><option value="2">February</option>
+      <option value="3">March</option><option value="4">April</option>
+      <option value="5">May</option><option value="6">June</option>
+      <option value="7">July</option><option value="8">August</option>
+      <option value="9">September</option><option value="10">October</option>
+      <option value="11">November</option><option value="12">December</option>
+    </select>
+    <label>Year</label>
+    <input type="number" id="f-year" value="2026" min="2024" max="2030" onchange="render()">
+    <div class="f-sep"></div>
+    <div class="last-sync"><div class="sync-dot"></div><span id="sync-lbl">Loading…</span></div>
+  </div>
+
+  <main>
+    <div class="kpi-grid" id="kpi-grid">
+      <div class="kpi k-rev"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="kv-rev">—</div><div class="kpi-sub">All completed repairs</div></div>
+      <div class="kpi k-tips"><div class="kpi-label">Total Tips</div><div class="kpi-value" id="kv-tips">—</div><div class="kpi-sub">Across all techs</div></div>
+      <div class="kpi k-cnt"><div class="kpi-label">Repairs Completed</div><div class="kpi-value" id="kv-cnt">—</div><div class="kpi-sub">This period</div></div>
+      <div class="kpi k-avg"><div class="kpi-label">Avg per Repair</div><div class="kpi-value" id="kv-avg">—</div><div class="kpi-sub">Revenue average</div></div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-hdr">
+          <h3>Payment Breakdown</h3>
+          <span id="pay-period">—</span>
+        </div>
+        <div class="panel-body" id="pay-body"><div class="empty"><span class="spinner"></span>Loading…</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr">
+          <h3>Tips by Technician</h3>
+          <span id="tip-period">—</span>
+        </div>
+        <div class="panel-body" id="tip-body"><div class="empty"><span class="spinner"></span>Loading…</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-hdr">
+        <h3>Completed Sales</h3>
+        <span id="sales-count">—</span>
+      </div>
+      <div class="panel-body" style="padding:0;">
+        <div class="sales-wrap">
+          <table id="sales-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Sales / Repairs</th>
+                <th>Location</th>
+                <th>Payment Method</th>
+                <th style="text-align:right">Total Amount</th>
+                <th style="text-align:right">Tips</th>
+                <th>Cashier</th>
+              </tr>
+            </thead>
+            <tbody id="sales-tbody"><tr><td colspan="7" class="empty"><span class="spinner"></span>Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────
+var FB_URL = 'https://lopez-tech-repairs-82c87-default-rtdb.firebaseio.com';
+var FB_KEY = 'vy7bsIpXGsJtyTO175pQiDJ8lgYbdLWJG4R9SZLm';
+
+var ADMINS = {
+  'saul':             '7679',
+  'lopeztechrepairs': '7679'
+};
+
+var PAY_COLORS = {
+  'Cash':            '#16a34a',
+  'Credit / Debit':  '#1e293b',
+  'Split Payment':   '#c2410c',
+  'Check':           '#78350f',
+  'Acima':           '#4a3728',
+  'Zelle':           '#4f46e5',
+  'CashApp':         '#15803d',
+  'PayPal':          '#003087',
+  'Venmo':           '#3d82c4',
+};
+
+var TECH_COLORS = {
+  'Saul':            {bg:'#16a34a', c:'#fff'},
+  'David':           {bg:'#1e293b', c:'#fff'},
+  'David Thompson':  {bg:'#1e293b', c:'#fff'},
+  'Juan':            {bg:'#dc2626', c:'#fff'},
+  'Juan Reynoso':    {bg:'#dc2626', c:'#fff'},
+  'Ismael':          {bg:'#7c3aed', c:'#fff'},
+};
+
+var allRepairs = [];
+var currentUser = null;
+
+// ── AUTH ──────────────────────────────────────────────────
+window.onload = function() {
+  var saved = null;
+  try { saved = JSON.parse(localStorage.getItem('ltr_dash_session')); } catch(e) {}
+  if (saved && saved.user) {
+    currentUser = saved.user;
+    startApp();
+  }
+  // Set current month/year
+  var now = new Date();
+  document.getElementById('f-month').value = now.getMonth() + 1;
+  document.getElementById('f-year').value  = now.getFullYear();
+};
+
+function doLogin() {
+  var u = (document.getElementById('l-user').value || '').trim().toLowerCase();
+  var p = (document.getElementById('l-pin').value  || '').trim();
+  var err = document.getElementById('lerr');
+  err.style.display = 'none';
+  if (!ADMINS[u] || ADMINS[u] !== p) {
+    err.style.display = 'block';
+    return;
+  }
+  currentUser = u;
+  localStorage.setItem('ltr_dash_session', JSON.stringify({ user: u }));
+  startApp();
+}
+
+function doSignOut() {
+  localStorage.removeItem('ltr_dash_session');
+  location.reload();
+}
+
+function startApp() {
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('app').classList.add('on');
+  fetchData();
+  setInterval(fetchData, 30000);
+}
+
+// ── FIREBASE ──────────────────────────────────────────────
+function fetchData() {
+  fetch(FB_URL + '/lopeztechrepairs/repairs.json?auth=' + FB_KEY)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data) { allRepairs = []; }
+      else if (Array.isArray(data)) { allRepairs = data.filter(Boolean); }
+      else { allRepairs = Object.values(data).filter(Boolean); }
+      document.getElementById('sync-lbl').textContent =
+        'Synced ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      render();
+    })
+    .catch(function() {
+      document.getElementById('sync-lbl').textContent = 'Offline';
+    });
+}
+
+// ── FILTERS ───────────────────────────────────────────────
+function getFiltered() {
+  var loc   = document.getElementById('f-loc').value;
+  var month = parseInt(document.getElementById('f-month').value);
+  var year  = parseInt(document.getElementById('f-year').value);
+
+  return allRepairs.filter(function(r) {
+    if (r.Status !== 'Completed') return false;
+    var dateStr = r.CompletedDate || r.DropoffDate || r.CreatedAt || '';
+    if (!dateStr) return false;
+    var d = new Date(dateStr);
+    if (isNaN(d.getTime())) return false;
+    if (d.getMonth() + 1 !== month) return false;
+    if (d.getFullYear() !== year)   return false;
+    if (loc !== 'both' && r.Location !== loc) return false;
+    return true;
+  });
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function render() {
+  var rows   = getFiltered();
+  var month  = parseInt(document.getElementById('f-month').value);
+  var year   = parseInt(document.getElementById('f-year').value);
+  var months = ['','January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+  var period = months[month] + ' ' + year;
+
+  var total = rows.reduce(function(s,r){ return s + (parseFloat(r.TotalCollected) || parseFloat(r.Quote) || 0); }, 0);
+  var tips  = rows.reduce(function(s,r){ return s + (parseFloat(r.Tip) || 0); }, 0);
+  var cnt   = rows.length;
+  var avg   = cnt ? total / cnt : 0;
+
+  document.getElementById('kv-rev').textContent  = '$' + total.toFixed(2);
+  document.getElementById('kv-tips').textContent = '$' + tips.toFixed(2);
+  document.getElementById('kv-cnt').textContent  = cnt;
+  document.getElementById('kv-avg').textContent  = '$' + avg.toFixed(2);
+
+  renderPayBreakdown(rows, period);
+  renderTechTips(rows, period);
+  renderSalesTable(rows);
+}
+
+function renderPayBreakdown(rows, period) {
+  document.getElementById('pay-period').textContent = period;
+  var totals = {};
+  rows.forEach(function(r) {
+    var m = r.PayMethod || 'Cash';
+    totals[m] = (totals[m] || 0) + (parseFloat(r.TotalCollected) || parseFloat(r.Quote) || 0);
+  });
+  var entries = Object.entries(totals).sort(function(a,b){ return b[1]-a[1]; });
+  var max = entries.length ? entries[0][1] : 1;
+
+  if (!entries.length) {
+    document.getElementById('pay-body').innerHTML = '<div class="empty">No data for this period</div>';
+    return;
+  }
+
+  document.getElementById('pay-body').innerHTML = entries.map(function(e) {
+    var pay = e[0], amt = e[1];
+    var color = PAY_COLORS[pay] || '#888';
+    var pct = (amt / max * 100).toFixed(1);
+    return '<div class="pay-row">'
+      + '<div class="pay-top">'
+        + '<div class="pay-name"><div class="pay-dot" style="background:' + color + '"></div>' + esc(pay) + '</div>'
+        + '<div class="pay-amt" style="color:' + color + '">$' + amt.toFixed(2) + '</div>'
+      + '</div>'
+      + '<div class="pay-bar-bg"><div class="pay-bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div>'
+    + '</div>';
+  }).join('');
+}
+
+function renderTechTips(rows, period) {
+  document.getElementById('tip-period').textContent = period;
+  var totals = {};
+  rows.forEach(function(r) {
+    var tip = parseFloat(r.Tip) || 0;
+    if (tip > 0) {
+      var t = r.AssignedTo || 'Unknown';
+      totals[t] = (totals[t] || 0) + tip;
+    }
+  });
+  var entries = Object.entries(totals).sort(function(a,b){ return b[1]-a[1]; });
+  var max = entries.length ? entries[0][1] : 1;
+
+  if (!entries.length) {
+    document.getElementById('tip-body').innerHTML = '<div class="empty">No tips recorded for this period</div>';
+    return;
+  }
+
+  document.getElementById('tip-body').innerHTML = entries.map(function(e) {
+    var tech = e[0], tip = e[1];
+    var tc = getTechColor(tech);
+    var ini = initials(tech);
+    var pct = (tip / max * 100).toFixed(1);
+    return '<div class="tech-row">'
+      + '<div class="tech-av" style="background:' + tc.bg + ';color:' + tc.c + '">' + ini + '</div>'
+      + '<div class="tech-info">'
+        + '<div class="tech-name-row">'
+          + '<span class="tech-name-lbl">' + esc(tech) + '</span>'
+          + '<span class="tech-tip-amt">$' + tip.toFixed(2) + '</span>'
+        + '</div>'
+        + '<div class="tech-bar-bg"><div class="tech-bar-fill" style="width:' + pct + '%;background:' + tc.bg + '"></div></div>'
+      + '</div>'
+    + '</div>';
+  }).join('');
+}
+
+function renderSalesTable(rows) {
+  var sorted = rows.slice().sort(function(a,b){
+    return new Date(b.CompletedDate || b.CreatedAt || 0) - new Date(a.CompletedDate || a.CreatedAt || 0);
+  });
+  document.getElementById('sales-count').textContent = sorted.length + ' records';
+
+  if (!sorted.length) {
+    document.getElementById('sales-tbody').innerHTML =
+      '<tr><td colspan="7" class="empty">No completed repairs for this period</td></tr>';
+    return;
+  }
+
+  document.getElementById('sales-tbody').innerHTML = sorted.map(function(r) {
+    var date   = fmtDate(r.CompletedDate || r.DropoffDate || r.CreatedAt);
+    var repair = r.RepairName || r.Device || '—';
+    var cust   = r.CustomerName || '';
+    var loc    = r.Location || '—';
+    var pay    = r.PayMethod || '—';
+    var color  = PAY_COLORS[pay] || '#888';
+    var amt    = parseFloat(r.TotalCollected) || parseFloat(r.Quote) || 0;
+    var tip    = parseFloat(r.Tip) || 0;
+    var tech   = r.AssignedTo || '—';
+    var tc     = getTechColor(tech);
+    var ini    = initials(tech);
+    var locClass = loc === 'Dayton' ? 'loc-dayton' : 'loc-crosby';
+
+    return '<tr>'
+      + '<td class="t-date">' + date + '</td>'
+      + '<td class="t-repair">' + esc(repair) + (cust ? '<div class="sub">' + esc(cust) + '</div>' : '') + '</td>'
+      + '<td><span class="loc-badge ' + locClass + '">' + esc(loc) + '</span></td>'
+      + '<td><span class="pay-pill" style="background:' + color + '">' + esc(pay) + '</span></td>'
+      + '<td class="t-amt">$' + amt.toFixed(2) + '</td>'
+      + '<td class="t-tip">' + (tip > 0 ? '$' + tip.toFixed(2) : '—') + '</td>'
+      + '<td><span class="tech-chip" style="background:' + tc.bg + '20;color:' + tc.bg + '">'
+          + '<span class="dot" style="background:' + tc.bg + ';color:' + tc.c + '">' + ini + '</span>'
+          + esc(tech) + '</span></td>'
+    + '</tr>';
+  }).join('');
+}
+
+// ── EXCEL EXPORT ──────────────────────────────────────────
+function exportExcel() {
+  var rows   = getFiltered();
+  var month  = parseInt(document.getElementById('f-month').value);
+  var year   = parseInt(document.getElementById('f-year').value);
+  var loc    = document.getElementById('f-loc').value;
+  var months = ['','January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+  var period = months[month] + ' ' + year;
+  var locLabel = loc === 'both' ? 'All Locations' : loc;
+
+  if (!rows.length) { showToast('No data to export for this period', 'err'); return; }
+
+  var sorted = rows.slice().sort(function(a,b){
+    return new Date(b.CompletedDate || b.CreatedAt || 0) - new Date(a.CompletedDate || a.CreatedAt || 0);
+  });
+
+  var wb = XLSX.utils.book_new();
+
+  // ── MAIN DATA SHEET ──────────────────────────────
+  var wsData = [
+    [period + ' · ' + locLabel + ' · Lopez Tech Repairs'],
+    [],
+    ['Date', 'Sales / Repairs', 'Customer', 'Location', 'Total Amount', 'Payment Method', 'Tips', 'Cashier', 'Commission']
+  ];
+
+  sorted.forEach(function(r) {
+    wsData.push([
+      fmtDate(r.CompletedDate || r.DropoffDate || r.CreatedAt),
+      r.RepairName || r.Device || '—',
+      r.CustomerName || '—',
+      r.Location || '—',
+      parseFloat(r.TotalCollected) || parseFloat(r.Quote) || 0,
+      r.PayMethod || '—',
+      parseFloat(r.Tip) || 0,
+      r.AssignedTo || '—',
+      ''
+    ]);
+  });
+
+  // Totals row
+  var totalAmt  = sorted.reduce(function(s,r){ return s + (parseFloat(r.TotalCollected)||parseFloat(r.Quote)||0); }, 0);
+  var totalTips = sorted.reduce(function(s,r){ return s + (parseFloat(r.Tip)||0); }, 0);
+  wsData.push([]);
+  wsData.push(['TOTALS', '', '', '', totalAmt, '', totalTips, '', '']);
+
+  var ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  // Column widths
+  ws['!cols'] = [
+    {wch:12},{wch:40},{wch:22},{wch:12},
+    {wch:14},{wch:16},{wch:10},{wch:20},{wch:14}
+  ];
+
+  // Style title row (merge A1:I1)
+  ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:8} }];
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Sales Log');
+
+  // ── PAYMENT SUMMARY SHEET ────────────────────────
+  var payTotals = {};
+  sorted.forEach(function(r){
+    var m = r.PayMethod || 'Cash';
+    payTotals[m] = (payTotals[m] || 0) + (parseFloat(r.TotalCollected)||parseFloat(r.Quote)||0);
+  });
+
+  var wsPay = [
+    [period + ' · Payment Breakdown'],
+    [],
+    ['Payment Method', locLabel + ' Total']
+  ];
+  Object.entries(payTotals).sort(function(a,b){return b[1]-a[1];}).forEach(function(e){
+    wsPay.push([e[0], e[1]]);
+  });
+  wsPay.push([]);
+  wsPay.push(['GRAND TOTAL', totalAmt]);
+
+  var wsP = XLSX.utils.aoa_to_sheet(wsPay);
+  wsP['!cols'] = [{wch:20},{wch:16}];
+  wsP['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:1} }];
+  XLSX.utils.book_append_sheet(wb, wsP, 'Payment Summary');
+
+  // ── TIPS SUMMARY SHEET ───────────────────────────
+  var techTips = {};
+  sorted.forEach(function(r){
+    var tip = parseFloat(r.Tip)||0;
+    if (tip > 0) techTips[r.AssignedTo||'Unknown'] = (techTips[r.AssignedTo||'Unknown']||0)+tip;
+  });
+
+  var wsTip = [
+    [period + ' · Tips by Technician'],
+    [],
+    ['Technician', 'Total Tips']
+  ];
+  Object.entries(techTips).sort(function(a,b){return b[1]-a[1];}).forEach(function(e){
+    wsTip.push([e[0], e[1]]);
+  });
+  wsTip.push([]);
+  wsTip.push(['TOTAL TIPS', totalTips]);
+
+  var wsT = XLSX.utils.aoa_to_sheet(wsTip);
+  wsT['!cols'] = [{wch:22},{wch:14}];
+  wsT['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:1} }];
+  XLSX.utils.book_append_sheet(wb, wsT, 'Tips by Tech');
+
+  var filename = 'LTR_' + period.replace(' ','_') + '_' + locLabel.replace(' ','_') + '.xlsx';
+  XLSX.writeFile(wb, filename);
+  showToast('Exported: ' + filename, 'ok');
+}
+
+// ── UTILS ─────────────────────────────────────────────────
+function getTechColor(name) {
+  var n = (name || '').toLowerCase();
+  if (n.includes('saul'))   return {bg:'#16a34a', c:'#fff'};
+  if (n.includes('david'))  return {bg:'#1e293b', c:'#fff'};
+  if (n.includes('juan'))   return {bg:'#dc2626', c:'#fff'};
+  if (n.includes('ismael')) return {bg:'#7c3aed', c:'#fff'};
+  var palette = [{bg:'#0369a1',c:'#fff'},{bg:'#b45309',c:'#fff'},{bg:'#0f766e',c:'#fff'}];
+  var idx = (name||'').split('').reduce(function(a,ch){return a+ch.charCodeAt(0);},0) % palette.length;
+  return palette[idx];
+}
+
+function initials(n) {
+  return (n||'?').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  var dt = new Date(d);
+  if (isNaN(dt.getTime())) return d;
+  return (dt.getMonth()+1).toString().padStart(2,'0') + '/'
+       + dt.getDate().toString().padStart(2,'0') + '/'
+       + dt.getFullYear();
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+var _tt = null;
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + (type||'ok');
+  clearTimeout(_tt); _tt = setTimeout(function(){ t.className=''; }, 3200);
+}
+</script>
+</body>
+</html>
