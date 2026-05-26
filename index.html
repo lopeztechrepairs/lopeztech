@@ -222,7 +222,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 /* PANEL */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:200;display:none;justify-content:flex-end;}
 .overlay.open{display:flex;}
-.panel{width:540px;max-width:96vw;height:100vh;background:var(--bg);border-left:1px solid var(--border);overflow-y:auto;box-shadow:-6px 0 24px rgba(0,0,0,.14);animation:pin .2s ease;display:flex;flex-direction:column;}
+.panel{width:540px;max-width:96vw;height:100vh;background:var(--bg);border-left:1px solid var(--border);overflow:hidden;box-shadow:-6px 0 24px rgba(0,0,0,.14);animation:pin .2s ease;display:flex;flex-direction:column;}
 @keyframes pin{from{transform:translateX(20px);opacity:0;}to{transform:translateX(0);opacity:1;}}
 .phd{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg);position:sticky;top:0;z-index:5;}
 .ptitle{font-size:15px;font-weight:600;color:var(--text);}
@@ -447,9 +447,9 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 .ptab{padding:9px 14px;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
 .ptab.active{color:var(--navy);border-bottom-color:var(--navy);}
 .ptab:hover:not(.active){color:var(--text);}
-.tc{display:none;padding:15px 18px;flex:1;overflow-y:auto;}
+.tc{display:none;padding:15px 18px;}
 .tc.active{display:block;}
-.panel-body{flex:1;overflow-y:auto;}
+.panel-body{flex:1;overflow-y:auto;min-height:0;}
 /* Summary card */
 .p-summary{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:14px;}
 .p-summary-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:7px;line-height:1.3;}
@@ -2164,6 +2164,34 @@ function openRepair(id){
     document.getElementById('f-ph1').value=r.Phone1||'';
     document.getElementById('f-ph2').value=r.Phone2||'';
     document.getElementById('f-cnotes').value=r.CustomerNotes||'';
+    // Show customer tab with data populated
+    document.getElementById('cust-main').style.display='block';
+    // Pre-fill search bar with customer name so it's clear who this is
+    const si=document.getElementById('cust-search');
+    if(si) si.value=r.CustomerName||'';
+    // Show profile panel if this customer has history
+    const hist=repairs.filter(x=>x.CustomerName===r.CustomerName&&phoneRaw(x.Phone1)===phoneRaw(r.Phone1));
+    const profCol=document.getElementById('cust-profile-col');
+    if(profCol&&hist.length>1){
+      profCol.style.display='flex';
+      const ini=(r.CustomerName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const profAv=document.getElementById('prof-av');if(profAv)profAv.textContent=ini;
+      const profNm=document.getElementById('prof-name');if(profNm)profNm.textContent=r.CustomerName||'—';
+      const open=hist.filter(x=>x.Status!=='Completed').length;
+      const done=hist.filter(x=>x.Status==='Completed').length;
+      const profCt=document.getElementById('prof-count');if(profCt)profCt.textContent=hist.length+' repair'+(hist.length!==1?'s':'')+' on file';
+      const profBd=document.getElementById('prof-badges');
+      if(profBd)profBd.innerHTML=
+        (done?`<span class="cust-prof-badge" style="background:var(--greenbg);color:var(--green2);border-color:var(--green);">${done} done</span>`:'')+
+        (open?`<span class="cust-prof-badge" style="background:var(--bluebg);color:var(--blue2);border-color:var(--blue);">${open} open</span>`:'');
+      const profHist=document.getElementById('prof-hist');
+      if(profHist){const sorted=hist.filter(x=>x.ID!==id).sort((a,b)=>new Date(b.CreatedAt)-new Date(a.CreatedAt)).slice(0,4);
+        profHist.innerHTML=sorted.map(h=>{const dotColor=h.Status==='Completed'?'var(--green)':h.Status==='Past Due'?'var(--red)':'var(--blue)';
+          return `<div class="cust-hist-item" onclick="openRepair('${h.ID}')" style="cursor:pointer;"><div class="cust-hist-dot" style="background:${dotColor};"></div><div style="flex:1;font-size:10px;color:var(--text);">${escH(h.RepairName||'—')}</div><div style="font-size:10px;color:var(--text3);">$${parseFloat(h.Quote||0).toFixed(0)}</div></div>`;}).join('');
+      }
+    } else if(profCol){
+      profCol.style.display='none';
+    }
     // flag removed
     document.getElementById('f-device').value=r.Device||'';
     document.getElementById('f-cat2').value=r.Category||'';
