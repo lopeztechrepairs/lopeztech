@@ -1358,7 +1358,7 @@ function showCustCard(cname){
       </div>
     </div>
     <div style="margin-top:14px;">
-      <button onclick="document.getElementById('cust-popup').remove();showView('search');setTimeout(()=>{const s=document.getElementById('srch2');if(s){s.value='${escH(cname)}';runSearch();}},200);" style="width:100%;padding:9px;background:#0f2236;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Geist',sans-serif;">🔍 View Full History</button>
+      <button onclick="slViewHistory('${escH(cname)}')" style="width:100%;padding:9px;background:#111827;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Geist',sans-serif;">🔍 View Full History</button>
     </div>`;
   document.body.appendChild(pop);
   pop.addEventListener('click',e=>e.stopPropagation());
@@ -1672,6 +1672,16 @@ function rowHTML(r){
 }
 
 function toggleSec(id){toggleKol(id);}
+
+function slViewHistory(cname){
+  const pop=document.getElementById('cust-popup');
+  if(pop)pop.remove();
+  showView('search');
+  setTimeout(function(){
+    const inp=document.getElementById('cs-in');
+    if(inp){inp.value=cname;doSearch();inp.focus();}
+  },120);
+}
 function setLoc(l,btn){locF=l;document.querySelectorAll('.locbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderRepairs();}
 
 // ── STATS ──
@@ -2051,6 +2061,19 @@ async function saveRepair(){
   const cat=document.getElementById('f-cat2').value;
   if(!cname){toast('Customer name is required','err');stab('customer');return;}
   if(!dev||!cat){toast('Device and category required','err');stab('repair');return;}
+  const tech=document.getElementById('f-tech2').value;
+  if(!tech){
+    toast('A technician must be selected','err');
+    stab('repair');
+    const techSel=document.getElementById('f-tech2');
+    if(techSel){
+      techSel.style.border='2px solid var(--red)';
+      techSel.style.boxShadow='0 0 0 3px rgba(201,42,42,.15)';
+      techSel.focus();
+      techSel.onchange=function(){techSel.style.border='';techSel.style.boxShadow='';};
+    }
+    return;
+  }
   const catS=cat.replace(' (iPad only)','').replace(' (Game Console only)','');
   const showQ=document.getElementById('qualfield').style.display!=='none';
   const qual=showQ?document.getElementById('f-qual').value:'';
@@ -4291,9 +4314,11 @@ function slAddEntry(){
   var pay  = document.getElementById('sl-pay').value;
   var tip  = parseFloat(document.getElementById('sl-tip').value)||0;
   var emp  = document.getElementById('sl-emp').value;
+  var loc  = document.getElementById('sl-loc').value;
 
   if(!name){ toast('Enter an item or repair name','err'); document.getElementById('sl-name').focus(); return; }
   if(amt<=0){ toast('Enter an amount','err'); document.getElementById('sl-amount').focus(); return; }
+  if(!loc){ toast('Select a location','err'); const el=document.getElementById('sl-loc'); if(el){el.style.border='2px solid var(--red)';el.focus();el.onchange=function(){el.style.border='';};} return; }
 
   // Check for bundled accessory
   var isBundled = document.getElementById('sl-bundle-check').checked;
@@ -4314,7 +4339,7 @@ function slAddEntry(){
   var tax   = (pay==='Credit/Debit') ? Math.round(combinedAmt*0.0825*100)/100 : 0;
   var total = Math.round((combinedAmt+tax+tip)*100)/100;
 
-  slItems.push({ name:combinedName, amount:combinedAmt, pay:pay, tax:tax, tip:tip, total:total, emp:emp, type:'repair', bundled:isBundled });
+  slItems.push({ name:combinedName, amount:combinedAmt, pay:pay, tax:tax, tip:tip, total:total, emp:emp, loc:loc, type:'repair', bundled:isBundled });
 
   // Clear fields
   document.getElementById('sl-name').value='';
@@ -4322,6 +4347,7 @@ function slAddEntry(){
   document.getElementById('sl-tip').value='';
   document.getElementById('sl-entry-preview').innerHTML='';
   document.getElementById('sl-bundle-check').checked=false;
+  document.getElementById('sl-loc').value='';
   document.getElementById('sl-bundle-wrap').style.display='none';
   document.getElementById('sl-bundle-acc').value='';
   document.getElementById('sl-bundle-price').value='';
@@ -4344,9 +4370,11 @@ function slAddAccessory(){
   var price = parseFloat(document.getElementById('sl-acc-price').value)||0;
   var pay  = document.getElementById('sl-acc-pay').value;
   var emp  = document.getElementById('sl-acc-emp').value;
+  var loc  = document.getElementById('sl-acc-loc').value;
 
   if(!type){ toast('Select an accessory','err'); return; }
   if(price<=0){ toast('Enter a price','err'); document.getElementById('sl-acc-price').focus(); return; }
+  if(!loc){ toast('Select a location','err'); const el=document.getElementById('sl-acc-loc'); if(el){el.style.border='2px solid var(--red)';el.focus();el.onchange=function(){el.style.border='';};} return; }
 
   var name = type;
   if(type==='Custom'){
@@ -4365,6 +4393,7 @@ function slAddAccessory(){
 
   // Reset
   document.getElementById('sl-acc-type').value='';
+  document.getElementById('sl-acc-loc').value='';
   document.getElementById('sl-acc-price').value='';
   document.getElementById('sl-acc-custom-wrap').style.display='none';
   document.getElementById('sl-acc-custom-name') && (document.getElementById('sl-acc-custom-name').value='');
@@ -4563,7 +4592,7 @@ async function slConfirmSync(){
         Category: item.type==='accessory' ? 'Accessory' : 'Repair',
         CustomerName: 'Walk-in',
         Phone1: '',
-        Location: cu ? (cu.location||'—') : '—',
+        Location: item.loc||'Dayton',
         AssignedTo: item.emp,
         Status: 'Completed',
         PayMethod: item.pay,
@@ -4639,8 +4668,8 @@ async function slConfirmSync(){
           <label>Repair / Sale Title</label>
           <input id="sl-name" type="text" placeholder="e.g. iPhone 13 Screen Repair" oninput="slFormatName(this)" onkeydown="if(event.key==='Enter')slAddEntry()" style="font-size:14px;font-weight:500;padding:10px 12px;"/>
         </div>
-        <!-- Row 2: amount, payment, tip, employee, add button -->
-        <div style="display:grid;grid-template-columns:110px 1fr 90px 130px 36px;gap:8px;align-items:end;">
+        <!-- Row 2: amount + payment + tip -->
+        <div style="display:grid;grid-template-columns:120px 1fr 100px;gap:8px;margin-bottom:8px;">
           <div class="sl-field">
             <label>Amount ($)</label>
             <input id="sl-amount" type="number" placeholder="0.00" step="0.01" min="0" oninput="slCalcEntry()"/>
@@ -4658,6 +4687,9 @@ async function slConfirmSync(){
             <label>Tip ($)</label>
             <input id="sl-tip" type="number" placeholder="0.00" step="0.01" min="0"/>
           </div>
+        </div>
+        <!-- Row 3: employee + location + add button -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 42px;gap:8px;align-items:end;margin-bottom:10px;">
           <div class="sl-field">
             <label>Employee</label>
             <select id="sl-emp">
@@ -4667,13 +4699,21 @@ async function slConfirmSync(){
               <option value="Noemy">Noemy</option>
             </select>
           </div>
+          <div class="sl-field">
+            <label>Location</label>
+            <select id="sl-loc">
+              <option value="">— Select location —</option>
+              <option value="Dayton">Dayton</option>
+              <option value="Crosby">Crosby</option>
+            </select>
+          </div>
           <div class="sl-field" style="justify-content:flex-end;">
-            <button class="sl-add-btn" onclick="slAddEntry()" title="Add to list" style="padding:9px 10px;">+</button>
+            <button class="sl-add-btn" onclick="slAddEntry()" title="Add to list" style="padding:9px 11px;font-size:16px;">+</button>
           </div>
         </div>
 
         <!-- Bundle with accessory checkbox -->
-        <label style="display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer;user-select:none;width:fit-content;">
+        <label style="display:flex;align-items:center;gap:8px;margin-top:4px;cursor:pointer;user-select:none;width:fit-content;">
           <input type="checkbox" id="sl-bundle-check" onchange="slToggleBundle()" style="width:15px;height:15px;accent-color:var(--green);cursor:pointer;"/>
           <span style="font-size:12px;font-weight:600;color:var(--text2);">Include accessory with this repair?</span>
           <span style="font-size:11px;color:var(--text3);">Combines into one line item</span>
@@ -4768,14 +4808,24 @@ async function slConfirmSync(){
             <input id="sl-acc-custom-name" type="text" placeholder="Enter accessory name" oninput="slFormatName(this)"/>
           </div>
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <div style="font-size:11px;color:var(--text3);font-weight:600;align-self:center;">Employee:</div>
-          <select id="sl-acc-emp" class="fsel" style="font-size:12px;">
-            <option value="Saul">Saul</option>
-            <option value="David">David</option>
-            <option value="Juan">Juan</option>
-            <option value="Noemy">Noemy</option>
-          </select>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:11px;color:var(--text3);font-weight:600;">Employee:</span>
+            <select id="sl-acc-emp" class="fsel" style="font-size:12px;">
+              <option value="Saul">Saul</option>
+              <option value="David">David</option>
+              <option value="Juan">Juan</option>
+              <option value="Noemy">Noemy</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:11px;color:var(--text3);font-weight:600;">Location:</span>
+            <select id="sl-acc-loc" class="fsel" style="font-size:12px;">
+              <option value="">— Location —</option>
+              <option value="Dayton">Dayton</option>
+              <option value="Crosby">Crosby</option>
+            </select>
+          </div>
         </div>
       </div>
 
