@@ -1164,11 +1164,11 @@ function getFullName(name){
 // ── STATUS CONFIG ──
 const STATUSES=[
   {id:'Completed',             color:'#0c8599', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M20 6L9 17l-5-5"/></svg>'},
-  {id:'Ready for Pickup',      color:'#2f9e44', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'},
-  {id:'Awaiting Parts',        color:'#e67700', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>'},
-  {id:'Dispatched to Specialist',color:'#6741d9',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>'},
-  {id:'In Progress',           color:'#e03131', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>'},
   {id:'Intake & Acceptance',   color:'#868e96', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>'},
+  {id:'In Progress',           color:'#e03131', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>'},
+  {id:'Dispatched to Specialist',color:'#6741d9',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>'},
+  {id:'Awaiting Parts',        color:'#e67700', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>'},
+  {id:'Ready for Pickup',      color:'#2f9e44', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'},
   {id:'Past Due',              color:'#c92a2a', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>'},
 ];
 
@@ -2155,7 +2155,7 @@ async function confirmDelete(){
   repairs=repairs.filter(x=>x.ID!==editId);
   renderRepairs();updateStats();
   closeM('delete-modal');closePanel();
-  toast('Repair deleted · logged for 30 days','ok');
+  toast('Repair deleted','ok');
   pushAllToCloud();
 }
 
@@ -2858,21 +2858,44 @@ function selectAllDeleted(){
   if(btn){btn.style.display='inline-flex';btn.textContent=`🗑 Remove ${selectedDeleted.size} from Log`;}
 }
 
-function removeFromLog(){
+async function removeFromLog(){
   if(!checkRole('user'))return;
   if(selectedDeleted.size===0){toast('Nothing selected','warn');return;}
-  if(!confirm(`Permanently remove ${selectedDeleted.size} entr${selectedDeleted.size>1?'ies':'y'} from the deleted log? This cannot be undone.`))return;
+  if(!confirm(`Permanently delete ${selectedDeleted.size} repair${selectedDeleted.size>1?'s':''} from Firebase? This cannot be undone.`))return;
+
   const deleted=lsLoad(LS_DEL,[]);
   const cutoff=new Date(Date.now()-30*86400000).toISOString();
   const pruned=deleted.filter(x=>x.DeletedAt>cutoff);
+  // IDs to fully wipe from Firebase
+  const toWipe=new Set(pruned.filter((_,i)=>selectedDeleted.has(i)).map(x=>x.ID));
   const toKeep=pruned.filter((_,i)=>!selectedDeleted.has(i));
+
+  // Wipe from Firebase
+  if(hasCloud()&&toWipe.size>0){
+    try{
+      const res=await fetch(getFbUrl()+'/lopeztechrepairs/repairs.json?auth='+getFbKey());
+      const data=await res.json();
+      const all=data?(Array.isArray(data)?data:Object.values(data)).filter(Boolean):[];
+      const remaining=all.filter(r=>!toWipe.has(r.ID));
+      await fetch(getFbUrl()+'/lopeztechrepairs/repairs.json?auth='+getFbKey(),{
+        method:'PUT',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(remaining)
+      });
+      toast(`${toWipe.size} repair${toWipe.size>1?'s':''} permanently deleted from Firebase`,'ok');
+    } catch(e){
+      toast('Firebase delete failed: '+e.message,'err');
+      return;
+    }
+  }
+
   lsSave(LS_DEL,toKeep);
   selectedDeleted.clear();
-  toast(`${pruned.length-toKeep.length} entr${pruned.length-toKeep.length>1?'ies':'y'} removed from log`,'ok');
   const pg=document.getElementById('view-deleted');
   if(pg)renderDeletedPage(pg);
   const nb=document.getElementById('nb-deleted');
   if(nb)nb.textContent=toKeep.length;
+  // Refresh local repairs list
+  if(hasCloud()) pullFromCloud();
 }
 
 function restoreFromSearch(id, deletedAt){
@@ -3283,7 +3306,7 @@ setInterval(async()=>{
       await pullFromCloud(true);
     }catch(e){}
   }
-},5000);
+},3000);
 
 // ══════════════════════════════════════════════════════
 // ── COMPLETE REPAIR POPUP ──
