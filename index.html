@@ -1343,6 +1343,15 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
     <div class="cbody" style="max-height:70vh;overflow-y:auto;">
       <div id="cp-info" style="font-size:13px;color:var(--text2);margin-bottom:14px;"></div>
       <div class="fgrid">
+        <div class="ff"><label>Technician</label>
+          <select id="cp-tech" class="fsel" style="width:100%;">
+            <option value="">— Select tech —</option>
+            <option value="Saul">Saul</option>
+            <option value="David">David</option>
+            <option value="Juan">Juan</option>
+            <option value="Noemy">Noemy</option>
+          </select>
+        </div>
         <div class="ff"><label>Payment Method</label>
           <select id="cp-pay" onchange="calcCP()" class="fsel" style="width:100%;">
             <option value="cash">Cash (no tax)</option>
@@ -2218,11 +2227,11 @@ document.addEventListener('click',()=>{document.getElementById('smenu').style.di
 
 async function qStatus(id,status,secId){
   if(cu.role==='guest')return;
-  if(!requireActiveUser())return;
   if(id==='__sec__')return;
   const r=repairs.find(x=>x.ID===id);if(!r)return;
-  // If marking complete show popup
+  // Completed popup never requires active user — just opens the form
   if(status==='Completed'){openCompletePopup(id);return;}
+  if(!requireActiveUser())return;
   const old=r.Status;
   r.Status=status;
   r.LastStatusChange=new Date().toISOString();
@@ -2653,7 +2662,48 @@ function calcM(){ /* parts cost section removed */ }
 // ── SAVE REPAIR ──
 async function saveRepair(){
   if(!checkRole('user')){toast('Access denied','err');return;}
-  if(!requireActiveUser())return;
+  const stat_early=document.getElementById('f-status').value;
+  // If targeting Completed, skip form validation and go straight to the popup
+  // (no active user required — the popup itself handles the completion)
+  if(stat_early==='Completed'){
+    if(editId){
+      const _pendingId=editId; // capture BEFORE closePanel clears editId
+      closePanel();
+      setTimeout(()=>openCompletePopup(_pendingId),200);
+    } else {
+      // New repair targeting Completed — need at least cname and device first
+      const cname_e=document.getElementById('f-cname').value.trim();
+      const dev_e=document.getElementById('f-device').value.trim();
+      const cat_e=document.getElementById('f-cat2').value;
+      if(!cname_e){toast('Customer name required','err');stab('customer');return;}
+      if(!dev_e||!cat_e){toast('Device and category required','err');stab('repair');return;}
+      // Create the repair with holding status then open popup
+      const loc_e=document.getElementById('f-loc2').value;
+      const newId_e=genId(loc_e);
+      const nr_e={
+        ID:newId_e,
+        CustomerName:cname_e,
+        Phone1:document.getElementById('f-ph1').value.trim(),
+        Phone2:document.getElementById('f-ph2').value.trim(),
+        CustomerNotes:document.getElementById('f-cnotes').value.trim(),
+        Flagged:false,FlagReason:'',
+        Device:dev_e,Category:cat_e,
+        RepairName:dev_e,
+        AssignedTo:document.getElementById('f-tech2').value,
+        Location:loc_e,
+        Status:'Ready for Pickup', // holding status
+        DropoffDate:document.getElementById('f-dropoff').value,
+        Quote:document.getElementById('f-quote').value,
+        CreatedAt:new Date().toISOString(),
+        Notes:'',HandoffNotes:'',ActivityLog:[],_local:true
+      };
+      logAct(nr_e,'Task created',getActiveUser());
+      repairs.unshift(nr_e);renderRepairs();
+      closePanel();
+      setTimeout(()=>openCompletePopup(newId_e),200);
+    }
+    return;
+  }
   const cname=document.getElementById('f-cname').value.trim();
   const dev=document.getElementById('f-device').value.trim();
   const cat=document.getElementById('f-cat2').value;
@@ -4233,6 +4283,7 @@ function openCompletePopup(id){
   const r=repairs.find(x=>x.ID===id); if(!r) return;
   cpRepairId=id; cpAddons=[]; cpTipAmt=0; cpDiscountAmt=0;
   // Reset UI
+  document.getElementById('cp-tech').value=r.AssignedTo||'';
   document.getElementById('cp-pay').value='cash';
   document.getElementById('cp-amount').value=parseFloat(r.Quote||0).toFixed(2);
   document.getElementById('cp-discount').value='';
@@ -4430,21 +4481,24 @@ function confirmComplete(){
   const depositDate=document.getElementById('cp-deposit-date').value||'';
   const depTotal=depositAmt+depositTax;
   const total=Math.max(0, base-discount+addonsTotal+tax+surcharge+cpTipAmt-depTotal);
+  const cpTech=document.getElementById('cp-tech')?.value||r.AssignedTo||'';
   r.Status='Completed';
   r.CompletedDate=new Date().toISOString();
+  r.AssignedTo=cpTech||r.AssignedTo; // update tech if changed in popup
   r.PayMethod=method==='card'?'Card':'Cash';
   r.AmountReceived=base;
   r.Discount=discount;
   r.Surcharge=surcharge;
   r.Tax=tax;
   r.Tip=cpTipAmt;
+  r.TipTech=cpTipAmt>0?cpTech:''; // who gets the tip
   r.Addons=cpAddons;
   r.DepositPaid=depositAmt;
   r.DepositTax=depositTax;
   r.DepositPayMethod=depositPayMethod;
   r.DepositDate=depositDate;
   r.TotalCollected=total;
-  logAct(r,`Marked completed · ${method==='card'?'Card':'Cash'} · $${total.toFixed(2)}`,getActiveUser());
+  logAct(r,`Marked completed · ${method==='card'?'Card':'Cash'} · $${total.toFixed(2)}${cpTipAmt>0?' · tip $'+cpTipAmt.toFixed(2)+' → '+cpTech:''}`,getActiveUser());
   
   renderRepairs(); updateStats(); renderStatusBar(); renderRecentBar();
   closeM('confirm-sale-popup');

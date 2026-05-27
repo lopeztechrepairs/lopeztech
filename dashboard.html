@@ -531,7 +531,7 @@ function renderPayBreakdown(rows, period) {
   document.getElementById('pay-period').textContent = period;
   var totals = {};
   rows.forEach(function(r) {
-    var m = r.PayMethod || 'Cash';
+    var m = normalizePayment(r.PayMethod);
     totals[m] = (totals[m] || 0) + (parseFloat(r.TotalCollected) || parseFloat(r.Quote) || 0);
   });
   var entries = Object.entries(totals).sort(function(a,b){ return b[1]-a[1]; });
@@ -562,7 +562,8 @@ function renderTechTips(rows, period) {
   rows.forEach(function(r) {
     var tip = parseFloat(r.Tip) || 0;
     if (tip > 0) {
-      var t = normalizeTech(r.AssignedTo || 'Unknown');
+      var t = normalizeTech(r.AssignedTo);
+      if (!t) return;
       totals[t] = (totals[t] || 0) + tip;
     }
   });
@@ -659,15 +660,13 @@ function renderSalesTable(rows) {
           + 'onmouseout="this.style.background=\'rgba(26,111,196,.08)\'">View more</button>'
       : '';
 
-    var deleteBtn = isQS
-      ? '<button onclick="confirmDeleteSale(\'' + esc(r.ID) + '\')" '
-          + 'title="Delete this Quick Sale" '
-          + 'style="width:26px;height:26px;border-radius:6px;border:none;background:rgba(220,38,38,.1);'
-          + 'color:#dc2626;font-size:14px;cursor:pointer;display:flex;align-items:center;'
-          + 'justify-content:center;transition:all .15s;line-height:1;" '
-          + 'onmouseover="this.style.background=\'rgba(220,38,38,.25)\'" '
-          + 'onmouseout="this.style.background=\'rgba(220,38,38,.1)\'">✕</button>'
-      : '<span style="display:inline-block;width:26px;"></span>';
+    var deleteBtn = '<button onclick="confirmDeleteSale(\'' + esc(r.ID) + '\')" '
+        + 'title="Delete & wipe from Firebase" '
+        + 'style="width:26px;height:26px;border-radius:6px;border:none;background:rgba(220,38,38,.1);'
+        + 'color:#dc2626;font-size:14px;cursor:pointer;display:flex;align-items:center;'
+        + 'justify-content:center;transition:all .15s;line-height:1;" '
+        + 'onmouseover="this.style.background=\'rgba(220,38,38,.25)\'" '
+        + 'onmouseout="this.style.background=\'rgba(220,38,38,.1)\'">✕</button>';
 
     var editBtn = '<button onclick="openEditSale(\'' + esc(r.ID) + '\')" '
       + 'title="Edit this sale" '
@@ -765,7 +764,7 @@ function exportExcel() {
   // ── PAYMENT SUMMARY SHEET ────────────────────────
   var payTotals = {};
   sorted.forEach(function(r){
-    var m = r.PayMethod || 'Cash';
+    var m = normalizePayment(r.PayMethod);
     payTotals[m] = (payTotals[m] || 0) + (parseFloat(r.TotalCollected)||parseFloat(r.Quote)||0);
   });
 
@@ -790,7 +789,8 @@ function exportExcel() {
   sorted.forEach(function(r){
     var tip = parseFloat(r.Tip)||0;
     if (tip > 0) {
-      var t = normalizeTech(r.AssignedTo||'Unknown');
+      var t = normalizeTech(r.AssignedTo);
+      if (!t) return;
       techTips[t] = (techTips[t]||0) + tip;
     }
   });
@@ -821,11 +821,22 @@ function exportExcel() {
 // Merges name variations (e.g. "Saul" + "Saul Lopez") into one canonical name
 function normalizeTech(name) {
   var n = (name || '').toLowerCase().trim();
+  if (!n) return null;
   if (n.includes('saul'))   return 'Saul Lopez';
   if (n.includes('david'))  return 'David Thompson';
   if (n.includes('juan'))   return 'Juan Reynoso';
+  if (n.includes('noemy') || n.includes('noemi')) return 'Noemy';
   if (n.includes('ismael')) return 'Ismael';
-  return name || 'Unknown';
+  return name;
+}
+
+function normalizePayment(m) {
+  var n = (m || 'Cash').toLowerCase().trim();
+  if (n === 'card' || n.includes('credit') || n.includes('debit')) return 'Credit / Debit';
+  if (n === 'cash') return 'Cash';
+  if (n === 'cashapp' || n === 'cash app') return 'CashApp';
+  if (n === 'zelle') return 'Zelle';
+  return m || 'Cash';
 }
 
 function getTechColor(name) {
@@ -949,7 +960,8 @@ function openTipsModal() {
   var techData = {};
   rows.forEach(function(r) {
     var tip  = parseFloat(r.Tip) || 0;
-    var tech = normalizeTech(r.AssignedTo || 'Unknown');
+    var tech = normalizeTech(r.AssignedTo);
+    if (!tech) return;
     if (!techData[tech]) techData[tech] = { tips: 0, count: 0, repairs: 0 };
     techData[tech].repairs++;
     if (tip > 0) { techData[tech].tips += tip; techData[tech].count++; }
