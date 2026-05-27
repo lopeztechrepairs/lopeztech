@@ -2706,20 +2706,25 @@ async function saveRepair(){
       Object.assign(repairs[idx],data);
     }
     
-    // If marking as Completed, show payment/tip popup
+    // If marking as Completed, hold status — only finalize after popup confirms
     if(stat==='Completed'){
+      // Revert status write — keep previous status until popup confirmed
+      const idx2=repairs.findIndex(r=>r.ID===editId);
+      if(idx2>=0) repairs[idx2].Status=repairs[idx2].Status==='Completed'?'Completed':(repairs[idx2].Status||'Ready for Pickup');
       const updatedId=editId;
       closePanel();
+      renderRepairs();
       setTimeout(()=>openCompletePopup(updatedId),200);
     } else {
       closePanel();toast('Repair updated','ok');
+      pushAllToCloud();
     }
-    pushAllToCloud();
   } else {
     const newId=genId(loc);
-    const nr={ID:newId,...data,CreatedAt:new Date().toISOString(),Notes:'',HandoffNotes:'',ActivityLog:[],_local:true};
-    if(stat==='Ready for Pickup')nr.ReadyDate=new Date().toISOString();
-    if(stat==='Completed')nr.CompletedDate=new Date().toISOString();
+    // Don't set Completed on new repair until popup confirms
+    const pendingStat=stat==='Completed'?'Ready for Pickup':stat;
+    const nr={ID:newId,...data,Status:pendingStat,CreatedAt:new Date().toISOString(),Notes:'',HandoffNotes:'',ActivityLog:[],_local:true};
+    if(pendingStat==='Ready for Pickup')nr.ReadyDate=new Date().toISOString();
     logAct(nr,`Task created`,getActiveUser());
     repairs.unshift(nr);renderRepairs();
     if(stat==='Completed'){
@@ -2728,8 +2733,8 @@ async function saveRepair(){
       setTimeout(()=>openCompletePopup(newRepId),200);
     } else {
       closePanel();toast(`Repair ${newId} created`,'ok');
+      pushAllToCloud();
     }
-    pushAllToCloud();
   }
 }
 
@@ -4479,62 +4484,110 @@ function logSaleToSheet(data){
 }
 
 function printCPReceipt(){
-  if(!cpRepairId) return;
+  if(!cpRepairId){ toast('No repair selected','err'); return; }
   const r=repairs.find(x=>x.ID===cpRepairId); if(!r) return;
   const method=document.getElementById('cp-pay').value;
   const base=parseFloat(document.getElementById('cp-amount').value)||0;
+  const discount=parseFloat(document.getElementById('cp-discount').value)||0;
   const surcharge=method==='card'?(parseFloat(document.getElementById('cp-surcharge').value)||0):0;
-  const tax=method==='card'?base*0.0825:0;
   const addonsTotal=cpAddons.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
-  const total=base+addonsTotal+tax+surcharge+cpTipAmt;
+  const subtotal=Math.max(0,base-discount)+addonsTotal;
+  const tax=method==='card'?Math.round(subtotal*0.0825*100)/100:0;
+  const isDepositChecked=document.getElementById('cp-deposit-check').checked;
+  const depositAmt=isDepositChecked?(parseFloat(document.getElementById('cp-deposit-amt').value)||0):0;
+  const depositPayMethod=isDepositChecked?document.getElementById('cp-deposit-pay').value:'';
+  const depositTax=depositPayMethod==='card'?Math.round(depositAmt*0.0825*100)/100:0;
+  const depositDate=document.getElementById('cp-deposit-date').value||'';
+  const depTotal=depositAmt+depositTax;
+  const total=Math.max(0,Math.round((subtotal+tax+surcharge-depTotal)*100)/100);
   const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  const locAddr=r.Location==='Dayton'?'112 Cook St, Dayton TX 77535':'6115 FM 2100 Suite #102, Crosby TX 77532';
-  const locPhone=r.Location==='Dayton'?'832-872-1887':'346-417-6309';
-  const addonLines=cpAddons.map(a=>`<tr><td style="padding:3px 6px;font-size:13px;color:#444;">+ ${a.name}</td><td style="padding:3px 6px;font-size:13px;text-align:right;">$${parseFloat(a.price).toFixed(2)}</td></tr>`).join('');
+  const techFull=getTechFullName(r.AssignedTo);
+  const payLabels={card:'Credit/Debit Card',cash:'Cash',cashapp:'CashApp',zelle:'Zelle'};
+  const repairDisplay=r.RepairName||r.Device||'—';
+
+  const addonLinesR=cpAddons.filter(a=>a.name).map(a=>
+    '<tr><td style="padding:5px 0;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0;">+ '+a.name+'</td>'
+    +'<td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">$'+parseFloat(a.price).toFixed(2)+'</td></tr>'
+  ).join('');
+  const discLineR=discount>0?'<tr><td style="padding:5px 0;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0;">Discount</td><td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">-$'+discount.toFixed(2)+'</td></tr>':'';
+  const taxLineR=tax>0?'<tr><td style="padding:5px 0;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0;">Tax (8.25%)</td><td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">$'+tax.toFixed(2)+'</td></tr>':'';
+  const surchargeLineR=surcharge>0?'<tr><td style="padding:5px 0;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0;">Card surcharge</td><td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">$'+surcharge.toFixed(2)+'</td></tr>':'';
+  const tipLineR=cpTipAmt>0?'<tr><td style="padding:5px 0;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0;">Tip</td><td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">$'+cpTipAmt.toFixed(2)+'</td></tr>':'';
+  const depLineR=depTotal>0?'<tr><td style="padding:5px 0;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0;">Deposit paid ('+(payLabels[depositPayMethod]||depositPayMethod)+(depositDate?' &middot; '+depositDate:'')+')</td><td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">-$'+depTotal.toFixed(2)+'</td></tr>':'';
+
   const html=`
-  <div style="background:#fff;color:#111;font-family:sans-serif;font-size:13px;padding:20px;max-width:600px;">
-    <table style="width:100%;border-collapse:collapse;border-bottom:2px solid #111;margin-bottom:14px;padding-bottom:12px;">
-      <tr>
-        <td style="width:80px;vertical-align:middle;padding-right:12px;"><img src="${LOGO_URI}" style="width:72px;height:72px;object-fit:contain;"/></td>
-        <td style="vertical-align:top;text-align:right;">
-          <div style="font-size:18px;font-weight:700;">Lopez Tech Repairs</div>
-          <div style="font-size:11px;color:#333;line-height:1.7;">${locAddr} · <strong>${locPhone}</strong><br/>lopeziphonetech@gmail.com</div>
-        </td>
-      </tr>
-    </table>
-    <div style="text-align:center;font-size:17px;font-weight:700;text-decoration:underline;margin-bottom:14px;">Repair Receipt</div>
-    <table style="width:100%;border-collapse:collapse;margin-bottom:14px;">
-      <tr><td style="padding:4px 6px;font-size:13px;color:#555;width:42%;">📅 Date</td><td>${today}</td></tr>
-      <tr><td style="padding:4px 6px;font-size:13px;color:#555;">📄 Repair ID</td><td style="font-family:monospace;">${r.ID}</td></tr>
-      <tr><td style="padding:4px 6px;font-size:13px;color:#555;">🔧 Repair</td><td>${r.RepairName||'—'}</td></tr>
-      <tr><td style="padding:4px 6px;font-size:13px;color:#555;">👤 Customer</td><td>${r.CustomerName||'—'}</td></tr>
-      <tr><td style="padding:4px 6px;font-size:13px;color:#555;">💳 Payment</td><td>${method==='card'?'Credit/Debit Card':'Cash'}</td></tr>
-    </table>
-    <table style="width:100%;border-collapse:collapse;margin-bottom:14px;">
-      <tr><td style="padding:4px 6px;font-size:13px;color:#555;">💵 Repair</td><td style="text-align:right;">$${base.toFixed(2)}</td></tr>
-      ${addonLines}
-      ${tax>0?`<tr><td style="padding:3px 6px;font-size:13px;color:#555;">🧾 Tax (8.25%)</td><td style="text-align:right;">$${tax.toFixed(2)}</td></tr>`:''}
-      ${surcharge>0?`<tr><td style="padding:3px 6px;font-size:13px;color:#555;">💳 Card Surcharge</td><td style="text-align:right;">$${surcharge.toFixed(2)}</td></tr>`:''}
-      ${cpTipAmt>0?`<tr><td style="padding:3px 6px;font-size:13px;color:#555;">🙏 Tip</td><td style="text-align:right;">$${cpTipAmt.toFixed(2)}</td></tr>`:''}
-      <tr style="border-top:2px solid #111;"><td style="padding:8px 6px;font-size:16px;font-weight:700;">💲 Total</td><td style="padding:8px 6px;font-size:16px;font-weight:700;text-align:right;">$${total.toFixed(2)}</td></tr>
-    </table>
-    <div style="background:#f9f9f9;border-radius:6px;padding:12px;margin-bottom:14px;font-size:11px;color:#444;line-height:1.8;">
-      <div style="font-weight:700;text-align:center;text-decoration:underline;margin-bottom:6px;">Terms & Conditions</div>
-      <ul style="padding-left:16px;margin:0;">
-        <li>60-day limited warranty on repairs and replaced parts.</li>
-        <li>7-day return eligibility after in-house inspection.</li>
-        <li>No returns on Acima-financed devices.</li>
-        <li>Payment is due upon repair completion and pickup.</li>
-      </ul>
+  <div style="background:#fff;color:#111;font-family:system-ui,sans-serif;font-size:13px;border-radius:10px;border:1px solid #ccc;overflow:hidden;max-width:600px;">
+    <div style="background:#111;padding:18px 22px;display:flex;align-items:center;gap:14px;">
+      <img src="${LOGO_URI}" style="width:50px;height:50px;object-fit:contain;background:#fff;border-radius:8px;padding:3px;flex-shrink:0;" alt="LTR"/>
+      <div style="flex:1;">
+        <div style="font-size:18px;font-weight:700;color:#fff;letter-spacing:-.3px;">Lopez Tech Repairs</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px;line-height:1.6;">
+          <span style="color:rgba(255,255,255,.8);">Crosby:</span> 6115 FM 2100 Suite #102, Crosby TX 77532 &middot; 346-417-6309<br/>
+          <span style="color:rgba(255,255,255,.8);">Dayton:</span> 112 Cook St, Dayton TX 77535 &middot; 832-872-1887
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:9px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;">Receipt</div>
+        <div style="font-size:13px;font-weight:700;color:#fff;margin-top:2px;font-family:monospace;">${r.ID}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:2px;">${today}</div>
+      </div>
     </div>
-    <div style="border-top:1px solid #ddd;padding-top:12px;margin-bottom:20px;">
-      <div style="font-size:11px;color:#888;margin-bottom:20px;">Customer Signature</div>
-      <div style="border-bottom:1px solid #888;margin-bottom:4px;"></div>
-      <div style="font-size:10px;color:#aaa;">${r.CustomerName||'Customer'}</div>
+    <div style="text-align:center;padding:11px 0;border-bottom:1px solid #eee;background:#fafafa;">
+      <div style="font-size:14px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#111;">Repair Receipt</div>
+      <div style="font-size:11px;color:#888;margin-top:2px;">Thank you for choosing Lopez Tech Repairs</div>
     </div>
-    <div style="text-align:center;font-weight:700;">Thank you for choosing Lopez Tech Repairs!</div>
+    <div style="padding:14px 22px;">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#999;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #eee;">Repair information</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <tr><td style="font-size:12px;color:#666;padding:4px 10px 4px 0;width:38%;">Customer</td><td style="font-size:12px;font-weight:500;padding:4px 0;">${r.CustomerName||'—'}</td></tr>
+        <tr><td style="font-size:12px;color:#666;padding:4px 10px 4px 0;">Repair</td><td style="font-size:12px;font-weight:500;padding:4px 0;">${repairDisplay}${r.Quality?' / '+r.Quality:''}</td></tr>
+        <tr><td style="font-size:12px;color:#666;padding:4px 10px 4px 0;">Location</td><td style="font-size:12px;font-weight:500;padding:4px 0;">${r.Location||'—'}</td></tr>
+        <tr><td style="font-size:12px;color:#666;padding:4px 10px 4px 0;">Payment</td><td style="font-size:12px;font-weight:500;padding:4px 0;">${payLabels[method]||method}</td></tr>
+        <tr><td style="font-size:12px;color:#666;padding:4px 10px 4px 0;">Technician</td><td style="font-size:12px;font-weight:500;padding:4px 0;">${techFull}</td></tr>
+      </table>
+    </div>
+    <div style="padding:0 22px 4px;">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#999;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #eee;">Cost breakdown</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <tr><td style="padding:5px 0;font-size:12px;color:#333;border-bottom:1px solid #f0f0f0;">${repairDisplay}</td><td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">$${base.toFixed(2)}</td></tr>
+        ${addonLinesR}${discLineR}${taxLineR}${surchargeLineR}${tipLineR}${depLineR}
+      </table>
+    </div>
+    <div style="padding:10px 22px 8px;">
+      <div style="background:#111;border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.6);">Total</div>
+        <div style="font-size:20px;font-weight:800;color:#fff;">$${total.toFixed(2)}</div>
+      </div>
+      <div style="background:#f5f5f5;border:1.5px solid #222;border-radius:8px;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:12px;font-weight:700;color:#111;display:flex;align-items:center;gap:6px;">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#111" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          Amount Paid
+        </div>
+        <div style="font-size:16px;font-weight:800;color:#111;">$${total.toFixed(2)}</div>
+      </div>
+    </div>
+    <div style="margin:4px 22px 14px;background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:12px 14px;">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#999;margin-bottom:8px;">Terms &amp; conditions</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;">
+        <div style="font-size:11px;color:#444;line-height:1.5;padding:2px 0;display:flex;gap:6px;"><span style="color:#999;">&middot;</span><span><strong>60-day warranty</strong> on repairs (OEM/Premium). 15 days Aftermarket.</span></div>
+        <div style="font-size:11px;color:#444;line-height:1.5;padding:2px 0;display:flex;gap:6px;"><span style="color:#999;">&middot;</span><span><strong>7-day return</strong> after passing in-house inspection.</span></div>
+        <div style="font-size:11px;color:#444;line-height:1.5;padding:2px 0;display:flex;gap:6px;"><span style="color:#999;">&middot;</span><span><strong>1-month battery warranty;</strong> Lifetime thereafter — $15 labor fee after 3 months.</span></div>
+        <div style="font-size:11px;color:#444;line-height:1.5;padding:2px 0;display:flex;gap:6px;"><span style="color:#999;">&middot;</span><span><strong>No returns</strong> on Acima-financed devices.</span></div>
+        <div style="font-size:11px;color:#444;line-height:1.5;padding:2px 0;display:flex;gap:6px;"><span style="color:#999;">&middot;</span><span>Warranty <strong>does not cover</strong> physical/liquid damage or unauthorized repairs.</span></div>
+        <div style="font-size:11px;color:#444;line-height:1.5;padding:2px 0;display:flex;gap:6px;"><span style="color:#999;">&middot;</span><span>Device not released until <strong>paid in full.</strong></span></div>
+      </div>
+    </div>
+    <div style="margin:0 22px 16px;padding-top:12px;border-top:1px solid #eee;">
+      <div style="font-size:10px;color:#aaa;margin-bottom:8px;">Customer signature</div>
+      <div style="border-bottom:1.5px solid #333;margin-bottom:4px;height:28px;"></div>
+      <div style="font-size:11px;color:#aaa;">${r.CustomerName||'Customer'}</div>
+    </div>
+    <div style="background:#111;padding:14px 22px;text-align:center;">
+      <div style="font-size:13px;font-weight:700;color:#fff;">Thank you for choosing Lopez Tech Repairs!</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:3px;">lopeziphonetech@gmail.com &middot; We appreciate your business</div>
+    </div>
   </div>`;
-  doPrint(html,`@page{size:letter;margin:12mm;}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:sans-serif;font-size:13px;}table{border-collapse:collapse;width:100%;}ul{padding-left:18px;}`);
+  doPrint(html, '@page{size:letter;margin:12mm;}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:system-ui,sans-serif;font-size:13px;color:#111;padding:0;}table{border-collapse:collapse;width:100%;}');
 }
 
 // ══════════════════════════════════════════════════════
