@@ -500,6 +500,19 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 .ff-inp.filled{background:var(--greenbg);border-color:var(--green);}
 .ff-sel{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:13px;font-family:'Geist',sans-serif;color:var(--text);outline:none;}
 
+
+/* ── REDESIGNED NOTES TAB ── */
+.note-sticky{border-radius:8px;padding:10px 12px;}
+.note-sticky-author{font-size:11px;font-weight:600;margin-bottom:2px;}
+.note-sticky-text{font-size:12px;color:#fff;line-height:1.5;}
+.note-sticky-time{font-size:10px;color:rgba(255,255,255,.6);text-align:right;margin-top:5px;}
+.aitem{display:flex;gap:9px;align-items:flex-start;padding:6px 0;border-bottom:0.5px solid var(--border);}
+.aitem:last-child{border-bottom:none;}
+.adot{width:7px;height:7px;border-radius:50%;background:var(--navy);flex-shrink:0;margin-top:4px;}
+.atext{font-size:12px;color:var(--text);line-height:1.4;}
+.ats{font-size:10px;color:var(--text3);margin-top:2px;}
+.aby{font-size:10px;color:var(--text3);}
+
 </style>
 </head>
 <body data-theme="light">
@@ -595,6 +608,16 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
     <div id="view-repairs" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
       <div class="topbar">
         <div class="tb-title">Repair Board</div>
+        <div style="display:flex;align-items:center;gap:6px;background:var(--bg2);border:1.5px solid var(--border);border-radius:20px;padding:4px 12px;">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:var(--text3);flex-shrink:0;"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <select id="active-user" onchange="setActiveUser(this.value)" style="background:none;border:none;font-size:12px;font-weight:600;color:var(--text);font-family:'Geist',sans-serif;outline:none;cursor:pointer;padding:0;">
+            <option value="">Working as…</option>
+            <option value="Saul">Saul</option>
+            <option value="David">David</option>
+            <option value="Juan">Juan</option>
+            <option value="Noemy">Noemy</option>
+          </select>
+        </div>
         <button class="locbtn active" onclick="setLoc('both',this)">Both</button>
         <button class="locbtn" onclick="setLoc('Crosby',this)">Crosby</button>
         <button class="locbtn" onclick="setLoc('Dayton',this)">Dayton</button>
@@ -631,7 +654,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
         <span style="font-size:12px;color:var(--green);font-weight:600;" id="st-ready-label">0 ready for pickup</span>
         <span style="width:1px;height:16px;background:var(--border);"></span>
         <span style="font-size:12px;color:var(--amber);font-weight:600;" id="st-past-label">0 past due</span>
-        <span id="st-rev-label" style="font-size:12px;color:var(--text3);margin-left:auto;font-weight:500;"></span>
+
       </div>
       <div class="fbar">
         <div class="sw">
@@ -699,7 +722,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
       <div style="padding:14px 14px 0;">
         <div class="cust-search-wrap">
           <i class="ti ti-search" aria-hidden="true"></i>
-          <input id="cust-search" class="cust-search-inp" type="text" placeholder="Search by name or phone…" oninput="custSearch(this)" autocomplete="off"/>
+          <input id="cust-search" class="cust-search-inp" type="text" placeholder="Search by name or phone…" oninput="fmtSearchPhone(this);custSearch(this)" autocomplete="off"/>
         </div>
         <!-- Match results -->
         <div id="cust-results"></div>
@@ -861,95 +884,231 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
         <div id="warranty-check-result" style="margin-top:10px;display:none;"></div>
       </div>
 
+    </div><!-- /tc-repair -->
+
+    <!-- NOTES TAB — redesigned -->
+    <div class="tc" id="tc-notes">
+      <!-- Mini tabs: Internal / Activity -->
+      <div style="display:flex;border-bottom:1px solid var(--border);background:var(--bg2);margin:-15px -18px 14px;">
+        <div id="ntab-internal" onclick="switchNoteTab('internal')" style="padding:8px 16px;font-size:12px;font-weight:600;color:var(--navy);border-bottom:2px solid var(--navy);cursor:pointer;">
+          Internal <span id="ntab-internal-cnt" style="font-size:10px;background:var(--navy);color:#fff;border-radius:10px;padding:1px 7px;margin-left:4px;">0</span>
+        </div>
+        <div id="ntab-activity" onclick="switchNoteTab('activity')" style="padding:8px 16px;font-size:12px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer;">
+          Activity <span id="ntab-activity-cnt" style="font-size:10px;background:var(--bg3);color:var(--text3);border-radius:10px;padding:1px 7px;margin-left:4px;">0</span>
+        </div>
+      </div>
+
+      <!-- Internal notes feed -->
+      <div id="notes-internal-panel">
+        <div id="ndisp" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;min-height:32px;">
+          <em style="color:var(--text3);font-size:12px;">No notes yet.</em>
+        </div>
+        <!-- Input row -->
+        <div style="display:flex;gap:7px;align-items:center;">
+          <select id="note-author" style="background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:7px 9px;font-size:12px;font-family:'Geist',sans-serif;color:var(--text);outline:none;flex-shrink:0;">
+            <option value="">— Who? —</option>
+            <option value="Saul">Saul</option>
+            <option value="David">David</option>
+            <option value="Juan">Juan</option>
+            <option value="Noemy">Noemy</option>
+          </select>
+          <input class="ninput" id="note-in" placeholder="Write a note…" style="flex:1;" onkeydown="if(event.key==='Enter')addNote()"/>
+          <button class="btn blue" onclick="addNote()" style="padding:7px 13px;flex-shrink:0;">Post</button>
+        </div>
+      </div>
+
+      <!-- Activity log panel (hidden by default) -->
+      <div id="notes-activity-panel" style="display:none;">
+        <div id="actlog" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+
+      <!-- hidden legacy compatibility -->
+      <div id="handoff-disp" style="display:none;"></div>
+      <input id="handoff-in" style="display:none;"/>
     </div>
+
+    <!-- PRINT TAB -->
+    <div class="tc" id="tc-print" style="padding:12px;">
+
+      <!-- LABEL CARD -->
+      <div class="p-card" style="border-left-color:var(--teal);margin-bottom:10px;">
+        <div class="p-card-hdr" onclick="togPrintCard('label')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+          <span>Repair Label</span>
+          <svg id="pchev-label" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="p-card-body" id="pbody-label" style="display:none;">
+          <div id="label-wrap"></div>
+          <button class="btn teal" onclick="printLabel()" style="width:100%;margin-top:6px;">Print Label</button>
+        </div>
+      </div>
+
+      <!-- RECEIPT CARD -->
+      <div class="p-card" style="border-left-color:var(--green);margin-bottom:10px;">
+        <div class="p-card-hdr" onclick="togPrintCard('receipt')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+          <span>Receipt</span>
+          <svg id="pchev-receipt" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="p-card-body" id="pbody-receipt" style="display:none;">
+
+          <!-- Receipt Note -->
+          <div style="margin-bottom:12px;">
+            <div class="slbl" style="margin-top:0;">Receipt note <span style="text-transform:none;letter-spacing:0;font-size:9px;">(prints on receipt)</span></div>
+            <textarea id="receipt-note-field" placeholder="e.g. 60-day warranty on screen · Battery at 89%…" oninput="buildReceipt()" style="width:100%;min-height:48px;resize:none;background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:13px;font-family:'Geist',sans-serif;color:var(--text);outline:none;"></textarea>
+          </div>
+
+          <!-- Payment rows -->
+          <div style="margin-bottom:12px;">
+            <div class="slbl" style="margin-top:0;">Payment</div>
+            <div id="pay-rows" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;">
+              <div class="pay-row" style="display:flex;gap:6px;align-items:flex-end;">
+                <div style="flex:1;">
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Method</div>
+                  <select class="pay-method fsel" onchange="buildReceipt();togSurcharge();" style="font-size:12px;width:100%;">
+                    <option value="card">Card</option>
+                    <option value="cash">Cash</option>
+                    <option value="cashapp">CashApp</option>
+                    <option value="zelle">Zelle</option>
+                  </select>
+                </div>
+                <div style="width:110px;flex-shrink:0;">
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Amount ($)</div>
+                  <input id="pay-amt" type="number" class="pay-amt fsel" step="0.01" min="0" oninput="buildReceipt()" style="font-size:12px;width:100%;"/>
+                </div>
+              </div>
+            </div>
+            <button onclick="addPayRow()" style="background:none;border:0.5px solid var(--border);border-radius:7px;padding:6px 12px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;width:100%;font-family:'Geist',sans-serif;">+ Add split payment</button>
+
+            <!-- Surcharge -->
+            <div id="surcharge-section" style="display:none;margin-top:8px;background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:9px 11px;">
+              <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--text);">
+                <input type="checkbox" id="surcharge-chk" onchange="buildReceipt()" style="width:14px;height:14px;accent-color:var(--navy);">
+                Apply credit card surcharge
+              </label>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:7px;">
+                <div style="font-size:11px;color:var(--text3);">Surcharge %</div>
+                <input type="number" id="surcharge-pct" value="3" step="0.1" min="0" oninput="buildReceipt()" style="width:72px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Geist',sans-serif;color:var(--text);"/>
+                <div id="surcharge-preview" style="font-size:11px;color:var(--text3);"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Accessories -->
+          <div style="margin-bottom:12px;">
+            <div class="slbl" style="margin-top:0;">Quick accessories</div>
+            <div style="display:grid;grid-template-columns:1fr 100px 32px;gap:6px;align-items:end;margin-bottom:6px;">
+              <div>
+                <select id="acc-select" class="fsel" onchange="togAccCustom()" style="font-size:12px;">
+                  <option value="">— Select accessory —</option>
+                  <option>Tempered Glass Screen Protector</option>
+                  <option>Privacy Tempered Glass Screen Protector</option>
+                  <option>Hard Case</option>
+                  <option>USB-C to Lightning iPhone Charging Cable</option>
+                  <option>USB-C to Android Charging Cable</option>
+                  <option>USB-A to Lightning iPhone Charging Cable</option>
+                  <option>USB-A to Android Charging Cable</option>
+                  <option>Camera Glass Protector</option>
+                  <option>USB-C Fast Charging Block</option>
+                  <option>USB-A Standard Charging Block</option>
+                  <option value="Custom">Custom…</option>
+                </select>
+              </div>
+              <div>
+                <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Price ($)</div>
+                <input type="number" id="acc-price" class="fsel" placeholder="0.00" step="0.01" min="0" style="font-size:12px;"/>
+              </div>
+              <button onclick="addToCart()" style="background:var(--navy);color:#fff;border:none;border-radius:7px;padding:7px 8px;font-size:14px;cursor:pointer;height:36px;">+</button>
+            </div>
+            <div id="acc-custom-wrap" style="display:none;margin-bottom:6px;">
+              <input type="text" id="acc-custom-name" class="fsel" placeholder="Enter item name" style="width:100%;font-size:12px;"/>
+            </div>
+            <div id="addon-rows" style="margin-bottom:4px;"></div>
+          </div>
+
+          <!-- Discount -->
+          <div style="display:grid;grid-template-columns:1fr 90px auto;gap:8px;align-items:end;margin-bottom:12px;">
+            <div>
+              <div class="slbl" style="margin-top:0;">Discount</div>
+              <select id="disc-type" class="fsel" onchange="buildReceipt()" style="font-size:12px;">
+                <option value="none">None</option>
+                <option value="dollar">$ Dollar off</option>
+                <option value="percent">% Percent off</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Value</div>
+              <input type="number" id="disc-val" class="fsel" value="0" min="0" step="0.01" oninput="buildReceipt()" style="font-size:12px;"/>
+            </div>
+            <div id="disc-preview" style="font-size:12px;color:var(--red);font-weight:600;padding-bottom:8px;"></div>
+          </div>
+
+          <!-- Deposit -->
+          <div style="margin-bottom:14px;">
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--text);margin-bottom:6px;">
+              <input type="checkbox" id="dep-chk" onchange="togDep()" style="width:14px;height:14px;accent-color:var(--navy);">
+              Deposit was paid
+            </label>
+            <div id="dep-section" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:9px 11px;">
+              <div style="display:grid;grid-template-columns:100px 1fr 130px;gap:8px;">
+                <div>
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Amount ($)</div>
+                  <input type="number" id="dep-amt" class="fsel" placeholder="0.00" step="0.01" min="0" oninput="buildReceipt()" style="font-size:12px;"/>
+                </div>
+                <div>
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Paid via</div>
+                  <select id="dep-method" class="fsel" onchange="buildReceipt()" style="font-size:12px;">
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
+                    <option value="cashapp">CashApp</option>
+                    <option value="zelle">Zelle</option>
+                  </select>
+                </div>
+                <div>
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Date paid</div>
+                  <input type="date" id="dep-date" class="fsel" onchange="buildReceipt()" style="font-size:12px;"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Receipt preview -->
+          <div id="receipt-wrap"></div>
+
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button class="btn green" onclick="printReceipt()" style="flex:1;">Print Receipt</button>
+            <button class="btn amber" id="wbtn" style="display:none;flex:1;" onclick="openWarranty()">Warranty Claim</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DROP-OFF CARD -->
+      <div class="p-card" style="border-left-color:var(--purple);margin-bottom:10px;">
+        <div class="p-card-hdr" onclick="togPrintCard('dropoff')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+          <span>Drop-off Paper</span>
+          <svg id="pchev-dropoff" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="p-card-body" id="pbody-dropoff" style="display:none;">
+          <p style="font-size:11px;color:var(--text3);margin-bottom:10px;">Check accessories, add tech notes, then print two copies.</p>
+          <div id="dropoff-wrap"></div>
+          <button class="btn purple" onclick="printDropoff()" style="width:100%;margin-top:6px;">Print Drop-off Paper</button>
+        </div>
+      </div>
+
+      <!-- hidden legacy compat -->
+      <div id="cash-tax-wrap" style="display:none;"><input id="cash-tax-input" type="number" value="0"/></div>
+      <div id="quick-addon-btns" style="display:none;"></div>
+
+    </div><!-- /tc-print -->
 
     </div><!-- /panel-body -->
 
-    <!-- STICKY SAVE BAR -->
+    <!-- STICKY SAVE BAR — only visible on Repair tab -->
     <div class="p-savebar" id="p-savebar" style="display:none;">
       <button class="btn" onclick="closePanel()">Cancel</button>
       <button class="btn blue" onclick="saveRepair()">Save Repair</button>
     </div>
 
-    <!-- NOTES TAB -->
-    <div class="tc" id="tc-notes">
-      <div class="slbl" style="margin-top:0;">Internal Notes</div>
-      <div class="nlist" id="ndisp">No notes yet.</div>
-      <div class="nadd">
-        <input class="ninput" id="note-in" placeholder="Add a note…" onkeydown="if(event.key==='Enter')addNote()"/>
-        <button class="btn blue" onclick="addNote()" style="padding:7px 12px;flex-shrink:0;">Add</button>
-      </div>
-      <div class="slbl" style="margin-top:14px;">Handoff Notes</div>
-      <div class="nlist" id="handoff-disp">No handoff notes.</div>
-      <div class="nadd">
-        <input class="ninput" id="handoff-in" placeholder="Shift handoff note…" onkeydown="if(event.key==='Enter')addHandoff()"/>
-        <button class="btn amber" onclick="addHandoff()" style="padding:7px 12px;flex-shrink:0;">Add</button>
-      </div>
-      <div class="slbl" style="margin-top:14px;">Activity Log</div>
-      <div id="actlog"></div>
-    </div>
-
-    <!-- PRINT TAB -->
-    <div class="tc" id="tc-print">
-      <div class="slbl" style="margin-top:0;">Repair Label — Brother QL-820NWB (2.4" × 1.5" Landscape)</div>
-      <div id="label-wrap"></div>
-      <div class="btnrow"><button class="btn teal" onclick="printLabel()">Print Label</button></div>
-      <div class="slbl" style="margin-top:14px;">Receipt</div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
-        <label style="font-size:12px;color:var(--text2);">Payment:</label>
-        <select id="pay-method" onchange="togCashTax();buildReceipt()" class="fsel" style="font-size:12px;"><option value="card">Card (+ 8.25% tax)</option><option value="cash">Cash</option></select>
-        <label style="font-size:12px;color:var(--text2);">Amount ($):</label>
-        <input id="pay-amt" type="number" step="0.01" class="fsel" style="width:88px;font-size:12px;" oninput="buildReceipt()"/>
-      </div>
-      <div id="cash-tax-wrap" style="display:none;align-items:center;gap:8px;margin-bottom:10px;background:var(--amberbg);border:1px solid var(--amber);border-radius:7px;padding:7px 10px;">
-        <span style="font-size:11px;color:var(--amber2);font-weight:500;">Cash Tax Override:</span>
-        <input id="cash-tax-input" type="number" step="0.01" min="0" class="fsel" style="width:80px;font-size:12px;" placeholder="0.00" value="0" oninput="buildReceipt()"/>
-        <span style="font-size:11px;color:var(--amber2);">Default: $0.00 (no tax on cash). Enter amount to override.</span>
-      </div>
-      <div style="margin-bottom:10px;">
-        <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:7px;">Quick Add-ons</div>
-        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px;" id="quick-addon-btns">
-          <button class="btn sm" onclick="qAdd('Case','10')">Case $10</button>
-          <button class="btn sm" onclick="qAdd('OtterBox Case','15')">OtterBox $15</button>
-          <button class="btn sm" onclick="qAdd('Tempered Glass Protector','10')">Tempered Glass $10</button>
-          <button class="btn sm" onclick="qAdd('Privacy Tempered Glass','15')">Privacy Glass $15</button>
-          <button class="btn sm" onclick="qAdd('Universal Screen Protector','')">Universal Protector</button>
-          <button class="btn sm" onclick="qAdd('iPad Tempered Glass Protector','10')">iPad Glass $10</button>
-          <button class="btn sm" onclick="qAdd('Free (Promo) Tempered Glass Protector','0')">Free Promo Glass</button>
-          <button class="btn sm" onclick="qAdd('USB-C to C Cable (iPhone)','15')">USB-C iPhone $15</button>
-          <button class="btn sm" onclick="qAdd('USB-C to C Cable (Android)','15')">USB-C Android $15</button>
-          <button class="btn sm" onclick="qAdd('Lightning iPhone Cable','10')">Lightning $10</button>
-          <button class="btn sm" onclick="qAdd('Android Charger Cable','10')">Android Cable $10</button>
-          <button class="btn sm blue" onclick="qAdd('','')">+ Custom Item</button>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <span style="font-size:11px;font-weight:600;color:var(--text2);">Line Items</span>
-          <button class="btn sm" onclick="addAddon()">+ Blank Line</button>
-        </div>
-        <div id="addon-rows"></div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
-          <span style="font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;">Discount:</span>
-          <select id="disc-type" class="fsel" style="font-size:12px;padding:5px 8px;" onchange="buildReceipt()">
-            <option value="none">None</option>
-            <option value="dollar">$ Dollar Off</option>
-            <option value="percent">% Percent Off</option>
-          </select>
-          <input type="number" id="disc-val" class="fsel" style="width:80px;font-size:12px;padding:5px 8px;" placeholder="0" min="0" step="0.01" oninput="buildReceipt()" value="0"/>
-          <span id="disc-preview" style="font-size:11px;color:var(--red);"></span>
-        </div>
-      </div>
-      <div id="receipt-wrap"></div>
-      <div class="btnrow">
-        <button class="btn green" onclick="printReceipt()">Print Receipt</button>
-        <button class="btn amber" id="wbtn" style="display:none;" onclick="openWarranty()">File Warranty Claim</button>
-      </div>
-      <div class="slbl" style="margin-top:14px;">Drop-off Paper — Customer Copy</div>
-      <p style="font-size:11px;color:var(--text3);margin-bottom:10px;">Check accessories, add tech notes, then print two copies.</p>
-      <div id="dropoff-wrap"></div>
-      <div class="btnrow"><button class="btn purple" onclick="printDropoff()">Print Drop-off Paper</button></div>
-    </div>
-  </div>
-</div>
+  </div><!-- /panel -->
+</div><!-- /panel-ov -->
 
 <!-- DELETE CONFIRM MODAL -->
 <div class="cov" id="delete-modal">
@@ -1482,20 +1641,47 @@ function custShowNewForm(){
   document.getElementById('cust-no-match').style.display='none';
   document.getElementById('cust-main').style.display='block';
   document.getElementById('cust-profile-col').style.display='none';
-  // pre-fill name from search
   const q = (document.getElementById('cust-search')?.value||'').trim();
   const nameEl = document.getElementById('f-cname');
-  if(nameEl && q && !q.match(/^[0-9]/)){
+  const ph1El  = document.getElementById('f-ph1');
+  const isPhone = /^[\d\s\(\)\-\+]{7,}$/.test(q);
+  if(q && isPhone && ph1El){
+    // Looks like a phone number — pre-fill phone field
+    ph1El.value = q;
+    ph1El.classList.remove('filled');
+    setTimeout(()=>nameEl?.focus(),50);
+  } else if(q && nameEl){
+    // Looks like a name — pre-fill name field
     nameEl.value = q.charAt(0).toUpperCase()+q.slice(1);
     nameEl.classList.remove('filled');
+    setTimeout(()=>ph1El?.focus(),50);
+  } else {
+    setTimeout(()=>nameEl?.focus(),50);
   }
-  setTimeout(()=>document.getElementById('f-cname')?.focus(),50);
 }
 
 function autoCapName(el){
   var pos=el.selectionStart;
   el.value=el.value.replace(/\b\w/g,function(c){return c.toUpperCase();});
   el.setSelectionRange(pos,pos);
+}
+function fmtSearchPhone(el){
+  var raw=el.value.replace(/\D/g,'');
+  var isPhone=raw.length>=4 && el.value.replace(/[^0-9\s\(\)\-]/g,'').length===el.value.length;
+  if(isPhone){
+    var formatted=raw.length<=3?raw:raw.length<=6?'('+raw.slice(0,3)+') '+raw.slice(3):raw.length<=10?'('+raw.slice(0,3)+') '+raw.slice(3,6)+'-'+raw.slice(6):raw;
+    if(el.value!==formatted)el.value=formatted;
+  } else {
+    // Title case — cap first letter of each word, keep iPhone/iPad
+    var cursor=el.selectionStart;
+    var val=el.value.split(' ').map(function(w){
+      if(!w.length)return w;
+      if(w.toLowerCase()==='iphone')return'iPhone';
+      if(w.toLowerCase()==='ipad')return'iPad';
+      return w.charAt(0).toUpperCase()+w.slice(1);
+    }).join(' ');
+    if(el.value!==val){el.value=val;try{el.setSelectionRange(cursor,cursor);}catch(e){}}
+  }
 }
 function fmtPhone(el){
   const raw=(el.value||'').replace(/\D/g,'').slice(0,10);
@@ -1569,6 +1755,9 @@ function enterApp(){
   });
   renderTechDropdowns();
   loadRepairs();
+  // Restore active user
+  const savedUser=lsLoad('lt_active_user','');
+  if(savedUser){activeUser=savedUser;const sel=document.getElementById('active-user');if(sel){sel.value=savedUser;sel.style.color=empColor(savedUser).text;}}
   window.addEventListener('online',()=>{toast('Back online — syncing…','ok');setTimeout(()=>pullFromCloud(),1000);});
   window.addEventListener('offline',()=>{toast('Offline — data unavailable','warn');});
   if(lsLoad('lt_sb_collapsed',false)){
@@ -1726,7 +1915,7 @@ function autoPastDue(){
     if(r.Status==='Ready for Pickup'&&r.ReadyDate){
       if(Math.floor((n-new Date(r.ReadyDate))/86400000)>=30){
         r.Status='Past Due';r.PastDueDate=new Date().toISOString();
-        logAct(r,'Auto-moved to Past Due (30 days in Ready for Pickup)');
+        logAct(r,'Auto-moved to Past Due (30 days in Ready for Pickup)','');
         changed=true;
       }
     }
@@ -1953,6 +2142,50 @@ function slViewHistory(cname){
     if(inp){inp.value=cname;doSearch();inp.focus();}
   },120);
 }
+
+// ── ACTIVE USER (shift selector) ──
+var activeUser = lsLoad('lt_active_user', '') || '';
+
+function setActiveUser(name){
+  // Also sync note author dropdown if open
+  const na=document.getElementById('note-author');
+  if(na&&name){na.value=name;na.style.border='';}
+  activeUser = name;
+  lsSave('lt_active_user', name);
+  const sel = document.getElementById('active-user');
+  if(sel && name) sel.style.color = empColor(name).text;
+  else if(sel) sel.style.color = '';
+}
+
+function getActiveUser(){
+  return activeUser || '';
+}
+
+function requireActiveUser(){
+  if(!activeUser){
+    toast('Select who you are working as before making changes','warn');
+    const sel=document.getElementById('active-user');
+    if(sel){
+      sel.parentElement.style.border='2px solid var(--amber)';
+      sel.parentElement.style.borderRadius='20px';
+      sel.focus();
+      setTimeout(()=>{if(sel.parentElement)sel.parentElement.style.border='';},2500);
+    }
+    return false;
+  }
+  return true;
+}
+
+function empColor(name){
+  const map = {
+    'Saul':  { bg:'#378ADD', text:'#0C447C', card:'#E6F1FB', border:'#85B7EB' },
+    'David': { bg:'#639922', text:'#27500A', card:'#EAF3DE', border:'#97C459' },
+    'Juan':  { bg:'#BA7517', text:'#633806', card:'#FAEEDA', border:'#EF9F27' },
+    'Noemy': { bg:'#534AB7', text:'#3C3489', card:'#EEEDFE', border:'#AFA9EC' },
+  };
+  return map[name] || { bg:'#888780', text:'#444441', card:'#F1EFE8', border:'#B4B2A9' };
+}
+
 function setLoc(l,btn){locF=l;document.querySelectorAll('.locbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderRepairs();}
 
 // ── STATS ──
@@ -1968,7 +2201,7 @@ function updateStats(){
   if(ol)ol.textContent=open+' active repair'+(open!==1?'s':'');
   if(rl)rl.textContent=ready+' ready for pickup';
   if(pl){pl.textContent=past>0?past+' past due':'';pl.style.color=past>0?'var(--red)':'var(--amber)';}
-  if(vl&&cu?.role==='admin')vl.textContent=rev>0?'$'+rev.toFixed(0)+' quoted':'';
+  // quoted label removed
 }
 
 // ── STATUS MENU ──
@@ -1985,6 +2218,7 @@ document.addEventListener('click',()=>{document.getElementById('smenu').style.di
 
 async function qStatus(id,status,secId){
   if(cu.role==='guest')return;
+  if(!requireActiveUser())return;
   if(id==='__sec__')return;
   const r=repairs.find(x=>x.ID===id);if(!r)return;
   // If marking complete show popup
@@ -1993,7 +2227,7 @@ async function qStatus(id,status,secId){
   r.Status=status;
   r.LastStatusChange=new Date().toISOString();
   if(status==='Ready for Pickup'&&old!=='Ready for Pickup')r.ReadyDate=new Date().toISOString();
-  logAct(r,`Status: ${old} → ${status} by ${cu.name}`);
+  logAct(r,`Status: ${old} → ${status}`,getActiveUser());
   renderRepairs();toast(`Moved to ${status}`,'ok');
   pushAllToCloud();
 }
@@ -2138,7 +2372,7 @@ function notifyVoice(id){
   const acct=r.Location==='Dayton'?'0':'1';
   const num=r.Location==='Dayton'?'832-872-1887':'346-417-6309';
   const msg=`Hi ${r.CustomerName}, your ${r.Device} is ready for pickup at Lopez Tech Repairs (${r.Location}). Please call us at ${num}. Thank you!`;
-  logAct(r,`Customer notified via Google Voice by ${cu.name}`);
+  logAct(r,`Customer notified via Google Voice`,getActiveUser());
   schedulePush();
   window.open(`https://voice.google.com/u/${acct}/messages?phoneNumber=${ph}`,'_blank');
   navigator.clipboard?.writeText(msg).catch(()=>{});
@@ -2219,7 +2453,7 @@ function openRepair(id){
     const fwc=document.getElementById('f-warranty-check');if(fwc)fwc.checked=false;
     togQual();togMiscDesc();upPrev();calcM();loadNotes(r);loadHistory(r);
     buildLabel(r);
-    document.getElementById('pay-amt').value=r.Quote||'';
+    const payAmtEl=document.getElementById('pay-amt');if(payAmtEl)payAmtEl.value=r.Quote||'';
     renderAddonRows();buildReceipt();buildDropoff(r);
   } else {
     document.getElementById('ptitle').textContent='New Repair';
@@ -2240,9 +2474,9 @@ function openRepair(id){
     const wcs=document.getElementById('warranty-check-section');if(wcs)wcs.style.display='none';
     const wcr=document.getElementById('warranty-check-result');if(wcr)wcr.style.display='none';
     const fwc=document.getElementById('f-warranty-check');if(fwc)fwc.checked=false;
-    document.getElementById('ndisp').innerHTML='No notes yet.';
-    document.getElementById('handoff-disp').innerHTML='No handoff notes.';
-    document.getElementById('actlog').innerHTML='';
+    document.getElementById('ndisp').innerHTML='<em style="color:var(--text3);font-size:12px;">No notes yet.</em>';
+    document.getElementById('handoff-disp').innerHTML='';
+    const al2=document.getElementById('actlog');if(al2)al2.innerHTML='';
     document.getElementById('cust-hist').style.display='none';
     const md=document.getElementById('mdisp');if(md)md.innerHTML='';
     document.getElementById('label-wrap').innerHTML='';
@@ -2419,6 +2653,7 @@ function calcM(){ /* parts cost section removed */ }
 // ── SAVE REPAIR ──
 async function saveRepair(){
   if(!checkRole('user')){toast('Access denied','err');return;}
+  if(!requireActiveUser())return;
   const cname=document.getElementById('f-cname').value.trim();
   const dev=document.getElementById('f-device').value.trim();
   const cat=document.getElementById('f-cat2').value;
@@ -2466,7 +2701,7 @@ async function saveRepair(){
       if(old.Status!==stat){
         if(stat==='Ready for Pickup')data.ReadyDate=new Date().toISOString();
         data.LastStatusChange=new Date().toISOString();
-        logAct(old,`Status: ${old.Status} → ${stat} by ${cu.name}`);
+        logAct(old,`Status: ${old.Status} → ${stat}`,getActiveUser());
       }
       Object.assign(repairs[idx],data);
     }
@@ -2485,7 +2720,7 @@ async function saveRepair(){
     const nr={ID:newId,...data,CreatedAt:new Date().toISOString(),Notes:'',HandoffNotes:'',ActivityLog:[],_local:true};
     if(stat==='Ready for Pickup')nr.ReadyDate=new Date().toISOString();
     if(stat==='Completed')nr.CompletedDate=new Date().toISOString();
-    logAct(nr,`Created by ${cu.name}`);
+    logAct(nr,`Task created`,getActiveUser());
     repairs.unshift(nr);renderRepairs();
     if(stat==='Completed'){
       const newRepId=newId;
@@ -2585,24 +2820,95 @@ function deleteSelected(){
 }
 
 // ── NOTES / ACTIVITY ──
-function logAct(r,text){if(!r.ActivityLog)r.ActivityLog=[];r.ActivityLog.push({t:text,ts:nowTs()});}
+function logAct(r,text,author){
+  if(!r.ActivityLog)r.ActivityLog=[];
+  r.ActivityLog.push({t:text,ts:nowTs(),by:author||getActiveUser()});
+}
 function loadNotes(r){
-  document.getElementById('ndisp').innerHTML=r.Notes?r.Notes.replace(/\n/g,'<br>'):'<em style="color:var(--text3)">No notes yet.</em>';
-  document.getElementById('handoff-disp').innerHTML=r.HandoffNotes?r.HandoffNotes.replace(/\n/g,'<br>'):'<em style="color:var(--text3)">No handoff notes.</em>';
-  const al=document.getElementById('actlog');al.innerHTML='';
-  (r.ActivityLog||[]).slice().reverse().forEach(a=>{
-    const d=document.createElement('div');d.className='aitem';
-    d.innerHTML=`<div class="adot"></div><div><div class="atext">${a.t}</div><div class="ats">${a.ts}</div></div>`;
-    al.appendChild(d);
-  });
+  // Render structured notes (NotesArr) or fall back to legacy Notes string
+  const ndisp=document.getElementById('ndisp');
+  if(r.NotesArr&&r.NotesArr.length){
+    ndisp.innerHTML=r.NotesArr.map(n=>{
+      const c=empColor(n.by||'');
+      return `<div>
+        <div style="font-size:11px;font-weight:600;color:${c.text};margin-bottom:3px;padding-left:2px;">${escH(n.by||'Staff')}</div>
+        <div class="note-sticky" style="background:${c.bg};">
+          <div class="note-sticky-text">${escH(n.text)}</div>
+          <div class="note-sticky-time">${n.ts||''}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } else if(r.Notes){
+    // Legacy plain text notes — parse and render
+    const lines=r.Notes.split('\n').filter(Boolean);
+    ndisp.innerHTML=lines.map(line=>{
+      const m=line.match(/^\[(.+?) — (.+?)\] (.+)$/);
+      if(m){
+        const c=empColor(m[2]);
+        return `<div>
+          <div style="font-size:11px;font-weight:600;color:${c.text};margin-bottom:3px;padding-left:2px;">${escH(m[2])}</div>
+          <div class="note-sticky" style="background:${c.bg};">
+            <div class="note-sticky-text">${escH(m[3])}</div>
+            <div class="note-sticky-time">${m[1]}</div>
+          </div>
+        </div>`;
+      }
+      return `<div class="note-sticky" style="background:var(--bg3);"><div class="note-sticky-text" style="color:var(--text);">${escH(line)}</div></div>`;
+    }).join('');
+  } else {
+    ndisp.innerHTML='<em style="color:var(--text3);font-size:12px;">No notes yet.</em>';
+  }
+  // Update internal count badge
+  const intCnt=document.getElementById('ntab-internal-cnt');
+  if(intCnt){const c=(r.NotesArr||[]).length||(r.Notes?r.Notes.split('\n').filter(Boolean).length:0);intCnt.textContent=c;}
+
+  // Render activity log
+  const al=document.getElementById('actlog');
+  if(al){
+    al.innerHTML='';
+    const actCnt=document.getElementById('ntab-activity-cnt');
+    if(actCnt)actCnt.textContent=(r.ActivityLog||[]).length;
+    (r.ActivityLog||[]).slice().reverse().forEach(a=>{
+      const d=document.createElement('div');d.className='aitem';
+      d.innerHTML=`<div class="adot"></div><div style="flex:1;"><div class="atext">${escH(a.t)}</div><div style="display:flex;gap:8px;margin-top:2px;"><span class="ats">${a.ts||''}</span>${a.by?`<span class="aby">· ${escH(a.by)}</span>`:''}</div></div>`;
+      al.appendChild(d);
+    });
+  }
+}
+
+function switchNoteTab(tab){
+  const iPanel=document.getElementById('notes-internal-panel');
+  const aPanel=document.getElementById('notes-activity-panel');
+  const iTab=document.getElementById('ntab-internal');
+  const aTab=document.getElementById('ntab-activity');
+  if(tab==='internal'){
+    iPanel.style.display='block';aPanel.style.display='none';
+    iTab.style.color='var(--navy)';iTab.style.borderBottomColor='var(--navy)';iTab.style.fontWeight='600';
+    aTab.style.color='var(--text3)';aTab.style.borderBottomColor='transparent';aTab.style.fontWeight='500';
+  } else {
+    iPanel.style.display='none';aPanel.style.display='block';
+    aTab.style.color='var(--navy)';aTab.style.borderBottomColor='var(--navy)';aTab.style.fontWeight='600';
+    iTab.style.color='var(--text3)';iTab.style.borderBottomColor='transparent';iTab.style.fontWeight='500';
+  }
 }
 async function addNote(){
   if(!checkRole('user'))return;
+  if(!requireActiveUser())return;
   const note=document.getElementById('note-in').value.trim();if(!note||!editId)return;
+  const author=document.getElementById('note-author')?.value||'';
+  if(!author){
+    toast('Select who is leaving this note','err');
+    const na=document.getElementById('note-author');
+    if(na){na.style.border='2px solid var(--red)';na.focus();na.onchange=function(){na.style.border='';};}
+    return;
+  }
   const r=repairs.find(x=>x.ID===editId);if(!r)return;
-  const line=`[${nowTs()} — ${cu.name}] ${note}`;
-  r.Notes=r.Notes?r.Notes+'\n'+line:line;
-  logAct(r,`Note by ${cu.name}`);
+  // Store notes as structured array
+  if(!r.NotesArr)r.NotesArr=[];
+  r.NotesArr.push({text:note,by:author,ts:nowTs()});
+  // Also keep legacy Notes string
+  r.Notes=(r.Notes?r.Notes+'\n':'')+`[${nowTs()} — ${author}] ${note}`;
+  logAct(r,`${author} left a note`,author);
   document.getElementById('note-in').value='';
   loadNotes(r);toast('Note added','ok');
   schedulePush();
@@ -2667,6 +2973,71 @@ function renderAddonRows(){
   wrap.innerHTML=addons.map((a,i)=>`<div class="addon-row"><input class="addon-name" type="text" placeholder="Item name" value="${(a.name||'').replace(/"/g,'&quot;')}" oninput="addons[${i}].name=this.value;buildReceipt()"/><input class="addon-price" type="number" placeholder="$0.00" step="0.01" value="${a.price===0?'0':a.price||''}" oninput="addons[${i}].price=parseFloat(this.value)||0;buildReceipt()"/><button class="addon-rm" onclick="addons.splice(${i},1);renderAddonRows();buildReceipt()">✕</button></div>`).join('');
 }
 function addAddon(){addons.push({name:'',price:0});renderAddonRows();buildReceipt();}
+
+// ── PRINT TAB ──
+function togPrintCard(id){
+  var body=document.getElementById('pbody-'+id);
+  var chev=document.getElementById('pchev-'+id);
+  if(!body)return;
+  var open=body.style.display==='block';
+  body.style.display=open?'none':'block';
+  if(chev)chev.style.transform=open?'':'rotate(180deg)';
+}
+
+function addPayRow(){
+  var rows=document.getElementById('pay-rows');
+  var div=document.createElement('div');
+  div.className='pay-row';
+  div.style.cssText='display:grid;grid-template-columns:1fr 110px 28px;gap:6px;align-items:end;';
+  div.innerHTML='<div><div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Method</div>'
+    +'<select class="pay-method fsel" onchange="buildReceipt();togSurcharge();" style="font-size:12px;">'
+    +'<option value="card">Card</option><option value="cash">Cash</option>'
+    +'<option value="cashapp">CashApp</option><option value="zelle">Zelle</option>'
+    +'</select></div>'
+    +'<div><div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Amount ($)</div>'
+    +'<input type="number" class="pay-amt fsel" step="0.01" min="0" oninput="buildReceipt()" style="font-size:12px;"/></div>'
+    +'<button onclick="this.parentElement.remove();buildReceipt();togSurcharge();" '
+    +"style=\"background:none;border:0.5px solid var(--border);border-radius:6px;padding:0;height:34px;width:28px;font-size:16px;cursor:pointer;color:var(--text3);align-self:flex-end;\">×</button>";
+  rows.appendChild(div);
+  togSurcharge();
+  buildReceipt();
+}
+
+function togSurcharge(){
+  var methods=[].slice.call(document.querySelectorAll('.pay-method'));
+  var hasCard=methods.some(function(m){return m.value==='card';});
+  var sec=document.getElementById('surcharge-section');
+  if(sec)sec.style.display=hasCard?'block':'none';
+}
+
+function togDep(){
+  var on=document.getElementById('dep-chk').checked;
+  document.getElementById('dep-section').style.display=on?'block':'none';
+  buildReceipt();
+}
+
+function togAccCustom(){
+  var v=document.getElementById('acc-select').value;
+  document.getElementById('acc-custom-wrap').style.display=v==='Custom'?'block':'none';
+}
+
+function addToCart(){
+  var sel=document.getElementById('acc-select');
+  var v=sel.value;
+  if(!v){sel.style.border='1px solid var(--red)';setTimeout(function(){sel.style.border='';},1500);return;}
+  var name=v==='Custom'?(document.getElementById('acc-custom-name').value||'').trim():v;
+  if(!name){toast('Enter item name','err');return;}
+  var price=parseFloat(document.getElementById('acc-price').value)||0;
+  addons.push({name:name,price:price});
+  sel.value='';
+  document.getElementById('acc-price').value='';
+  document.getElementById('acc-custom-wrap').style.display='none';
+  if(document.getElementById('acc-custom-name'))document.getElementById('acc-custom-name').value='';
+  renderAddonRows();
+  buildReceipt();
+  toast(name+' added','ok');
+}
+
 function togCashTax(){
   const m=document.getElementById('pay-method')?.value;
   const w=document.getElementById('cash-tax-wrap');
@@ -2714,26 +3085,83 @@ function printLabel(){
 }
 
 // ── RECEIPT ──
+function getPayMethodDisplay(payMethods,payAmts,method){
+  var labels={card:'Credit/Debit Card',cash:'Cash',cashapp:'CashApp',zelle:'Zelle'};
+  if(payMethods.length>1){
+    return payMethods.map(function(m,i){
+      return (labels[m.value]||m.value)+' $'+(parseFloat(payAmts[i]?.value)||0).toFixed(2);
+    }).join(' + ');
+  }
+  return labels[method]||method;
+}
 function buildReceipt(){
   const r=editId?repairs.find(x=>x.ID===editId):null;if(!r)return;
-  const method=document.getElementById('pay-method').value;
-  const base=parseFloat(document.getElementById('pay-amt').value)||parseFloat(r.Quote||0);
+
+  // Collect all payment rows
+  const payMethods=[].slice.call(document.querySelectorAll('.pay-method'));
+  const payAmts=[].slice.call(document.querySelectorAll('.pay-amt'));
+  const method=payMethods[0]?.value||'cash';
+  const isSplit=payMethods.length>1;
+  const hasCard=payMethods.some(function(m){return m.value==='card';});
+
+  // Base amount from quote (not from first pay row — that's what was collected)
+  const base=parseFloat(r.Quote||0);
   const addonsTotal=addons.reduce((a,x)=>a+(parseFloat(x.price)||0),0);
   const preDisc=base+addonsTotal;
-  // Discount
+
   const dType=document.getElementById('disc-type')?.value||'none';
   const dVal=parseFloat(document.getElementById('disc-val')?.value)||0;
   let discAmt=0;
   if(dType==='dollar')discAmt=Math.min(dVal,preDisc);
   else if(dType==='percent')discAmt=Math.min((dVal/100)*preDisc,preDisc);
+  discAmt=Math.round(discAmt*100)/100;
   const dp=document.getElementById('disc-preview');
   if(dp)dp.textContent=discAmt>0?`-$${discAmt.toFixed(2)}`:'';
-  const subtotal=preDisc-discAmt;
-  // Tax — editable for cash
-  let tax=0;
-  if(method==='card'){tax=subtotal*0.0825;}
-  else{const cashTaxEl=document.getElementById('cash-tax-input');tax=parseFloat(cashTaxEl?.value)||0;}
-  const total=subtotal+tax;
+  const subtotal=Math.round((preDisc-discAmt)*100)/100;
+
+  // Square-style tax: always on full subtotal if any card payment
+  let tax=hasCard?Math.round(subtotal*0.0825*100)/100:0;
+
+  // Surcharge
+  let surchargeAmt=0;
+  const surChk=document.getElementById('surcharge-chk');
+  if(hasCard&&surChk?.checked){
+    const pct=parseFloat(document.getElementById('surcharge-pct')?.value)||0;
+    const cardPaid=payAmts.reduce(function(s,el,i){return s+(payMethods[i]?.value==='card'?parseFloat(el.value)||0:0);},0);
+    surchargeAmt=Math.round(cardPaid*(pct/100)*100)/100;
+    const sp=document.getElementById('surcharge-preview');
+    if(sp)sp.textContent='Card surcharge: +$'+surchargeAmt.toFixed(2);
+  } else {
+    const sp=document.getElementById('surcharge-preview');
+    if(sp)sp.textContent='';
+  }
+
+  const total=Math.round((subtotal+tax+surchargeAmt)*100)/100;
+
+  // Split payment: collect each leg, running balance
+  // Square approach: total is fixed, first payment reduces balance, remaining shown
+  const payLegs=payMethods.map(function(m,i){
+    const amt=Math.round((parseFloat(payAmts[i]?.value)||0)*100)/100;
+    return {method:m.value,amt:amt};
+  }).filter(function(l){return l.amt>0;});
+
+  const totalPaid=Math.round(payLegs.reduce(function(s,l){return s+l.amt;},0)*100)/100;
+
+  // Remaining = total - first payment (Square shows balance after each leg)
+  const firstPaid=payLegs.length>0?payLegs[0].amt:0;
+  const remainingAfterFirst=isSplit?Math.max(0,Math.round((total-firstPaid)*100)/100):0;
+
+  // Deposit logic
+  const depOn=document.getElementById('dep-chk')?.checked;
+  const depAmt=depOn?Math.round((parseFloat(document.getElementById('dep-amt')?.value)||0)*100)/100:0;
+  const depMethod=document.getElementById('dep-method')?.value||'cash';
+  const depDate=document.getElementById('dep-date')?.value||'';
+  const depIsCard=depMethod==='card';
+  const depTax=depIsCard?Math.round(depAmt*0.0825*100)/100:0;
+  const depTotal=Math.round((depAmt+depTax)*100)/100;
+
+  // Receipt note
+  const receiptNote=(document.getElementById('receipt-note-field')?.value||'').trim();
   const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   const locAddr=r.Location==='Dayton'?'112 Cook St, Dayton TX 77535':'6115 FM 2100 Suite #102, Crosby TX 77532';
   const locPhone=r.Location==='Dayton'?'832-872-1887':'346-417-6309';
@@ -2770,7 +3198,10 @@ function buildReceipt(){
       <tr><td style="padding:4px 6px;font-size:13px;color:#555;width:42%;">📅 Date</td><td style="padding:4px 6px;font-size:13px;">${today}</td></tr>
       <tr><td style="padding:4px 6px;font-size:13px;color:#555;">📄 Repair ID</td><td style="padding:4px 6px;font-size:13px;font-family:monospace;">${r.ID}</td></tr>
       <tr><td style="padding:4px 6px;font-size:13px;color:#555;">🔧 Repair Type / Issue</td><td style="padding:4px 6px;font-size:13px;">${repairDisplay}${r.Quality?' / '+r.Quality:''}</td></tr>
-      <tr><td style="padding:4px 6px;font-size:13px;color:#555;">💳 Payment Method</td><td style="padding:4px 6px;font-size:13px;">${method==='card'?'Credit / Debit Card':'Cash'}</td></tr>
+      ${isSplit
+        ? `<tr><td style="padding:4px 6px;font-size:13px;color:#555;">💳 Payment</td><td style="padding:4px 6px;font-size:13px;">Split payment</td></tr>`
+        : `<tr><td style="padding:4px 6px;font-size:13px;color:#555;">💳 Payment</td><td style="padding:4px 6px;font-size:13px;">${getPayMethodDisplay(payMethods,payAmts,method)}</td></tr>`
+      }
       <tr><td style="padding:4px 6px;font-size:13px;color:#555;">👤 Customer</td><td style="padding:4px 6px;font-size:13px;">${r.CustomerName||'—'}</td></tr>
       <tr><td style="padding:4px 6px;font-size:13px;color:#555;">🔨 Technician</td><td style="padding:4px 6px;font-size:13px;">${techFull}</td></tr>
     </table>
@@ -2778,7 +3209,20 @@ function buildReceipt(){
       <tr><td colspan="2" style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#888;border-bottom:1px solid #eee;padding-bottom:4px;padding-left:6px;">Cost Breakdown</td></tr>
       <tr><td style="padding:4px 6px;font-size:13px;color:#555;">💵 Repair Total</td><td style="padding:4px 6px;font-size:13px;text-align:right;">$${base.toFixed(2)}</td></tr>
       ${addonLines}${discLine}${subLine}${taxLine}
-      <tr style="border-top:2px solid #111;"><td style="padding:8px 6px 4px;font-size:16px;font-weight:700;">💲 Total Due</td><td style="padding:8px 6px 4px;font-size:16px;font-weight:700;text-align:right;">$${total.toFixed(2)}</td></tr>
+      <tr style="border-top:2px solid #111;"><td style="padding:8px 6px 4px;font-size:15px;font-weight:700;">Total</td><td style="padding:8px 6px 4px;font-size:15px;font-weight:700;text-align:right;">$${total.toFixed(2)}</td></tr>
+      ${surchargeAmt>0?`<tr><td style="padding:3px 6px;font-size:13px;color:#555;">Card surcharge</td><td style="padding:3px 6px;font-size:13px;text-align:right;">$${surchargeAmt.toFixed(2)}</td></tr>`:''}
+      ${depOn&&depAmt>0?`<tr><td style="padding:3px 6px;font-size:13px;color:#555;">Deposit paid (${depMethod}${depDate?' · '+depDate:''})</td><td style="padding:3px 6px;font-size:13px;text-align:right;">-$${depAmt.toFixed(2)}</td></tr>${depIsCard?`<tr><td style="padding:3px 6px;font-size:12px;color:#888;"> &nbsp;Tax on deposit</td><td style="padding:3px 6px;font-size:12px;text-align:right;color:#888;">-$${depTax.toFixed(2)}</td></tr>`:''}`:''}
+      ${isSplit?`
+        <tr><td colspan="2" style="padding:6px 6px 2px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#888;border-top:1px solid #eee;">Payment breakdown</td></tr>
+        ${payLegs.map(function(leg,i){
+          var labels={card:'Credit/Debit Card',cash:'Cash',cashapp:'CashApp',zelle:'Zelle'};
+          var runningBalance=i===0?total-leg.amt:null;
+          return '<tr><td style="padding:3px 6px 3px 14px;font-size:12px;color:#555;">'+(i+1)+'. '+( labels[leg.method]||leg.method)+'</td>'
+            +'<td style="padding:3px 6px;font-size:12px;text-align:right;">$'+leg.amt.toFixed(2)+'</td></tr>'
+            +(i===0&&payLegs.length>1?'<tr><td style="padding:2px 6px 3px 14px;font-size:11px;color:#888;">  Balance after 1st payment</td><td style="padding:2px 6px;font-size:11px;text-align:right;color:#888;">$'+Math.max(0,total-leg.amt).toFixed(2)+'</td></tr>':'');
+        }).join('')}
+        <tr style="border-top:1px solid #ddd;"><td style="padding:6px 6px 4px;font-size:15px;font-weight:700;color:#1D9E75;">Amount Paid</td><td style="padding:6px 6px 4px;font-size:15px;font-weight:700;text-align:right;color:#1D9E75;">$${totalPaid.toFixed(2)}</td></tr>
+      `:`<tr style="border-top:1px solid #ddd;"><td style="padding:6px 6px 4px;font-size:15px;font-weight:700;color:#1D9E75;">Amount Paid</td><td style="padding:6px 6px 4px;font-size:15px;font-weight:700;text-align:right;color:#1D9E75;">$${total.toFixed(2)}</td></tr>`}
       ${(()=>{
     const isW=r.IsWarranty||document.getElementById('f-warranty-check')?.checked;
     const origId=r.WarrantyOf||document.getElementById('f-device')?.dataset?.warrantyOf||'—';
@@ -2809,7 +3253,8 @@ function buildReceipt(){
       <div style="border-bottom:1px solid #888;margin-bottom:4px;"></div>
       <div style="font-size:10px;color:#aaa;">${r.CustomerName||'Customer'}</div>
     </div>
-    <div style="text-align:center;font-size:13px;font-weight:700;color:#111;margin-top:6px;">Thank you for choosing Lopez Tech Repairs!</div>
+    ${receiptNote?`<div style="background:#f5f5f5;border-radius:6px;padding:10px 14px;margin-bottom:12px;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#888;margin-bottom:4px;">Note</div><div style="font-size:12px;color:#333;font-style:italic;">${receiptNote}</div></div>`:''}
+  <div style="text-align:center;font-size:13px;font-weight:700;color:#111;margin-top:6px;">Thank you for choosing Lopez Tech Repairs!</div>
     <div style="text-align:center;font-size:13px;color:#1971c2;margin-top:3px;">💙 We appreciate your business. Have a great day! 💙</div>
   </div>`;
 }
@@ -3514,7 +3959,7 @@ function saveInlineQuote(id,val){
   const newQ=parseFloat(val);
   if(isNaN(newQ)){renderRepairs();return;}
   r.Quote=String(newQ);
-  logAct(r,`Quote updated to $${newQ.toFixed(2)} by ${cu.name}`);
+  if(Math.abs(_oldQ-newQ)>0.01)logAct(r,`Quote updated: $${_oldQ.toFixed(2)} → $${newQ.toFixed(2)}`,getActiveUser());
   
   renderRepairs();
   pushAllToCloud();
@@ -3914,7 +4359,7 @@ function confirmComplete(){
   r.DepositPayMethod=depositPayMethod;
   r.DepositDate=depositDate;
   r.TotalCollected=total;
-  logAct(r,`Completed by ${cu.name} · ${method==='card'?'Card':'Cash'} · $${total.toFixed(2)}`);
+  logAct(r,`Marked completed · ${method==='card'?'Card':'Cash'} · $${total.toFixed(2)}`,getActiveUser());
   
   renderRepairs(); updateStats(); renderStatusBar(); renderRecentBar();
   closeM('confirm-sale-popup');
@@ -4153,7 +4598,7 @@ function completeQS(){
     IsQuickSale:true,
     QSItems:JSON.parse(JSON.stringify(qsCart))
   };
-  logAct(rec,`Quick Sale by ${cu.name} · $${total.toFixed(2)}`);
+  logAct(rec,`Quick sale · $${total.toFixed(2)}`,getActiveUser());
   repairs.unshift(rec);
   renderRepairs(); updateStats();
   closeM('qs-modal');
@@ -4275,7 +4720,7 @@ function completeDPSale(){
     CustomerAddr:addr,
     CustomerID:{type:idtype, number:idnum}
   };
-  logAct(rec,`Device Sale by ${cu.name} · ${method} · $${total.toFixed(2)}`);
+  logAct(rec,`Device sale · ${method} · $${total.toFixed(2)}`,getActiveUser());
   repairs.unshift(rec);
   renderRepairs(); updateStats();
   closeM('dp-modal');
