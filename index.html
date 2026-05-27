@@ -2697,40 +2697,37 @@ async function saveRepair(){
   if(editId){
     const idx=repairs.findIndex(r=>r.ID===editId);
     if(idx>=0){
+      const prevStatus=repairs[idx].Status; // capture BEFORE assign
       const old=repairs[idx];
       if(old.Status!==stat){
         if(stat==='Ready for Pickup')data.ReadyDate=new Date().toISOString();
         data.LastStatusChange=new Date().toISOString();
-        logAct(old,`Status: ${old.Status} → ${stat}`,getActiveUser());
+        logAct(old,`Status: ${old.Status} -> ${stat}`,getActiveUser());
       }
       Object.assign(repairs[idx],data);
+      // If targeting Completed, restore old status so card stays on board
+      if(stat==='Completed') repairs[idx].Status=prevStatus;
     }
-    
-    // If marking as Completed, hold status — only finalize after popup confirms
     if(stat==='Completed'){
-      // Revert status write — keep previous status until popup confirmed
-      const idx2=repairs.findIndex(r=>r.ID===editId);
-      if(idx2>=0) repairs[idx2].Status=repairs[idx2].Status==='Completed'?'Completed':(repairs[idx2].Status||'Ready for Pickup');
-      const updatedId=editId;
       closePanel();
       renderRepairs();
-      setTimeout(()=>openCompletePopup(updatedId),200);
+      setTimeout(()=>openCompletePopup(editId),200);
+      // DO NOT pushAllToCloud here — confirmComplete() handles it
     } else {
       closePanel();toast('Repair updated','ok');
       pushAllToCloud();
     }
   } else {
     const newId=genId(loc);
-    // Don't set Completed on new repair until popup confirms
-    const pendingStat=stat==='Completed'?'Ready for Pickup':stat;
-    const nr={ID:newId,...data,Status:pendingStat,CreatedAt:new Date().toISOString(),Notes:'',HandoffNotes:'',ActivityLog:[],_local:true};
-    if(pendingStat==='Ready for Pickup')nr.ReadyDate=new Date().toISOString();
+    const holdStat=stat==='Completed'?'Ready for Pickup':stat;
+    const nr={ID:newId,...data,Status:holdStat,CreatedAt:new Date().toISOString(),Notes:'',HandoffNotes:'',ActivityLog:[],_local:true};
+    if(holdStat==='Ready for Pickup')nr.ReadyDate=new Date().toISOString();
     logAct(nr,`Task created`,getActiveUser());
     repairs.unshift(nr);renderRepairs();
     if(stat==='Completed'){
-      const newRepId=newId;
       closePanel();
-      setTimeout(()=>openCompletePopup(newRepId),200);
+      setTimeout(()=>openCompletePopup(newId),200);
+      // DO NOT pushAllToCloud here — confirmComplete() handles it
     } else {
       closePanel();toast(`Repair ${newId} created`,'ok');
       pushAllToCloud();
