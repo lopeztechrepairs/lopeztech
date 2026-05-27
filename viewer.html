@@ -18,10 +18,11 @@
   --safe-bot:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;overflow:hidden;}
+html{height:100%;background:var(--bg);}
+body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;overflow:hidden;}
 
 /* LOGIN */
-#login{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;z-index:999;}
+#login{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;z-index:999;-webkit-overflow-scrolling:auto;}
 .login-badge{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#1f6feb,#0d419d);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;margin-bottom:20px;box-shadow:0 8px 32px rgba(31,111,235,.4);}
 .login-title{font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px;}
 .login-sub{font-size:13px;color:var(--text2);margin-bottom:32px;}
@@ -29,7 +30,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);transition:all .2s;}
 .pin-dot.filled{background:#1f6feb;border-color:#1f6feb;transform:scale(1.1);}
 .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:280px;}
-.num-btn{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:18px;font-size:22px;font-weight:500;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;-webkit-user-select:none;transition:transform .1s;}
+.num-btn{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:18px;font-size:22px;font-weight:500;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;-webkit-user-select:none;user-select:none;transition:transform .1s;touch-action:manipulation;}
 .num-btn:active{background:var(--surface3);transform:scale(.95);}
 .num-btn.del{font-size:18px;color:var(--text2);}
 .num-btn.empty{visibility:hidden;}
@@ -148,6 +149,20 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 .empty-title{font-size:14px;font-weight:600;color:var(--text2);margin-bottom:4px;}
 .loading-ring{width:28px;height:28px;border:3px solid var(--border);border-top-color:#1f6feb;border-radius:50%;animation:spin .7s linear infinite;margin:40px auto 12px;}
 
+/* STATUS CHANGE */
+.status-change-section{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.status-change-lbl{font-size:10px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+.status-pills{display:flex;flex-wrap:wrap;gap:8px;}
+.status-pill{
+  padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--text2);font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;
+  display:flex;align-items:center;gap:5px;
+}
+.status-pill:active{transform:scale(.96);}
+.status-pill.current{opacity:.4;cursor:default;pointer-events:none;}
+.status-pill.saving{opacity:.5;pointer-events:none;}
+
 /* TOAST */
 #toast{position:fixed;bottom:calc(var(--safe-bot)+72px);left:50%;transform:translateX(-50%) translateY(12px);background:#238636;color:#fff;padding:9px 18px;border-radius:20px;font-size:12px;font-weight:600;opacity:0;transition:all .22s;pointer-events:none;white-space:nowrap;z-index:999;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -160,23 +175,23 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
   <div class="login-badge">LTR</div>
   <div class="login-title">Lopez Tech Repairs</div>
   <div class="login-sub">Enter your PIN to continue</div>
-  <div class="pin-dots">
+  <div class="pin-dots" id="pin-dots-wrap">
     <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
     <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
   </div>
   <div class="numpad">
-    <button class="num-btn" onclick="numTap('1')">1</button>
-    <button class="num-btn" onclick="numTap('2')">2</button>
-    <button class="num-btn" onclick="numTap('3')">3</button>
-    <button class="num-btn" onclick="numTap('4')">4</button>
-    <button class="num-btn" onclick="numTap('5')">5</button>
-    <button class="num-btn" onclick="numTap('6')">6</button>
-    <button class="num-btn" onclick="numTap('7')">7</button>
-    <button class="num-btn" onclick="numTap('8')">8</button>
-    <button class="num-btn" onclick="numTap('9')">9</button>
-    <button class="num-btn empty"></button>
-    <button class="num-btn" onclick="numTap('0')">0</button>
-    <button class="num-btn del" onclick="numDel()">⌫</button>
+    <button type="button" class="num-btn" onclick="numTap('1')">1</button>
+    <button type="button" class="num-btn" onclick="numTap('2')">2</button>
+    <button type="button" class="num-btn" onclick="numTap('3')">3</button>
+    <button type="button" class="num-btn" onclick="numTap('4')">4</button>
+    <button type="button" class="num-btn" onclick="numTap('5')">5</button>
+    <button type="button" class="num-btn" onclick="numTap('6')">6</button>
+    <button type="button" class="num-btn" onclick="numTap('7')">7</button>
+    <button type="button" class="num-btn" onclick="numTap('8')">8</button>
+    <button type="button" class="num-btn" onclick="numTap('9')">9</button>
+    <button type="button" class="num-btn empty"></button>
+    <button type="button" class="num-btn" onclick="numTap('0')">0</button>
+    <button type="button" class="num-btn del" onclick="numDel()">⌫</button>
   </div>
   <div id="login-err">Incorrect PIN. Try again.</div>
 </div>
@@ -295,17 +310,28 @@ function numDel(){
 function tryLogin(){
   if(PINS[pinBuf]){
     var l=document.getElementById('login');
-    l.style.transition='opacity .3s'; l.style.opacity='0';
+    var app=document.getElementById('app');
+    l.style.transition='opacity .25s';
+    l.style.opacity='0';
+    l.style.pointerEvents='none';
+    app.classList.add('on');
     setTimeout(function(){
       l.style.display='none';
-      document.getElementById('app').classList.add('on');
       loadRepairs();
-    },300);
+    },280);
   } else {
-    document.getElementById('login-err').style.display='block';
+    var err=document.getElementById('login-err');
+    err.style.display='block';
+    // Shake animation
+    var dots=document.getElementById('pin-dots-wrap');
+    if(dots){dots.style.transition='transform .05s';dots.style.transform='translateX(8px)';
+      setTimeout(function(){dots.style.transform='translateX(-8px)';
+        setTimeout(function(){dots.style.transform='translateX(0)';},80);
+      },80);
+    }
     [0,1,2,3].forEach(function(i){document.getElementById('d'+i).classList.remove('filled');});
     pinBuf='';
-    setTimeout(function(){document.getElementById('login-err').style.display='none';},1800);
+    setTimeout(function(){err.style.display='none';},1800);
   }
 }
 
@@ -544,8 +570,80 @@ function openRepairDetail(id){
     +'</div>';
   }
 
+  // Status change section — show all statuses except current and Completed
+  var ALL_STATUSES=[
+    'Intake & Acceptance','In Progress','Dispatched to Specialist',
+    'Awaiting Parts','Ready for Pickup','Past Due'
+  ];
+  html+='<div class="status-change-section">'
+    +'<div class="status-change-lbl">Move to</div>'
+    +'<div class="status-pills">'
+    +ALL_STATUSES.map(function(s){
+      var c=STATUS_CFG[s]||{color:'#8b949e',emoji:'•'};
+      var isCurrent=r.Status===s;
+      return '<div class="status-pill'+(isCurrent?' current':'')+'" '
+        +'style="border-color:'+(isCurrent?c.color:'var(--border)')
+        +';color:'+(isCurrent?c.color:'var(--text2)')+';'
+        +(isCurrent?'background:'+STATUS_CFG[s].bg+';':'')+'" '
+        +(isCurrent?'':'onclick="changeStatus('+JSON.stringify(r.ID)+','+JSON.stringify(s)+')'+'"')
+        +'id="spill-'+esc(r.ID)+'-'+s.replace(/[^a-z]/gi,'_')+'">'
+        +c.emoji+' '+esc(s)
+      +'</div>';
+    }).join('')
+    +'</div>'
+  +'</div>';
+
   document.getElementById('rp-body').innerHTML=html;
   openPopup('rep-bd','rep-pop');
+}
+
+// ── STATUS CHANGE + FIREBASE SYNC ──
+async function changeStatus(id, newStatus){
+  var r=repairs.find(function(x){return x.ID===id;});
+  if(!r) return;
+  var oldStatus=r.Status;
+  if(oldStatus===newStatus) return;
+
+  // Mark pill as saving
+  var pillId='spill-'+id+'-'+newStatus.replace(/[^a-z]/gi,'_');
+  var pill=document.getElementById(pillId);
+  if(pill){pill.classList.add('saving');pill.textContent='Saving…';}
+
+  // Update local state immediately
+  r.Status=newStatus;
+  r.LastStatusChange=new Date().toISOString();
+  if(newStatus==='Ready for Pickup') r.ReadyDate=new Date().toISOString();
+
+  // Push to Firebase — fetch full array, update, write back
+  try{
+    var res=await fetch(FB+'/lopeztechrepairs/repairs.json?auth='+KEY);
+    var data=await res.json();
+    var arr=Array.isArray(data)?data:Object.values(data);
+    // Find and update this repair in the array
+    var updated=arr.map(function(x){
+      if(!x||x.ID!==id) return x;
+      var copy=Object.assign({},x);
+      copy.Status=newStatus;
+      copy.LastStatusChange=r.LastStatusChange;
+      if(newStatus==='Ready for Pickup') copy.ReadyDate=r.ReadyDate;
+      return copy;
+    });
+    await fetch(FB+'/lopeztechrepairs/repairs.json?auth='+KEY,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(updated)
+    });
+    showToast(id+' → '+newStatus+' ✓');
+  } catch(e){
+    // Revert on failure
+    r.Status=oldStatus;
+    showToast('Failed to update','err');
+  }
+
+  // Re-render and close popup
+  closePopup('rep-bd','rep-pop');
+  updatePDPill();
+  setTimeout(render,100);
 }
 
 // ── POPUP HELPERS ──
