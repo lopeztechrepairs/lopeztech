@@ -406,6 +406,9 @@ var ADMINS = {
 var PAY_COLORS = {
   'Cash':            '#16a34a',
   'Credit / Debit':  '#1e293b',
+  'Venmo':           '#3d4eac',
+  'Check':           '#6b7280',
+  'Split':           '#7c3aed',
   'Split Payment':   '#c2410c',
   'Check':           '#78350f',
   'Acima':           '#4a3728',
@@ -531,8 +534,7 @@ function renderPayBreakdown(rows, period) {
   document.getElementById('pay-period').textContent = period;
   var totals = {};
   rows.forEach(function(r) {
-    var m = normalizePayment(r.PayMethod);
-    totals[m] = (totals[m] || 0) + (parseFloat(r.TotalCollected) || parseFloat(r.Quote) || 0);
+    distributePayment(r, totals);
   });
   var entries = Object.entries(totals).sort(function(a,b){ return b[1]-a[1]; });
   var max = entries.length ? entries[0][1] : 1;
@@ -764,8 +766,7 @@ function exportExcel() {
   // ── PAYMENT SUMMARY SHEET ────────────────────────
   var payTotals = {};
   sorted.forEach(function(r){
-    var m = normalizePayment(r.PayMethod);
-    payTotals[m] = (payTotals[m] || 0) + (parseFloat(r.TotalCollected)||parseFloat(r.Quote)||0);
+    distributePayment(r, payTotals);
   });
 
   var wsPay = [
@@ -836,7 +837,25 @@ function normalizePayment(m) {
   if (n === 'cash') return 'Cash';
   if (n === 'cashapp' || n === 'cash app') return 'CashApp';
   if (n === 'zelle') return 'Zelle';
+  if (n === 'venmo') return 'Venmo';
+  if (n === 'check') return 'Check';
+  if (n === 'split') return 'Split'; // fallback if legs missing
   return m || 'Cash';
+}
+
+// Distributes a repair's payment across method buckets (handles split payments)
+function distributePayment(r, totals) {
+  var total = parseFloat(r.TotalCollected) || parseFloat(r.Quote) || 0;
+  if (r.PayLegs && Array.isArray(r.PayLegs) && r.PayLegs.length > 0) {
+    // Split payment — distribute each leg into its method bucket
+    r.PayLegs.forEach(function(leg) {
+      var m = normalizePayment(leg.method);
+      totals[m] = (totals[m] || 0) + (parseFloat(leg.amt) || 0);
+    });
+  } else {
+    var m = normalizePayment(r.PayMethod);
+    totals[m] = (totals[m] || 0) + total;
+  }
 }
 
 function getTechColor(name) {

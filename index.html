@@ -1352,15 +1352,53 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
             <option value="Noemy">Noemy</option>
           </select>
         </div>
-        <div class="ff"><label>Payment Method</label>
-          <select id="cp-pay" onchange="calcCP()" class="fsel" style="width:100%;">
-            <option value="cash">Cash (no tax)</option>
-            <option value="card">Card (+ 8.25% tax)</option>
-          </select>
-        </div>
-        <div class="ff"><label>Amount Received ($)</label><input id="cp-amount" type="number" step="0.01" placeholder="0.00" oninput="calcCP()"/></div>
-        <div class="ff"><label>Discount ($)</label><input id="cp-discount" type="number" step="0.01" min="0" placeholder="0.00" oninput="calcCP()"/></div>
       </div>
+
+      <!-- PAYMENT ROWS -->
+      <div class="slbl" style="margin-top:0;">Payment</div>
+      <div id="cp-pay-rows" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;">
+        <div class="cp-pay-row" style="display:flex;gap:6px;align-items:flex-end;">
+          <div style="flex:1;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Method</div>
+            <select class="cp-pay-method fsel" onchange="calcCP()" style="font-size:12px;width:100%;" id="cp-pay">
+              <option value="cash">Cash</option>
+              <option value="card">Card (+ tax)</option>
+              <option value="zelle">Zelle</option>
+              <option value="venmo">Venmo</option>
+              <option value="check">Check</option>
+              <option value="cashapp">CashApp</option>
+            </select>
+          </div>
+          <div style="width:110px;flex-shrink:0;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Amount ($)</div>
+            <input id="cp-amount" type="number" class="cp-pay-amt fsel" step="0.01" min="0" placeholder="0.00" oninput="calcCP()" style="font-size:12px;width:100%;"/>
+          </div>
+        </div>
+      </div>
+      <button onclick="addCPPayRow()" style="background:none;border:0.5px solid var(--border);border-radius:7px;padding:6px 12px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;width:100%;font-family:'Geist',sans-serif;margin-bottom:10px;">+ Add split payment</button>
+
+      <!-- SURCHARGE -->
+      <div id="cp-surcharge-row" style="display:none;margin-bottom:10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;">
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--text);margin-bottom:7px;">
+          <input type="checkbox" id="cp-surcharge-chk" onchange="calcCP()" style="width:14px;height:14px;accent-color:var(--navy);">
+          Apply credit card surcharge
+        </label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="font-size:11px;color:var(--text3);">Surcharge %</div>
+          <input type="number" id="cp-surcharge-pct" value="3" step="0.1" min="0" oninput="calcCP()" style="width:72px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Geist',sans-serif;color:var(--text);"/>
+          <div id="cp-surcharge-preview" style="font-size:11px;color:var(--text3);"></div>
+        </div>
+      </div>
+
+      <!-- DISCOUNT -->
+      <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:10px;">
+        <div style="flex:1;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Discount ($)</div>
+          <input id="cp-discount" type="number" step="0.01" min="0" placeholder="0.00" oninput="calcCP()" class="fsel" style="width:100%;font-size:12px;"/>
+        </div>
+      </div>
+
+      <!-- DEPOSIT -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;">
         <input type="checkbox" id="cp-deposit-check" onchange="toggleCPDeposit()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green);"/>
         <label for="cp-deposit-check" style="font-size:13px;font-weight:600;cursor:pointer;color:var(--text);">Deposit was paid</label>
@@ -1388,10 +1426,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
           💳 Deposit tax (8.25%): <strong id="cp-deposit-tax-amt">$0.00</strong>
         </div>
       </div>
-      <div id="cp-surcharge-row" style="display:none;margin-bottom:10px;">
-        <label style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;">Credit Card Surcharge ($)</label>
-        <input id="cp-surcharge" type="number" step="0.01" min="0" placeholder="0.00" oninput="calcCP()" style="width:100%;margin-top:4px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:13px;"/>
-      </div>
+
       <div class="slbl">Add-ons</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
         <button class="btn sm" onclick="toggleCPAddon('Screen Protector',10,this)">Screen Protector $10</button>
@@ -1423,9 +1458,10 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
         <div id="cp-addons-summary"></div>
         <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;" id="cp-discount-line" style="display:none;"><span style="color:#dc2626;">Discount</span><span id="cp-show-discount" style="color:#dc2626;">-$0.00</span></div>
         <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;" id="cp-deposit-line" style="display:none;"><span style="color:var(--green);">Deposit Paid</span><span id="cp-show-deposit" style="color:var(--green);">-$0.00</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;"><span>Tax</span><span id="cp-show-tax">$0.00</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;"><span>Tax (8.25%)</span><span id="cp-show-tax">$0.00</span></div>
         <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;" id="cp-surcharge-line" style="display:none;"><span>Surcharge</span><span id="cp-show-surcharge">$0.00</span></div>
         <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;"><span>Tip</span><span id="cp-show-tip">$0.00</span></div>
+        <div id="cp-split-summary"></div>
         <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--border);margin-top:8px;padding-top:8px;"><span>Total Due</span><span id="cp-show-total">$0.00</span></div>
       </div>
     </div>
@@ -4284,10 +4320,14 @@ function openCompletePopup(id){
   cpRepairId=id; cpAddons=[]; cpTipAmt=0; cpDiscountAmt=0;
   // Reset UI
   document.getElementById('cp-tech').value=r.AssignedTo||'';
+  // Remove any extra split pay rows, keep only first
+  var cpRows=document.getElementById('cp-pay-rows');
+  if(cpRows){[].slice.call(cpRows.querySelectorAll('.cp-pay-row')).slice(1).forEach(function(el){el.remove();});}
   document.getElementById('cp-pay').value='cash';
   document.getElementById('cp-amount').value=parseFloat(r.Quote||0).toFixed(2);
   document.getElementById('cp-discount').value='';
-  document.getElementById('cp-surcharge').value='';
+  const cpSurChk=document.getElementById('cp-surcharge-chk');
+  if(cpSurChk)cpSurChk.checked=false;
   document.getElementById('cp-surcharge-row').style.display='none';
   document.getElementById('cp-surcharge-line').style.display='none';
   document.getElementById('cp-addons-list').innerHTML='';
@@ -4313,49 +4353,124 @@ function openCompletePopup(id){
   document.getElementById('complete-popup').classList.add('open');
 }
 
+function addCPPayRow(){
+  var rows=document.getElementById('cp-pay-rows');
+  var div=document.createElement('div');
+  div.className='cp-pay-row';
+  div.style.cssText='display:flex;gap:6px;align-items:flex-end;margin-top:6px;';
+  div.innerHTML='<div style="flex:1;">'
+    +'<div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Method</div>'
+    +'<select class="cp-pay-method fsel" onchange="calcCP()" style="font-size:12px;width:100%;">'
+    +'<option value="cash">Cash</option>'
+    +'<option value="card">Card (+ tax)</option>'
+    +'<option value="zelle">Zelle</option>'
+    +'<option value="venmo">Venmo</option>'
+    +'<option value="check">Check</option>'
+    +'<option value="cashapp">CashApp</option>'
+    +'</select></div>'
+    +'<div style="width:110px;flex-shrink:0;">'
+    +'<div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Amount ($)</div>'
+    +'<input type="number" class="cp-pay-amt fsel" step="0.01" min="0" placeholder="0.00" oninput="calcCP()" style="font-size:12px;width:100%;"/>'
+    +'</div>'
+    +'<button onclick="this.parentElement.remove();calcCP();" '
+    +'style="flex-shrink:0;background:none;border:0.5px solid var(--border2);border-radius:6px;'
+    +'width:30px;height:34px;font-size:18px;cursor:pointer;color:var(--text3);'
+    +'display:flex;align-items:center;justify-content:center;padding:0;">×</button>';
+  rows.appendChild(div);
+  calcCP();
+}
+
 function calcCP(){
-  const method=document.getElementById('cp-pay').value;
-  const base=parseFloat(document.getElementById('cp-amount').value)||0;
+  // Collect all payment rows
+  const payMethods=[].slice.call(document.querySelectorAll('.cp-pay-method'));
+  const payAmts=[].slice.call(document.querySelectorAll('.cp-pay-amt'));
+  const isCPSplit=payMethods.length>1;
+  const primaryMethod=payMethods[0]?.value||'cash';
+  const hasCard=payMethods.some(m=>m.value==='card');
+
+  // Base = first pay row amount (the quote)
+  const base=parseFloat(document.getElementById('cp-amount')?.value)||0;
   const discount=parseFloat(document.getElementById('cp-discount').value)||0;
   cpDiscountAmt=discount;
   const addonsTotal=cpAddons.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
   const subtotal=Math.max(0, base - discount) + addonsTotal;
-  const isSurcharge=method==='card';
-  document.getElementById('cp-surcharge-row').style.display=isSurcharge?'block':'none';
-  document.getElementById('cp-surcharge-line').style.display=isSurcharge?'flex':'none';
-  const surcharge=isSurcharge?(parseFloat(document.getElementById('cp-surcharge').value)||0):0;
-  const tax=method==='card'?subtotal*0.0825:0;
-  // Always read manual tip field — it wins over button-set value
+
+  // Tax on full subtotal if any card payment (Square style)
+  const tax=hasCard?Math.round(subtotal*0.0825*100)/100:0;
+
+  // Surcharge — show/hide section, apply if checkbox checked
+  const surRow=document.getElementById('cp-surcharge-row');
+  if(surRow)surRow.style.display=hasCard?'block':'none';
+  const surChk=document.getElementById('cp-surcharge-chk');
+  const surLine=document.getElementById('cp-surcharge-line');
+  let surcharge=0;
+  if(hasCard&&surChk?.checked){
+    const pct=parseFloat(document.getElementById('cp-surcharge-pct')?.value)||0;
+    const cardPaid=payAmts.reduce((s,el,i)=>s+(payMethods[i]?.value==='card'?parseFloat(el.value)||0:0),0);
+    surcharge=Math.round(cardPaid*(pct/100)*100)/100;
+    if(surLine)surLine.style.display='flex';
+    const sp=document.getElementById('cp-surcharge-preview');
+    if(sp)sp.textContent='Card surcharge: +$'+surcharge.toFixed(2);
+  } else {
+    if(surLine)surLine.style.display='none';
+  }
+
+  // Manual tip
   const manualTip=parseFloat(document.getElementById('cp-tip-manual').value);
   if(!isNaN(manualTip)) cpTipAmt=manualTip;
-  // Deposit — with its own payment method tax
+
+  // Deposit
   const isDepositChecked=document.getElementById('cp-deposit-check').checked;
   const depositAmt=isDepositChecked?(parseFloat(document.getElementById('cp-deposit-amt').value)||0):0;
   const depositPayMethod=isDepositChecked?document.getElementById('cp-deposit-pay').value:'cash';
   const depositTax=depositPayMethod==='card'?depositAmt*0.0825:0;
-  // Show/hide deposit tax info line
   const depTaxLine=document.getElementById('cp-deposit-tax-line');
   depTaxLine.style.display=(isDepositChecked&&depositPayMethod==='card'&&depositAmt>0)?'block':'none';
   document.getElementById('cp-deposit-tax-amt').textContent='$'+depositTax.toFixed(2);
-  const total=subtotal+tax+surcharge+cpTipAmt - (depositAmt+depositTax);
+  const depTotal=depositAmt+depositTax;
+
+  const total=Math.max(0,Math.round((subtotal+tax+surcharge+cpTipAmt-depTotal)*100)/100);
+
+  // Split payment legs
+  const cpPayLegs=payMethods.map((m,i)=>({method:m.value,amt:Math.round((parseFloat(payAmts[i]?.value)||0)*100)/100})).filter(l=>l.amt>0);
+  const totalPaid=Math.round(cpPayLegs.reduce((s,l)=>s+l.amt,0)*100)/100;
+
   // Addons summary
   document.getElementById('cp-addons-summary').innerHTML=
     cpAddons.map(a=>`<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;"><span>+ ${a.name}</span><span>$${parseFloat(a.price).toFixed(2)}</span></div>`).join('');
+
   document.getElementById('cp-show-price').textContent='$'+base.toFixed(2);
-  // Discount row
   const discLine=document.getElementById('cp-discount-line');
   discLine.style.display=discount>0?'flex':'none';
   document.getElementById('cp-show-discount').textContent='-$'+discount.toFixed(2);
-  // Deposit row — show combined (deposit + its tax)
   const depLine=document.getElementById('cp-deposit-line');
-  const depTotal=depositAmt+depositTax;
   depLine.style.display=(depTotal>0)?'flex':'none';
-  const depPayLabel=depositPayMethod==='card'?' (Card)':depositPayMethod==='zelle'?' (Zelle)':' (Cash)';
+  const payLabels={card:'Card',cash:'Cash',zelle:'Zelle',venmo:'Venmo',check:'Check',cashapp:'CashApp'};
+  const depPayLabel=' ('+( payLabels[depositPayMethod]||depositPayMethod)+')';
   document.getElementById('cp-show-deposit').textContent='-$'+depTotal.toFixed(2)+depPayLabel;
   document.getElementById('cp-show-tax').textContent='$'+tax.toFixed(2);
   document.getElementById('cp-show-surcharge').textContent='$'+surcharge.toFixed(2);
   document.getElementById('cp-show-tip').textContent='$'+cpTipAmt.toFixed(2);
-  document.getElementById('cp-show-total').textContent='$'+Math.max(0,total).toFixed(2);
+
+  // Split payment breakdown in summary
+  const splitEl=document.getElementById('cp-split-summary');
+  if(splitEl){
+    if(isCPSplit&&cpPayLegs.length>0){
+      splitEl.innerHTML='<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:6px;">'
+        +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:4px;">Payment breakdown</div>'
+        +cpPayLegs.map((l,i)=>{
+          const bal=i===0&&cpPayLegs.length>1?'<div style="font-size:11px;color:var(--text3);padding-left:12px;">Balance after: $'+Math.max(0,total-l.amt).toFixed(2)+'</div>':'';
+          return '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0;">'
+            +'<span>'+(i+1)+'. '+(payLabels[l.method]||l.method)+'</span>'
+            +'<span>$'+l.amt.toFixed(2)+'</span></div>'+bal;
+        }).join('')
+        +'</div>';
+    } else {
+      splitEl.innerHTML='';
+    }
+  }
+
+  document.getElementById('cp-show-total').textContent='$'+total.toFixed(2);
 }
 
 function renderCPAddonList(){
@@ -4433,13 +4548,20 @@ function toggleCPDeposit(){
 function preConfirmComplete(){
   if(!cpRepairId){ toast('No repair selected','err'); return; }
   const r=repairs.find(x=>x.ID===cpRepairId); if(!r) return;
-  const method=document.getElementById('cp-pay').value;
+  const cpPreMethods=[].slice.call(document.querySelectorAll('.cp-pay-method'));
+  const cpPreAmts=[].slice.call(document.querySelectorAll('.cp-pay-amt'));
+  const method=cpPreMethods[0]?.value||'cash';
+  const hasCardPre=cpPreMethods.some(m=>m.value==='card');
+  const isSplitPre=cpPreMethods.length>1;
   const base=parseFloat(document.getElementById('cp-amount').value)||0;
   const discount=parseFloat(document.getElementById('cp-discount').value)||0;
-  const surcharge=method==='card'?(parseFloat(document.getElementById('cp-surcharge').value)||0):0;
+  const surChkPre=document.getElementById('cp-surcharge-chk');
+  const surPctPre=parseFloat(document.getElementById('cp-surcharge-pct')?.value)||0;
+  const cardPaidPre=hasCardPre&&surChkPre?.checked?cpPreAmts.reduce((s,el,i)=>s+(cpPreMethods[i]?.value==='card'?parseFloat(el.value)||0:0),0):0;
+  const surcharge=hasCardPre&&surChkPre?.checked?Math.round(cardPaidPre*(surPctPre/100)*100)/100:0;
   const addonsTotal=cpAddons.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
   const subtotal=Math.max(0,base-discount)+addonsTotal;
-  const tax=method==='card'?subtotal*0.0825:0;
+  const tax=hasCardPre?subtotal*0.0825:0;
   const isDepositChecked=document.getElementById('cp-deposit-check').checked;
   const depositAmt=isDepositChecked?(parseFloat(document.getElementById('cp-deposit-amt').value)||0):0;
   const depositPayMethod=isDepositChecked?document.getElementById('cp-deposit-pay').value:'cash';
@@ -4451,7 +4573,10 @@ function preConfirmComplete(){
   let html=`<div style="margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);font-size:14px;">`;
   html+=`<strong>${r.RepairName||r.Device||'—'}</strong> · ${r.CustomerName}</div>`;
   html+=`<table style="width:100%;border-collapse:collapse;">`;
-  html+=`<tr><td style="padding:4px 0;color:var(--text3);">Payment</td><td style="text-align:right;font-weight:600;">${method==='card'?'Credit/Debit Card':'Cash'}</td></tr>`;
+  const pLbls={card:'Card',cash:'Cash',zelle:'Zelle',venmo:'Venmo',check:'Check',cashapp:'CashApp'};
+  const payDisp=isSplitPre?'Split payment':( pLbls[method]||method);
+  html+=`<tr><td style="padding:4px 0;color:var(--text3);">Payment</td><td style="text-align:right;font-weight:600;">${payDisp}</td></tr>`;
+  if(isSplitPre){cpPreMethods.forEach((m,i)=>{const a=parseFloat(cpPreAmts[i]?.value)||0;if(a>0)html+=`<tr><td style="padding:2px 0 2px 14px;font-size:12px;color:var(--text3);">${i+1}. ${pLbls[m.value]||m.value}</td><td style="text-align:right;font-size:12px;">$${a.toFixed(2)}</td></tr>`;});}
   html+=`<tr><td style="padding:4px 0;color:var(--text3);">Repair Amount</td><td style="text-align:right;">$${base.toFixed(2)}</td></tr>`;
   if(discount>0) html+=`<tr><td style="padding:4px 0;color:#dc2626;">Discount</td><td style="text-align:right;color:#dc2626;">-$${discount.toFixed(2)}</td></tr>`;
   cpAddons.forEach(a=>{ html+=`<tr><td style="padding:4px 0;color:var(--text3);">+ ${a.name}</td><td style="text-align:right;">$${parseFloat(a.price).toFixed(2)}</td></tr>`; });
@@ -4468,11 +4593,20 @@ function preConfirmComplete(){
 function confirmComplete(){
   if(!cpRepairId){ toast('No repair selected','err'); return; }
   const r=repairs.find(x=>x.ID===cpRepairId); if(!r) return;
-  const method=document.getElementById('cp-pay').value;
-  const base=parseFloat(document.getElementById('cp-amount').value)||0;
+  const cpMethods=[].slice.call(document.querySelectorAll('.cp-pay-method'));
+  const cpAmtEls=[].slice.call(document.querySelectorAll('.cp-pay-amt'));
+  const method=cpMethods[0]?.value||'cash';
+  const hasCardConf=cpMethods.some(m=>m.value==='card');
+  const isSplitConf=cpMethods.length>1;
+  const base=parseFloat(document.getElementById('cp-amount')?.value)||0;
   const discount=parseFloat(document.getElementById('cp-discount').value)||0;
-  const surcharge=method==='card'?(parseFloat(document.getElementById('cp-surcharge').value)||0):0;
-  const tax=method==='card'?Math.max(0,base-discount)*0.0825:0;
+  const surChkConf=document.getElementById('cp-surcharge-chk');
+  const surPct=parseFloat(document.getElementById('cp-surcharge-pct')?.value)||0;
+  const cardPaidConf=hasCardConf&&surChkConf?.checked?cpAmtEls.reduce((s,el,i)=>s+(cpMethods[i]?.value==='card'?parseFloat(el.value)||0:0),0):0;
+  const surcharge=hasCardConf&&surChkConf?.checked?Math.round(cardPaidConf*(surPct/100)*100)/100:0;
+  const tax=hasCardConf?Math.max(0,base-discount)*0.0825:0;
+  // Build pay legs for storage
+  const cpLegsConf=cpMethods.map((m,i)=>({method:m.value,amt:Math.round((parseFloat(cpAmtEls[i]?.value)||0)*100)/100})).filter(l=>l.amt>0);
   const addonsTotal=cpAddons.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
   const isDepositChecked=document.getElementById('cp-deposit-check').checked;
   const depositAmt=isDepositChecked?(parseFloat(document.getElementById('cp-deposit-amt').value)||0):0;
@@ -4485,7 +4619,9 @@ function confirmComplete(){
   r.Status='Completed';
   r.CompletedDate=new Date().toISOString();
   r.AssignedTo=cpTech||r.AssignedTo; // update tech if changed in popup
-  r.PayMethod=method==='card'?'Card':'Cash';
+  const payLbls={card:'Card',cash:'Cash',zelle:'Zelle',venmo:'Venmo',check:'Check',cashapp:'CashApp'};
+  r.PayMethod=isSplitConf?'Split':( payLbls[method]||method);
+  r.PayLegs=isSplitConf?cpLegsConf:[];
   r.AmountReceived=base;
   r.Discount=discount;
   r.Surcharge=surcharge;
@@ -4540,7 +4676,10 @@ function printCPReceipt(){
   const method=document.getElementById('cp-pay').value;
   const base=parseFloat(document.getElementById('cp-amount').value)||0;
   const discount=parseFloat(document.getElementById('cp-discount').value)||0;
-  const surcharge=method==='card'?(parseFloat(document.getElementById('cp-surcharge').value)||0):0;
+  const surChkPre=document.getElementById('cp-surcharge-chk');
+  const surPctPre=parseFloat(document.getElementById('cp-surcharge-pct')?.value)||0;
+  const cardPaidPre=hasCardPre&&surChkPre?.checked?cpPreAmts.reduce((s,el,i)=>s+(cpPreMethods[i]?.value==='card'?parseFloat(el.value)||0:0),0):0;
+  const surcharge=hasCardPre&&surChkPre?.checked?Math.round(cardPaidPre*(surPctPre/100)*100)/100:0;
   const addonsTotal=cpAddons.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
   const subtotal=Math.max(0,base-discount)+addonsTotal;
   const tax=method==='card'?Math.round(subtotal*0.0825*100)/100:0;
@@ -5084,13 +5223,22 @@ async function slLoadTodayRepairs(){
 function slRenderTrackerItems(){
   var el = document.getElementById('sl-tracker-list');
   if(!el) return;
+  var locFilter = (document.getElementById('sl-loc-filter')?.value||'').trim();
+  var filtered = locFilter
+    ? slTrackerItems.filter(function(r){ return (r.Location||'') === locFilter; })
+    : slTrackerItems;
   var count = document.getElementById('sl-tracker-count');
-  if(count) count.textContent = slTrackerItems.length;
-  if(!slTrackerItems.length){
-    el.innerHTML='<div class="sl-empty" style="color:var(--text3);">No completed repairs yet today.</div>';
+  if(count) count.textContent = filtered.length + (locFilter?' ('+locFilter+')':'');
+  if(!filtered.length){
+    el.innerHTML='<div class="sl-empty" style="color:var(--text3);">'
+      +(locFilter?'No completed repairs today at '+locFilter+'.':'No completed repairs yet today.')
+      +'</div>';
     return;
   }
-  el.innerHTML = slTrackerItems.map(function(r, idx){
+  el.innerHTML = filtered.map(function(r, idx){
+    // find true index in slTrackerItems for edit/save
+    var trueIdx = slTrackerItems.indexOf(r);
+    idx = trueIdx;
     var pay = r.PayMethod||'Cash';
     var amt = parseFloat(r.TotalCollected||r.Quote||0);
     var tip = parseFloat(r.Tip||0);
@@ -5828,7 +5976,14 @@ async function slConfirmSync(){
       <div class="sl-section">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <h3 style="margin:0;color:var(--green2);">✓ From Tracker Today (<span id="sl-tracker-count">0</span>)</h3>
-          <button onclick="slLoadTodayRepairs()" style="background:none;border:none;font-size:11px;color:var(--blue);cursor:pointer;font-weight:600;">↻ Refresh</button>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <select id="sl-loc-filter" onchange="slRenderTrackerItems()" style="font-size:11px;font-weight:600;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer;font-family:'Geist',sans-serif;">
+              <option value="">All Locations</option>
+              <option value="Dayton">Dayton</option>
+              <option value="Crosby">Crosby</option>
+            </select>
+            <button onclick="slLoadTodayRepairs()" style="background:none;border:none;font-size:11px;color:var(--blue);cursor:pointer;font-weight:600;">↻ Refresh</button>
+          </div>
         </div>
         <div id="sl-tracker-loading" style="display:none;font-size:11px;color:var(--text3);padding:6px 0;">Loading today's repairs…</div>
         <div id="sl-tracker-list"><div class="sl-empty">Loading…</div></div>
