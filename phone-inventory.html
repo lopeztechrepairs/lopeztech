@@ -613,7 +613,6 @@
         <button class="tab-btn" onclick="setTab('available',this)">Available <span class="badge" id="cnt_available">0</span></button>
         <button class="tab-btn" onclick="setTab('received',this)">Received <span class="badge" id="cnt_received">0</span></button>
         <button class="tab-btn" onclick="setTab('inrepair',this)">In Repair <span class="badge" id="cnt_inrepair">0</span></button>
-        <button class="tab-btn" onclick="setTab('sold',this)">Sold <span class="badge" id="cnt_sold">0</span></button>
       </div>
       <div class="tb-spacer"></div>
       <input class="search-input" type="text" id="searchBox" placeholder="🔍  Search phones…" oninput="renderCards()">
@@ -626,6 +625,28 @@
     </div>
 
     <div class="phone-grid" id="phoneGrid"></div>
+
+    <!-- ── SOLD PHONES SECTION ── -->
+    <div id="soldSection" style="margin-top:24px;border:1.5px solid #d48000;border-radius:16px;overflow:hidden;display:none;">
+      <div onclick="toggleSoldSection()"
+           style="display:flex;align-items:center;gap:12px;padding:14px 20px;background:linear-gradient(90deg,rgba(212,128,0,.08),transparent);cursor:pointer;user-select:none;">
+        <span style="font-size:18px;">💰</span>
+        <div style="flex:1;">
+          <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;letter-spacing:.5px;color:#d48000;">SOLD PHONES</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:1px;">
+            <span id="sold-count-lbl">0 devices sold</span>
+            &nbsp;·&nbsp; Revenue: <span id="sold-revenue-lbl" style="color:var(--success);font-weight:600;">$0.00</span>
+            &nbsp;·&nbsp; Profit: <span id="sold-profit-lbl" style="color:var(--accent);font-weight:600;">$0.00</span>
+          </div>
+        </div>
+        <span id="sold-section-arrow" style="font-size:12px;color:var(--text-dim);transition:transform .2s;">▼</span>
+      </div>
+      <div id="soldSectionBody" style="display:none;border-top:1px solid rgba(212,128,0,.25);">
+        <div style="padding:10px 16px 16px;">
+          <div class="phone-grid" id="soldGrid"></div>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -857,7 +878,7 @@ function updateTabCounts() {
   document.getElementById('cnt_available').textContent=phones.filter(function(p){return p.status==='available';}).length;
   document.getElementById('cnt_received').textContent=phones.filter(function(p){return p.status==='received';}).length;
   document.getElementById('cnt_inrepair').textContent=phones.filter(function(p){return p.status==='inrepair';}).length;
-  document.getElementById('cnt_sold').textContent=phones.filter(function(p){return p.status==='sold';}).length;
+  // cnt_sold removed — sold now has dedicated section
 }
 
 function setTab(tab,btn) {
@@ -934,6 +955,8 @@ function renderCards() {
   var carFil  = document.getElementById('filterCarrier').value;
 
   var entries = Object.entries(phonesData);
+  // Always exclude sold from main inventory grid
+  entries = entries.filter(function(e){ return e[1].status !== 'sold'; });
   if (currentTab !== 'all') entries = entries.filter(function(e){ return e[1].status===currentTab; });
   if (search) entries = entries.filter(function(e){
     var p=e[1];
@@ -950,6 +973,7 @@ function renderCards() {
     return;
   }
 
+  renderSoldSection();
   entries.sort(function(a,b){ return (parseFloat(a[1].price)||0)-(parseFloat(b[1].price)||0); });
 
   // Group by brand
@@ -1091,10 +1115,50 @@ function buildCard(id,p) {
   +'</div>';
 }
 
+// ─── SOLD SECTION ─────────────────────────────────────────────────────────
+function renderSoldSection() {
+  var soldEntries = Object.entries(phonesData).filter(function(e){ return e[1].status==='sold'; });
+  var section = document.getElementById('soldSection');
+  var grid = document.getElementById('soldGrid');
+  if (!section || !grid) return;
+
+  // Update labels
+  var totalRevenue = soldEntries.reduce(function(s,e){ return s+(parseFloat(e[1].price)||0); }, 0);
+  var totalCost    = soldEntries.reduce(function(s,e){ return s+(parseFloat(e[1].cost)||0); }, 0);
+  var profit       = totalRevenue - totalCost;
+  document.getElementById('sold-count-lbl').textContent   = soldEntries.length+' device'+(soldEntries.length!==1?'s':'')+' sold';
+  document.getElementById('sold-revenue-lbl').textContent = '$'+totalRevenue.toFixed(2);
+  document.getElementById('sold-profit-lbl').textContent  = '$'+profit.toFixed(2);
+
+  // Show/hide section
+  section.style.display = soldEntries.length ? 'block' : 'none';
+  if (!soldEntries.length) return;
+
+  // Sort newest sold first (by soldDate if available, otherwise by model)
+  soldEntries.sort(function(a,b){
+    var da = a[1].soldDate ? new Date(a[1].soldDate) : new Date(0);
+    var db = b[1].soldDate ? new Date(b[1].soldDate) : new Date(0);
+    return db - da;
+  });
+
+  // Build cards for sold grid — same buildCard but currentTab context
+  var savedTab = currentTab;
+  grid.innerHTML = soldEntries.map(function(e){ return buildCard(e[0],e[1]); }).join('');
+}
+
+function toggleSoldSection() {
+  var body  = document.getElementById('soldSectionBody');
+  var arrow = document.getElementById('sold-section-arrow');
+  var open  = body.style.display === 'block';
+  body.style.display  = open ? 'none' : 'block';
+  arrow.style.transform = open ? '' : 'rotate(180deg)';
+}
+
 // ─── STATUS CHANGE ────────────────────────────────────────────────────────
 function changeStatus(id,newStatus) {
   if (!newStatus) return;
   var payload={status:newStatus};
+  if (newStatus==='sold') payload.soldDate = new Date().toISOString();
   savePhone(id,payload).then(function(){
     phonesData[id]=Object.assign({},phonesData[id],payload);
     updateStats(); updateTabCounts(); renderCards();
