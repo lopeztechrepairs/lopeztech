@@ -833,23 +833,20 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
     <div class="tc" id="tc-repair">
 
       <!-- Quick Templates -->
-      <div id="tpl-wrap" style="display:none;margin-bottom:12px;">
-        <div class="slbl" style="margin-top:0;">Quick Templates</div>
-        <div class="tpl-list" id="tpl-chips"></div>
+      <div id="tpl-wrap" style="display:none;margin-bottom:0;">
+        <div class="slbl" style="margin-top:0;padding:10px 18px 6px;">Quick Templates</div>
+        <div class="tpl-list" id="tpl-chips" style="padding:0 18px 10px;"></div>
       </div>
 
-      <!-- D: Live summary card -->
-      <div class="p-summary" id="p-summary" style="display:none;">
+      <!-- Live summary -->
+      <div class="p-summary" id="p-summary" style="display:none;margin:10px 18px 0;">
         <div class="p-summary-name" id="rpname">—</div>
         <div class="p-summary-badges" id="p-summary-badges"></div>
       </div>
-      <div id="rprev" style="display:none;">
-        <div id="rpqual"></div>
-        <div id="rpid"></div>
-      </div>
+      <div id="rprev" style="display:none;"><div id="rpqual"></div><div id="rpid"></div></div>
 
-      <!-- C: Status pill selector -->
-      <div style="margin-bottom:14px;">
+      <!-- STATUS — always visible -->
+      <div style="padding:12px 18px 10px;border-bottom:1px solid var(--border);">
         <div class="slbl" style="margin-top:0;margin-bottom:7px;">Status</div>
         <div class="status-pills">
           <span class="spill" data-status="Intake &amp; Acceptance" onclick="setStatusPill(this)">Intake</span>
@@ -862,64 +859,78 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
         <input type="hidden" id="f-status" value="Intake &amp; Acceptance"/>
       </div>
 
-      <!-- B: Device & Repair card (blue accent) -->
-      <div class="p-card" style="border-left-color:#1971c2;">
-        <div class="p-card-hdr">Device &amp; Repair</div>
-        <div class="p-card-body">
-          <div class="ff dev-wrap">
-            <label>Repair Title *</label>
-            <input id="f-device" type="text" placeholder="e.g. iPhone 11 Screen Repair, PS5 HDMI Port" oninput="upPrev();devSuggest()" autocomplete="off"/>
-            <div class="dev-drop" id="dev-drop"></div>
+      <!-- DEVICE & REPAIR — collapsible -->
+      <div onclick="toggleRepairSection('device')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;transition:background .1s;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:var(--blue);flex-shrink:0;"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.6px;">Device &amp; Repair</div>
+            <div id="device-section-preview" style="font-size:10px;color:var(--text3);margin-top:1px;">Tap to expand</div>
           </div>
-          <div class="fgrid" style="margin-bottom:0;">
-            <div class="ff">
-              <label>Repair Category *</label>
-              <select id="f-cat2" onchange="upPrev();togQual();togMiscDesc()">
-                <option value="">Select category…</option>
-                <option>Display/Screen</option><option>Digitizer (iPad only)</option><option>Battery</option>
-                <option>Charging Port</option><option>Front Camera</option><option>Rear Camera</option>
-                <option>Ear Speaker</option><option>Loud Speaker</option><option>Back Glass</option>
-                <option>HDMI Port (Game Console only)</option><option>Software/OS</option>
-                <option>Motherboard</option><option>SSD/HDD Repair</option><option>RAM Repair</option>
-                <option>Misc. Labor</option>
-              </select>
-            </div>
-            <div class="ff" id="qualfield" style="display:none;"><label>Screen Quality</label>
-              <select id="f-qual" onchange="upPrev()"><option>OEM</option><option>Prem. OLED</option><option>Aftermarket Basic</option></select>
-            </div>
+        </div>
+        <svg id="chev-device" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--text3);transition:transform .2s;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div id="rsec-device" style="display:none;border-bottom:1px solid var(--border);padding:12px 18px;display:flex;flex-direction:column;gap:10px;">
+        <div class="ff dev-wrap">
+          <label>Repair Title *</label>
+          <input id="f-device" type="text" placeholder="e.g. iPhone 11 Screen Repair, PS5 HDMI Port" oninput="upPrev();devSuggest();updateDevicePreview()" autocomplete="off"/>
+          <div class="dev-drop" id="dev-drop"></div>
+        </div>
+        <div class="fgrid" style="margin-bottom:0;">
+          <div class="ff">
+            <label>Repair Category *</label>
+            <select id="f-cat2" onchange="upPrev();togQual();togMiscDesc();updateDevicePreview()">
+              <option value="">Select category…</option>
+              <option>Display/Screen</option><option>Digitizer (iPad only)</option><option>Battery</option>
+              <option>Charging Port</option><option>Front Camera</option><option>Rear Camera</option>
+              <option>Ear Speaker</option><option>Loud Speaker</option><option>Back Glass</option>
+              <option>HDMI Port (Game Console only)</option><option>Software/OS</option>
+              <option>Motherboard</option><option>SSD/HDD Repair</option><option>RAM Repair</option>
+              <option>Misc. Labor</option>
+            </select>
           </div>
-          <div class="ff s2" id="misc-desc-field" style="display:none;">
-            <label>Labor Description</label>
-            <input id="f-misc-desc" type="text" placeholder="e.g. Motherboard cleaning, water damage diagnostic…" oninput="upPrev()"/>
+          <div class="ff" id="qualfield" style="display:none;"><label>Screen Quality</label>
+            <select id="f-qual" onchange="upPrev()"><option>OEM</option><option>Prem. OLED</option><option>Aftermarket Basic</option></select>
           </div>
-          <div class="fgrid" style="margin-bottom:0;">
-            <div class="ff"><label>IMEI / Serial # (optional)</label><input id="f-imei" type="text" placeholder="Optional" style="font-family:'Geist Mono',monospace;font-size:11px;"/></div>
-            <div class="ff"><label>Passcode (optional)</label><input id="f-pass" type="text" placeholder="Optional"/></div>
-          </div>
+        </div>
+        <div class="ff s2" id="misc-desc-field" style="display:none;">
+          <label>Labor Description</label>
+          <input id="f-misc-desc" type="text" placeholder="e.g. Motherboard cleaning, water damage diagnostic…" oninput="upPrev()"/>
+        </div>
+        <div class="fgrid" style="margin-bottom:0;">
+          <div class="ff"><label>IMEI / Serial # (optional)</label><input id="f-imei" type="text" placeholder="Optional" style="font-family:'Geist Mono',monospace;font-size:11px;"/></div>
+          <div class="ff"><label>Passcode (optional)</label><input id="f-pass" type="text" placeholder="Optional"/></div>
         </div>
       </div>
 
-      <!-- B: Assignment card (green accent) -->
-      <div class="p-card" style="border-left-color:#2f9e44;">
-        <div class="p-card-hdr">Assignment</div>
-        <div class="p-card-body">
-          <div class="fgrid" style="margin-bottom:0;">
-            <div class="ff"><label>Technician</label><select id="f-tech2"></select></div>
-            <div class="ff"><label>Store Location *</label>
-              <select id="f-loc2" onchange="upPrev()">
-                <option value="">Select location…</option>
-                <option>Crosby</option>
-                <option>Dayton</option>
-              </select>
-            </div>
-            <div class="ff"><label>Drop-off Date</label><input id="f-dropoff" type="date"/></div>
-            <div class="ff"><label>Repair Quote ($)</label><input id="f-quote" type="number" placeholder="0.00" step="0.01" min="0" oninput="upPrev();calcM()"/></div>
+      <!-- ASSIGNMENT — collapsible -->
+      <div onclick="toggleRepairSection('assign')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;transition:background .1s;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:var(--green);flex-shrink:0;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.6px;">Assignment</div>
+            <div id="assign-section-preview" style="font-size:10px;color:var(--text3);margin-top:1px;">Tap to expand</div>
           </div>
+        </div>
+        <svg id="chev-assign" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--text3);transition:transform .2s;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div id="rsec-assign" style="display:none;border-bottom:1px solid var(--border);padding:12px 18px;">
+        <div class="fgrid" style="margin-bottom:0;">
+          <div class="ff"><label>Technician</label><select id="f-tech2" onchange="updateAssignPreview()"></select></div>
+          <div class="ff"><label>Store Location *</label>
+            <select id="f-loc2" onchange="upPrev();updateAssignPreview()">
+              <option value="">Select location…</option>
+              <option>Crosby</option>
+              <option>Dayton</option>
+            </select>
+          </div>
+          <div class="ff"><label>Drop-off Date</label><input id="f-dropoff" type="date" onchange="updateAssignPreview()"/></div>
+          <div class="ff"><label>Repair Quote ($)</label><input id="f-quote" type="number" placeholder="0.00" step="0.01" min="0" oninput="upPrev();calcM();updateAssignPreview()"/></div>
         </div>
       </div>
 
-      <!-- Warranty section -->
-      <div id="warranty-check-section" style="display:none;margin-bottom:10px;background:var(--amberbg);border:1px solid var(--amber);border-radius:8px;padding:12px 14px;">
+      <!-- WARRANTY -->
+      <div id="warranty-check-section" style="display:none;margin:10px 18px;background:var(--amberbg);border:1px solid var(--amber);border-radius:8px;padding:12px 14px;">
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;font-weight:500;color:var(--amber2);">
           <input type="checkbox" id="f-warranty-check" style="width:16px;height:16px;accent-color:var(--amber);cursor:pointer;" onchange="togWarrantyCheck()"/>
           ⚡ This is a warranty repair
@@ -927,47 +938,59 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
         <div id="warranty-check-result" style="margin-top:10px;display:none;"></div>
       </div>
 
+      <!-- NOTES — collapsible, at the bottom of Repair tab -->
+      <div onclick="toggleRepairSection('notes')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;cursor:pointer;border-top:1px solid var(--border);border-bottom:1px solid var(--border);user-select:none;transition:background .1s;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:var(--navy);flex-shrink:0;"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.6px;">Notes</div>
+              <span id="notes-tab-cnt" style="font-size:10px;background:var(--navy);color:#fff;border-radius:8px;padding:1px 6px;display:none;"></span>
+            </div>
+            <div id="notes-section-preview" style="font-size:10px;color:var(--text3);margin-top:1px;">No notes yet</div>
+          </div>
+        </div>
+        <svg id="chev-notes" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--text3);transition:transform .2s;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div id="rsec-notes" style="display:none;border-bottom:1px solid var(--border);">
+        <!-- Notes feed -->
+        <div id="ndisp" style="display:flex;flex-direction:column;gap:0;min-height:32px;"></div>
+        <!-- Activity log (hidden, still functional) -->
+        <div id="notes-activity-panel" style="display:none;"><div id="actlog" style="display:flex;flex-direction:column;gap:6px;padding:10px 18px;"></div></div>
+        <!-- Compose -->
+        <div style="padding:10px 18px;background:var(--bg2);border-top:1px solid var(--border);">
+          <div style="background:var(--bg);border:1px solid var(--border2);border-radius:10px;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;border-bottom:1px solid var(--border);">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;color:var(--text3);flex-shrink:0;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span style="font-size:11px;font-weight:600;color:var(--text3);">Posting as:</span>
+              <select id="note-author" style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:5px 9px;font-size:12px;font-family:'Geist',sans-serif;color:var(--text);outline:none;flex-shrink:0;">
+                <option value="">— Select —</option>
+                <option value="Saul">Saul</option>
+                <option value="David">David</option>
+                <option value="Juan">Juan</option>
+                <option value="Noemy">Noemy</option>
+              </select>
+            </div>
+            <textarea id="note-in" placeholder="Write a note… (Ctrl+Enter to post)" style="width:100%;min-height:68px;resize:vertical;background:var(--bg);border:none;padding:9px 11px;font-size:13px;font-family:'Geist',sans-serif;color:var(--text);outline:none;line-height:1.5;" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();notePreConfirm();}"></textarea>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-top:1px solid var(--border);">
+              <span id="note-char-count" style="font-size:10px;color:var(--text3);"></span>
+              <button class="btn blue" onclick="notePreConfirm()" style="padding:6px 14px;">Post Note</button>
+            </div>
+          </div>
+        </div>
+        <!-- hidden legacy -->
+        <div id="notes-internal-panel" style="display:none;"></div>
+        <div id="handoff-disp" style="display:none;"></div>
+        <input id="handoff-in" style="display:none;"/>
+      </div>
+
     </div><!-- /tc-repair -->
 
-    <!-- NOTES TAB — redesigned -->
-    <div class="tc" id="tc-notes">
-      <!-- Mini tabs: Internal / Activity -->
-      <div style="display:flex;border-bottom:1px solid var(--border);background:var(--bg2);margin:-15px -18px 14px;">
-        <div id="ntab-internal" onclick="switchNoteTab('internal')" style="padding:8px 16px;font-size:12px;font-weight:600;color:var(--navy);border-bottom:2px solid var(--navy);cursor:pointer;">
-          Internal <span id="ntab-internal-cnt" style="font-size:10px;background:var(--navy);color:#fff;border-radius:10px;padding:1px 7px;margin-left:4px;">0</span>
-        </div>
-        <div id="ntab-activity" onclick="switchNoteTab('activity')" style="padding:8px 16px;font-size:12px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer;">
-          Activity <span id="ntab-activity-cnt" style="font-size:10px;background:var(--bg3);color:var(--text3);border-radius:10px;padding:1px 7px;margin-left:4px;">0</span>
-        </div>
-      </div>
-
-      <!-- Internal notes feed -->
-      <div id="notes-internal-panel">
-        <div id="ndisp" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;min-height:32px;">
-          <em style="color:var(--text3);font-size:12px;">No notes yet.</em>
-        </div>
-        <!-- Input row -->
-        <div style="display:flex;gap:7px;align-items:center;">
-          <select id="note-author" style="background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:7px 9px;font-size:12px;font-family:'Geist',sans-serif;color:var(--text);outline:none;flex-shrink:0;">
-            <option value="">— Who? —</option>
-            <option value="Saul">Saul</option>
-            <option value="David">David</option>
-            <option value="Juan">Juan</option>
-            <option value="Noemy">Noemy</option>
-          </select>
-          <input class="ninput" id="note-in" placeholder="Write a note…" style="flex:1;" onkeydown="if(event.key==='Enter')addNote()"/>
-          <button class="btn blue" onclick="addNote()" style="padding:7px 13px;flex-shrink:0;">Post</button>
-        </div>
-      </div>
-
-      <!-- Activity log panel (hidden by default) -->
-      <div id="notes-activity-panel" style="display:none;">
-        <div id="actlog" style="display:flex;flex-direction:column;gap:6px;"></div>
-      </div>
-
-      <!-- hidden legacy compatibility -->
-      <div id="handoff-disp" style="display:none;"></div>
-      <input id="handoff-in" style="display:none;"/>
+    <!-- NOTES TAB — now empty shell for compatibility, hidden from tabs -->
+    <div class="tc" id="tc-notes" style="display:none!important;">
+      <div id="ntab-internal-cnt" style="display:none;">0</div>
+      <div id="ntab-activity-cnt" style="display:none;">0</div>
+      <div id="notes-internal-panel-legacy" style="display:none;"></div>
     </div>
 
     <!-- PRINT TAB -->
@@ -2545,6 +2568,12 @@ function openRepair(id){
     buildLabel(r);
     const payAmtEl=document.getElementById('pay-amt');if(payAmtEl)payAmtEl.value=r.Quote||'';
     renderAddonRows();buildReceipt();buildDropoff(r);
+    // Update collapsible section previews
+    updateDevicePreview();updateAssignPreview();
+    // Reset device/assign sections to collapsed, notes auto-expands via loadNotes
+    const sd=document.getElementById('rsec-device');if(sd){sd.style.display='none';const c=document.getElementById('chev-device');if(c)c.style.transform='';}
+    const sa=document.getElementById('rsec-assign');if(sa){sa.style.display='none';const c=document.getElementById('chev-assign');if(c)c.style.transform='';}
+    const sn=document.getElementById('rsec-notes');if(sn){sn.style.display='none';const c=document.getElementById('chev-notes');if(c)c.style.transform='';}
   } else {
     document.getElementById('ptitle').textContent='New Repair';
     document.getElementById('psub').textContent='';
@@ -2732,6 +2761,34 @@ function stab(t){
     if(r){buildLabel(r);buildDropoff(r);}
     buildReceipt();
   }
+}
+
+function toggleRepairSection(id){
+  const body=document.getElementById('rsec-'+id);
+  const chev=document.getElementById('chev-'+id);
+  if(!body)return;
+  const isOpen=body.style.display!=='none';
+  body.style.display=isOpen?'none':'block';
+  if(chev)chev.style.transform=isOpen?'':'rotate(180deg)';
+}
+
+function updateDevicePreview(){
+  const dev=document.getElementById('f-device')?.value||'';
+  const cat=document.getElementById('f-cat2')?.value||'';
+  const el=document.getElementById('device-section-preview');
+  if(!el)return;
+  if(dev||cat){el.textContent=[dev,cat].filter(Boolean).join(' · ');}
+  else{el.textContent='Tap to expand';}
+}
+
+function updateAssignPreview(){
+  const tech=document.getElementById('f-tech2')?.value||'';
+  const loc=document.getElementById('f-loc2')?.value||'';
+  const quote=document.getElementById('f-quote')?.value||'';
+  const el=document.getElementById('assign-section-preview');
+  if(!el)return;
+  const parts=[tech,loc,quote?'$'+parseFloat(quote).toFixed(2):''].filter(Boolean);
+  el.textContent=parts.length?parts.join(' · '):'Tap to expand';
 }
 
 function togQual(){
@@ -3020,70 +3077,58 @@ function logAct(r,text,author){
   r.ActivityLog.push({t:text,ts:nowTs(),by:author||getActiveUser()});
 }
 function loadNotes(r){
-  // Render structured notes (NotesArr) or fall back to legacy Notes string
   const ndisp=document.getElementById('ndisp');
+  const noteCnt=(r.NotesArr||[]).length||(r.Notes?r.Notes.split('\n').filter(Boolean).length:0);
   if(r.NotesArr&&r.NotesArr.length){
     ndisp.innerHTML=r.NotesArr.map(n=>{
       const c=empColor(n.by||'');
-      return `<div>
-        <div style="font-size:11px;font-weight:600;color:${c.text};margin-bottom:3px;padding-left:2px;">${escH(n.by||'Staff')}</div>
-        <div class="note-sticky" style="background:${c.bg};">
-          <div class="note-sticky-text">${escH(n.text)}</div>
-          <div class="note-sticky-time">${n.ts||''}</div>
+      return `<div style="padding:10px 18px;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:${c.bg};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:${c.text||'#fff'};flex-shrink:0;">${(n.by||'?').slice(0,2).toUpperCase()}</div>
+          <span style="font-size:12px;font-weight:600;color:var(--text);">${escH(n.by||'Staff')}</span>
+          <span style="font-size:11px;color:var(--text3);">· ${n.ts||''}</span>
         </div>
+        <div style="font-size:13px;color:var(--text);line-height:1.55;padding-left:29px;white-space:pre-wrap;">${escH(n.text)}</div>
       </div>`;
     }).join('');
   } else if(r.Notes){
-    // Legacy plain text notes — parse and render
     const lines=r.Notes.split('\n').filter(Boolean);
     ndisp.innerHTML=lines.map(line=>{
       const m=line.match(/^\[(.+?) — (.+?)\] (.+)$/);
       if(m){
         const c=empColor(m[2]);
-        return `<div>
-          <div style="font-size:11px;font-weight:600;color:${c.text};margin-bottom:3px;padding-left:2px;">${escH(m[2])}</div>
-          <div class="note-sticky" style="background:${c.bg};">
-            <div class="note-sticky-text">${escH(m[3])}</div>
-            <div class="note-sticky-time">${m[1]}</div>
+        return `<div style="padding:10px 18px;border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;">
+            <div style="width:22px;height:22px;border-radius:50%;background:${c.bg};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:${c.text||'#fff'};flex-shrink:0;">${m[2].slice(0,2).toUpperCase()}</div>
+            <span style="font-size:12px;font-weight:600;color:var(--text);">${escH(m[2])}</span>
+            <span style="font-size:11px;color:var(--text3);">· ${m[1]}</span>
           </div>
+          <div style="font-size:13px;color:var(--text);line-height:1.55;padding-left:29px;">${escH(m[3])}</div>
         </div>`;
       }
-      return `<div class="note-sticky" style="background:var(--bg3);"><div class="note-sticky-text" style="color:var(--text);">${escH(line)}</div></div>`;
+      return `<div style="padding:10px 18px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text);">${escH(line)}</div>`;
     }).join('');
   } else {
-    ndisp.innerHTML='<em style="color:var(--text3);font-size:12px;">No notes yet.</em>';
+    ndisp.innerHTML='<div style="padding:12px 18px;font-size:12px;color:var(--text3);font-style:italic;">No notes yet.</div>';
   }
-  // Update internal count badge
-  const intCnt=document.getElementById('ntab-internal-cnt');
-  if(intCnt){const c=(r.NotesArr||[]).length||(r.Notes?r.Notes.split('\n').filter(Boolean).length:0);intCnt.textContent=c;}
-
-  // Render activity log
+  const tabCnt=document.getElementById('notes-tab-cnt');
+  if(tabCnt){if(noteCnt>0){tabCnt.textContent=noteCnt;tabCnt.style.display='inline';}else{tabCnt.style.display='none';}}
+  const preview=document.getElementById('notes-section-preview');
+  if(preview){
+    if(noteCnt>0){const last=r.NotesArr?r.NotesArr[r.NotesArr.length-1]:null;preview.textContent=last?`${last.by} · ${last.text.slice(0,40)}${last.text.length>40?'…':''}`:noteCnt+' note'+(noteCnt>1?'s':'');}
+    else{preview.textContent='No notes yet';}
+  }
+  const notesSec=document.getElementById('rsec-notes');
+  const notesChev=document.getElementById('chev-notes');
+  if(notesSec&&noteCnt>0&&notesSec.style.display==='none'){notesSec.style.display='block';if(notesChev)notesChev.style.transform='rotate(180deg)';}
   const al=document.getElementById('actlog');
   if(al){
     al.innerHTML='';
-    const actCnt=document.getElementById('ntab-activity-cnt');
-    if(actCnt)actCnt.textContent=(r.ActivityLog||[]).length;
     (r.ActivityLog||[]).slice().reverse().forEach(a=>{
       const d=document.createElement('div');d.className='aitem';
       d.innerHTML=`<div class="adot"></div><div style="flex:1;"><div class="atext">${escH(a.t)}</div><div style="display:flex;gap:8px;margin-top:2px;"><span class="ats">${a.ts||''}</span>${a.by?`<span class="aby">· ${escH(a.by)}</span>`:''}</div></div>`;
       al.appendChild(d);
     });
-  }
-}
-
-function switchNoteTab(tab){
-  const iPanel=document.getElementById('notes-internal-panel');
-  const aPanel=document.getElementById('notes-activity-panel');
-  const iTab=document.getElementById('ntab-internal');
-  const aTab=document.getElementById('ntab-activity');
-  if(tab==='internal'){
-    iPanel.style.display='block';aPanel.style.display='none';
-    iTab.style.color='var(--navy)';iTab.style.borderBottomColor='var(--navy)';iTab.style.fontWeight='600';
-    aTab.style.color='var(--text3)';aTab.style.borderBottomColor='transparent';aTab.style.fontWeight='500';
-  } else {
-    iPanel.style.display='none';aPanel.style.display='block';
-    aTab.style.color='var(--navy)';aTab.style.borderBottomColor='var(--navy)';aTab.style.fontWeight='600';
-    iTab.style.color='var(--text3)';iTab.style.borderBottomColor='transparent';iTab.style.fontWeight='500';
   }
 }
 async function addNote(){
