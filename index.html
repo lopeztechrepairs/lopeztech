@@ -972,10 +972,10 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
                 <option value="Noemy">Noemy</option>
               </select>
             </div>
-            <textarea id="note-in" placeholder="Write a note… (Ctrl+Enter to post)" style="width:100%;min-height:68px;resize:vertical;background:var(--bg);border:none;padding:9px 11px;font-size:13px;font-family:'Geist',sans-serif;color:var(--text);outline:none;line-height:1.5;" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();notePreConfirm();}"></textarea>
+            <textarea id="note-in" placeholder="Write a note… (Ctrl+Enter to post)" style="width:100%;min-height:68px;resize:vertical;background:var(--bg);border:none;padding:9px 11px;font-size:13px;font-family:'Geist',sans-serif;color:var(--text);outline:none;line-height:1.5;" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();addNote();}"></textarea>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-top:1px solid var(--border);">
               <span id="note-char-count" style="font-size:10px;color:var(--text3);"></span>
-              <button class="btn blue" onclick="notePreConfirm()" style="padding:6px 14px;">Post Note</button>
+              <button class="btn blue" onclick="addNote()" style="padding:6px 14px;">Post Note</button>
             </div>
           </div>
         </div>
@@ -3146,6 +3146,7 @@ async function addNote(){
   r.Notes=(r.Notes?r.Notes+'\n':'')+`[${nowTs()} — ${author}] ${note}`;
   logAct(r,`${author} left a note`,author);
   document.getElementById('note-in').value='';
+  const cc=document.getElementById('note-char-count');if(cc)cc.textContent='';
   loadNotes(r);upPrev();toast('Note added','ok');
   schedulePush();
 }
