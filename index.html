@@ -753,8 +753,9 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 
     <!-- TABS — Customer moved to header chip -->
     <div class="ptabs">
+      <div class="ptab" onclick="stab('customer')">Customer</div>
       <div class="ptab active" onclick="stab('repair')">Repair</div>
-      <div class="ptab" onclick="stab('notes')">Notes <span id="notes-tab-cnt" style="font-size:10px;background:var(--navy);color:#fff;border-radius:8px;padding:1px 6px;margin-left:2px;display:none;"></span></div>
+      <div class="ptab" onclick="stab('activity')">Activity</div>
       <div class="ptab" onclick="stab('print')">Print</div>
     </div>
 
@@ -957,8 +958,6 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
       <div id="rsec-notes" style="display:none;border-bottom:1px solid var(--border);">
         <!-- Notes feed -->
         <div id="ndisp" style="display:flex;flex-direction:column;gap:0;min-height:32px;"></div>
-        <!-- Activity log (hidden, still functional) -->
-        <div id="notes-activity-panel" style="display:none;"><div id="actlog" style="display:flex;flex-direction:column;gap:6px;padding:10px 18px;"></div></div>
         <!-- Compose -->
         <div style="padding:10px 18px;background:var(--bg2);border-top:1px solid var(--border);">
           <div style="background:var(--bg);border:1px solid var(--border2);border-radius:10px;overflow:hidden;">
@@ -988,11 +987,14 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 
     </div><!-- /tc-repair -->
 
-    <!-- NOTES TAB — now empty shell for compatibility, hidden from tabs -->
-    <div class="tc" id="tc-notes" style="display:none!important;">
-      <div id="ntab-internal-cnt" style="display:none;">0</div>
-      <div id="ntab-activity-cnt" style="display:none;">0</div>
-      <div id="notes-internal-panel-legacy" style="display:none;"></div>
+    <!-- ACTIVITY TAB — shows the repair activity log -->
+    <div class="tc" id="tc-activity">
+      <div style="padding:12px 18px 6px;border-bottom:1px solid var(--border);">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);">Repair Activity Log</div>
+      </div>
+      <div id="actlog" style="display:flex;flex-direction:column;gap:6px;padding:12px 18px;min-height:60px;">
+        <em style="font-size:12px;color:var(--text3);">No activity yet.</em>
+      </div>
     </div>
 
     <!-- PRINT TAB -->
@@ -2500,7 +2502,7 @@ function openRepair(id){
   editId=id;addons=[];
   document.getElementById('panel-ov').classList.add('open');
   custResetTab();
-  stab('repair');renderTemplates();
+  stab(id?'repair':'customer');renderTemplates();
   setTimeout(()=>{syncStatusPillFromSelect();},50);
 
   if(id){
@@ -2753,7 +2755,7 @@ function syncStatusPillFromSelect(){
 }
 
 function stab(t){
-  document.querySelectorAll('.ptab').forEach((el,i)=>el.classList.toggle('active',['repair','notes','print'][i]===t));
+  document.querySelectorAll('.ptab').forEach((el,i)=>el.classList.toggle('active',['customer','repair','activity','print'][i]===t));
   document.querySelectorAll('.tc').forEach(el=>el.classList.remove('active'));
   const savebar=document.getElementById('p-savebar');
   if(savebar) savebar.style.display = t==='repair'?'flex':'none';
@@ -2869,7 +2871,7 @@ async function saveRepair(){
       const cname_e=document.getElementById('f-cname').value.trim();
       const dev_e=document.getElementById('f-device').value.trim();
       const cat_e=document.getElementById('f-cat2').value;
-      if(!cname_e){toast('Customer name required','err');stab('repair');return;}
+      if(!cname_e){toast('Customer name required','err');stab('customer');return;}
       if(!dev_e||!cat_e){toast('Device and category required','err');stab('repair');return;}
       // Create the repair with holding status then open popup
       const loc_e=document.getElementById('f-loc2').value;
@@ -2901,7 +2903,7 @@ async function saveRepair(){
   const cname=document.getElementById('f-cname').value.trim();
   const dev=document.getElementById('f-device').value.trim();
   const cat=document.getElementById('f-cat2').value;
-  if(!cname){toast('Customer name is required','err');stab('repair');return;}
+  if(!cname){toast('Customer name is required','err');stab('customer');return;}
   if(!dev||!cat){toast('Device and category required','err');stab('repair');return;}
   const tech=document.getElementById('f-tech2').value;
   if(!tech){
