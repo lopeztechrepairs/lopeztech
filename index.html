@@ -456,8 +456,10 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 .p-summary-badges{display:flex;gap:5px;flex-wrap:wrap;}
 .p-sum-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;border:1px solid;}
 /* Status pills */
-.status-pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
-.spill{font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text3);transition:all .15s;user-select:none;}
+.status-pills{display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;cursor:grab;padding-bottom:3px;margin-bottom:11px;}
+.status-pills::-webkit-scrollbar{display:none;}
+.status-pills.dragging{cursor:grabbing;}
+.spill{font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text3);transition:all .15s;user-select:none;flex-shrink:0;white-space:nowrap;}
 .spill:hover{border-color:var(--border2);color:var(--text);}
 .spill.active-intake{background:#f1f0fe;color:#4c2fad;border-color:#a39be8;}
 .spill.active-progress{background:var(--redbg);color:var(--red2);border-color:var(--red);}
@@ -843,7 +845,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
         <div class="p-summary-name" id="rpname">—</div>
         <div class="p-summary-badges" id="p-summary-badges"></div>
       </div>
-      <div id="rprev" style="display:none;"><div id="rpqual"></div><div id="rpid"></div></div>
+      <div id="rprev" style="display:none!important;"><div id="rpqual"></div><div id="rpid"></div></div>
 
       <!-- STATUS — always visible -->
       <div style="padding:12px 18px 10px;border-bottom:1px solid var(--border);">
@@ -2826,11 +2828,13 @@ function upPrev(){
                         status==='In Progress'?'background:#fff5f5;color:#a61e1e;border:1px solid #c92a2a':
                         status==='Dispatched to Specialist'?'background:#f3f0ff;color:#4c2fad;border:1px solid #6741d9':
                         'background:var(--bg3);color:var(--text3);border:1px solid var(--border)';
+      const noteCnt=editId?(()=>{const r=repairs.find(x=>x.ID===editId);return r?((r.NotesArr||[]).length||(r.Notes?r.Notes.split('\n').filter(Boolean).length:0)):0;})():0;
       badgesEl.innerHTML=
         (status?`<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;${statusColor}">${status}</span>`:'')
         +(tech?`<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:var(--bg3);color:var(--text2);border:1px solid var(--border)">👤 ${tech}</span>`:'')
         +(loc?`<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:var(--bg3);color:var(--text2);border:1px solid var(--border)">📍 ${loc}</span>`:'')
-        +(quote?`<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:var(--greenbg);color:var(--green2);border:1px solid var(--green)">$${parseFloat(quote).toFixed(2)}</span>`:'');
+        +(quote?`<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:var(--greenbg);color:var(--green2);border:1px solid var(--green)">$${parseFloat(quote).toFixed(2)}</span>`:'')
+        +(noteCnt>0?`<span onclick="toggleRepairSection('notes')" style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:var(--bluebg);color:var(--blue2);border:1px solid var(--blue);cursor:pointer;" title="${noteCnt} note${noteCnt>1?'s':''}"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>${noteCnt}</span>`:'');
     }
   }
   // keep legacy rpqual/rpid for any other code that reads them
@@ -3150,7 +3154,7 @@ async function addNote(){
   r.Notes=(r.Notes?r.Notes+'\n':'')+`[${nowTs()} — ${author}] ${note}`;
   logAct(r,`${author} left a note`,author);
   document.getElementById('note-in').value='';
-  loadNotes(r);toast('Note added','ok');
+  loadNotes(r);upPrev();toast('Note added','ok');
   schedulePush();
 }
 async function addHandoff(){
@@ -6188,5 +6192,38 @@ async function slConfirmSync(){
   </div>
 </div>
 
+<script>
+// Drag-to-scroll for status pills
+(function(){
+  let el,dragging=false,startX=0,scrollLeft=0;
+  document.addEventListener('mousedown',function(e){
+    el=e.target.closest('.status-pills');
+    if(!el)return;
+    dragging=true;startX=e.pageX-el.offsetLeft;scrollLeft=el.scrollLeft;
+    el.classList.add('dragging');
+  });
+  document.addEventListener('mouseup',function(){
+    if(el)el.classList.remove('dragging');
+    dragging=false;
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!dragging||!el)return;
+    e.preventDefault();
+    const x=e.pageX-el.offsetLeft;
+    el.scrollLeft=scrollLeft-(x-startX);
+  });
+  // Touch support
+  document.addEventListener('touchstart',function(e){
+    el=e.target.closest('.status-pills');
+    if(!el)return;
+    startX=e.touches[0].pageX-el.offsetLeft;scrollLeft=el.scrollLeft;
+  },{passive:true});
+  document.addEventListener('touchmove',function(e){
+    if(!el)return;
+    const x=e.touches[0].pageX-el.offsetLeft;
+    el.scrollLeft=scrollLeft-(x-startX);
+  },{passive:true});
+})();
+</script>
 </body>
 </html>
