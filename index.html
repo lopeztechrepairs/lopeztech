@@ -709,7 +709,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
     <div class="ptabs">
       <div class="ptab active" onclick="stab('customer')">Customer</div>
       <div class="ptab" onclick="stab('repair')">Repair</div>
-      <div class="ptab" onclick="stab('notes')">Notes</div>
+      <div class="ptab" onclick="stab('notes')">Notes <span id="notes-tab-cnt" style="font-size:10px;background:var(--bg3);color:var(--text3);border-radius:8px;padding:1px 6px;margin-left:2px;display:none;"></span></div>
       <div class="ptab" onclick="stab('print')">Print</div>
     </div>
 
@@ -903,17 +903,24 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
         <div id="ndisp" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;min-height:32px;">
           <em style="color:var(--text3);font-size:12px;">No notes yet.</em>
         </div>
-        <!-- Input row -->
-        <div style="display:flex;gap:7px;align-items:center;">
-          <select id="note-author" style="background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:7px 9px;font-size:12px;font-family:'Geist',sans-serif;color:var(--text);outline:none;flex-shrink:0;">
-            <option value="">— Who? —</option>
-            <option value="Saul">Saul</option>
-            <option value="David">David</option>
-            <option value="Juan">Juan</option>
-            <option value="Noemy">Noemy</option>
-          </select>
-          <input class="ninput" id="note-in" placeholder="Write a note…" style="flex:1;" onkeydown="if(event.key==='Enter')addNote()"/>
-          <button class="btn blue" onclick="addNote()" style="padding:7px 13px;flex-shrink:0;">Post</button>
+        <!-- Compose area -->
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--text3);flex-shrink:0;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span style="font-size:11px;font-weight:600;color:var(--text3);">Posting as:</span>
+            <select id="note-author" style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:5px 9px;font-size:12px;font-family:'Geist',sans-serif;color:var(--text);outline:none;flex-shrink:0;">
+              <option value="">— Select —</option>
+              <option value="Saul">Saul</option>
+              <option value="David">David</option>
+              <option value="Juan">Juan</option>
+              <option value="Noemy">Noemy</option>
+            </select>
+          </div>
+          <textarea id="note-in" placeholder="Write a note… (Ctrl+Enter to post)" style="width:100%;min-height:72px;resize:vertical;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:9px 11px;font-size:13px;font-family:'Geist',sans-serif;color:var(--text);outline:none;transition:border-color .15s;line-height:1.5;" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();notePreConfirm();}"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+            <span id="note-char-count" style="font-size:10px;color:var(--text3);"></span>
+            <button class="btn blue" onclick="notePreConfirm()" style="padding:7px 16px;">Post Note</button>
+          </div>
         </div>
       </div>
 
@@ -2104,6 +2111,9 @@ function kanbanCard(r,sec){
   const dw=rd>=28?`<span style="font-size:9px;color:var(--red);font-weight:700;margin-left:4px;">⚠ ${rd}d</span>`:'';
   const emp=(r.AssignedTo||'—').split(' ')[0];
   const showQ=cu?.role==='admin';
+  const noteCnt=(r.NotesArr||[]).length||(r.Notes?r.Notes.split('\n').filter(Boolean).length:0);
+  const noteBadge=noteCnt>0?`<span onclick="event.stopPropagation();openRepairTab('${r.ID}','notes')" title="${noteCnt} note${noteCnt>1?'s':''}" style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px;background:var(--bluebg);color:var(--blue);border:1px solid var(--blue);cursor:pointer;margin-left:auto;">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>${noteCnt}</span>`:'';
   return `<div class="kcard" style="border-left-color:${sec.color};" onclick="openRepairTab('${r.ID}','repair')">
     <div class="kcard-name">${r.RepairName||r.Device||'—'}${wb}${fl}${dw}</div>
     <div class="kcard-cust" onclick="event.stopPropagation();showCustCard(this.dataset.name)" data-name="${r.CustomerName||''}">${r.CustomerName||'—'}</div>
@@ -2111,6 +2121,7 @@ function kanbanCard(r,sec){
       <span class="kcard-emp">${emp}</span>
       ${showQ&&r.Quote?`<span class="kcard-amt">$${parseFloat(r.Quote).toFixed(2)}</span>`:'<span></span>'}
       <span class="kcard-age ${ac}">${age}d</span>
+      ${noteBadge}
     </div>
   </div>`;
 }
@@ -2408,6 +2419,15 @@ document.addEventListener('click',e=>{
   if(!e.target.closest('.dev-wrap'))document.getElementById('dev-drop')?.classList.remove('open');
 });
 
+// Note textarea char counter
+document.addEventListener('input',e=>{
+  if(e.target.id==='note-in'){
+    const len=e.target.value.length;
+    const el=document.getElementById('note-char-count');
+    if(el) el.textContent=len>0?`${len} char${len>1?'s':''}`:''
+  }
+});
+
 // ── GOOGLE VOICE ──
 function notifyVoice(id){
   if(!checkRole('user'))return;
@@ -2500,6 +2520,9 @@ function openRepair(id){
     buildLabel(r);
     const payAmtEl=document.getElementById('pay-amt');if(payAmtEl)payAmtEl.value=r.Quote||'';
     renderAddonRows();buildReceipt();buildDropoff(r);
+    // Auto-open Notes tab if repair already has notes
+    const hasNotes=(r.NotesArr&&r.NotesArr.length)||(r.Notes&&r.Notes.trim());
+    if(hasNotes){setTimeout(()=>stab('notes'),60);}
   } else {
     document.getElementById('ptitle').textContent='New Repair';
     document.getElementById('psub').textContent='';
@@ -2949,6 +2972,13 @@ function loadNotes(r){
   // Update internal count badge
   const intCnt=document.getElementById('ntab-internal-cnt');
   if(intCnt){const c=(r.NotesArr||[]).length||(r.Notes?r.Notes.split('\n').filter(Boolean).length:0);intCnt.textContent=c;}
+  // Update Notes tab label badge
+  const tabCnt=document.getElementById('notes-tab-cnt');
+  if(tabCnt){
+    const c=(r.NotesArr||[]).length||(r.Notes?r.Notes.split('\n').filter(Boolean).length:0);
+    if(c>0){tabCnt.textContent=c;tabCnt.style.display='inline';tabCnt.style.background='var(--navy)';tabCnt.style.color='#fff';}
+    else{tabCnt.style.display='none';}
+  }
 
   // Render activity log
   const al=document.getElementById('actlog');
@@ -2979,7 +3009,7 @@ function switchNoteTab(tab){
     iTab.style.color='var(--text3)';iTab.style.borderBottomColor='transparent';iTab.style.fontWeight='500';
   }
 }
-async function addNote(){
+function notePreConfirm(){
   if(!checkRole('user'))return;
   if(!requireActiveUser())return;
   const note=document.getElementById('note-in').value.trim();if(!note||!editId)return;
@@ -2990,6 +3020,21 @@ async function addNote(){
     if(na){na.style.border='2px solid var(--red)';na.focus();na.onchange=function(){na.style.border='';};}
     return;
   }
+  // Populate confirm modal
+  const c=empColor(author);
+  const av=document.getElementById('note-confirm-avatar');
+  if(av){av.textContent=author.slice(0,2).toUpperCase();av.style.background=c.bg;av.style.color=c.text||'#fff';}
+  const nm=document.getElementById('note-confirm-name');if(nm)nm.textContent=author;
+  const prev=document.getElementById('note-confirm-preview');if(prev)prev.textContent=note;
+  const ts=document.getElementById('note-confirm-ts');if(ts)ts.textContent=nowTs();
+  document.getElementById('note-confirm-modal').classList.add('open');
+}
+async function addNote(){
+  if(!checkRole('user'))return;
+  if(!requireActiveUser())return;
+  const note=document.getElementById('note-in').value.trim();if(!note||!editId)return;
+  const author=document.getElementById('note-author')?.value||'';
+  if(!author){toast('Select who is leaving this note','err');return;}
   const r=repairs.find(x=>x.ID===editId);if(!r)return;
   // Store notes as structured array
   if(!r.NotesArr)r.NotesArr=[];
@@ -2998,6 +3043,8 @@ async function addNote(){
   r.Notes=(r.Notes?r.Notes+'\n':'')+`[${nowTs()} — ${author}] ${note}`;
   logAct(r,`${author} left a note`,author);
   document.getElementById('note-in').value='';
+  document.getElementById('note-char-count').textContent='';
+  closeM('note-confirm-modal');
   loadNotes(r);toast('Note added','ok');
   schedulePush();
 }
@@ -6014,6 +6061,31 @@ async function slConfirmSync(){
         <button class="btn blue" onclick="slSubmit()" id="sl-submit-btn" style="padding:10px 24px;font-size:14px;">Submit Shift Log</button>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- NOTE CONFIRM MODAL -->
+<div class="cov" id="note-confirm-modal">
+  <div class="cmodal" style="max-width:420px;">
+    <div class="chd">
+      <div class="ctitle">📝 Confirm Note</div>
+      <button class="cclose" onclick="closeM('note-confirm-modal')">✕</button>
+    </div>
+    <div class="cbody">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div id="note-confirm-avatar" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;background:var(--navy);"></div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);" id="note-confirm-name">Saul</div>
+          <div style="font-size:11px;color:var(--text3);">will be posted on this repair</div>
+        </div>
+      </div>
+      <div id="note-confirm-preview" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;max-height:160px;overflow-y:auto;margin-bottom:6px;"></div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:18px;" id="note-confirm-ts"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button class="btn" onclick="closeM('note-confirm-modal')">Cancel</button>
+        <button class="btn blue" onclick="addNote()" style="padding:9px 22px;">✓ Post Note</button>
+      </div>
     </div>
   </div>
 </div>
