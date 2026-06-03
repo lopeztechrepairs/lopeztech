@@ -3954,6 +3954,7 @@ function renderDeletedPage(pg){
               <span style="font-size:11px;color:var(--text3);">Auto-purges after 30 days</span>
               <button class="btn sm" onclick="selectAllDeleted()" style="font-size:10px;padding:3px 9px;">Select All</button>
               <button class="btn sm red" id="del-log-btn" onclick="removeFromLog()" style="font-size:10px;padding:3px 9px;display:none;">🗑 Remove Selected</button>
+              ${cu&&cu.role==='admin'?`<button class="btn sm red" onclick="wipeAllDeleted()" style="font-size:10px;padding:3px 9px;background:var(--red);color:#fff;border-color:var(--red);">💥 Wipe All</button>`:''}
             </div>
           </div>
           ${pruned.map((d,i)=>{
@@ -4014,12 +4015,56 @@ async function removeFromLog(){
   const deleted=lsLoad(LS_DEL,[]);
   const cutoff=new Date(Date.now()-30*86400000).toISOString();
   const pruned=deleted.filter(x=>x.DeletedAt>cutoff);
-  // IDs to fully wipe from Firebase
   const toWipe=new Set(pruned.filter((_,i)=>selectedDeleted.has(i)).map(x=>x.ID));
   const toKeep=pruned.filter((_,i)=>!selectedDeleted.has(i));
 
-  // Wipe from Firebase
   if(hasCloud()&&toWipe.size>0){
+    try{
+      // Wipe from Firebase repairs node
+      const res=await fetch(getFbUrl()+'/lopeztechrepairs/repairs.json?auth='+getFbKey());
+      const data=await res.json();
+      const all=data?(Array.isArray(data)?data:Object.values(data)).filter(Boolean):[];
+      const remaining=all.filter(r=>!toWipe.has(r.ID));
+      await fetch(getFbUrl()+'/lopeztechrepairs/repairs.json?auth='+getFbKey(),{
+        method:'PUT',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(remaining)
+      });
+      // Also overwrite Firebase deleted node so auto-pull doesn't bring them back
+      await fetch(getFbUrl()+'/lopeztechrepairs/deleted.json?auth='+getFbKey(),{
+        method:'PUT',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(toKeep)
+      });
+    } catch(e){
+      toast('Firebase delete failed: '+e.message,'err');
+      return;
+    }
+  }
+
+  // Update in-memory repairs so nothing re-appears
+  repairs=repairs.filter(r=>!toWipe.has(r.ID));
+  lsSave(LS_R,repairs);
+  lsSave(LS_DEL,toKeep);
+  selectedDeleted.clear();
+
+  toast(`${toWipe.size} repair${toWipe.size>1?'s':''} permanently wiped`,'ok');
+  renderRepairs();updateStats();
+  const pg=document.getElementById('view-deleted');
+  if(pg)renderDeletedPage(pg);
+  const nb=document.getElementById('nb-deleted');
+  if(nb)nb.textContent=toKeep.length;
+}
+
+async function wipeAllDeleted(){
+  if(!checkRole('admin')){toast('Admin only','err');return;}
+  const deleted=lsLoad(LS_DEL,[]);
+  const cutoff=new Date(Date.now()-30*86400000).toISOString();
+  const pruned=deleted.filter(x=>x.DeletedAt>cutoff);
+  if(!pruned.length){toast('Nothing to wipe','warn');return;}
+  if(!confirm(`Permanently wipe ALL ${pruned.length} deleted repair${pruned.length>1?'s':''} from Firebase and the log? This cannot be undone.`))return;
+
+  const toWipe=new Set(pruned.map(x=>x.ID));
+
+  if(hasCloud()){
     try{
       const res=await fetch(getFbUrl()+'/lopeztechrepairs/repairs.json?auth='+getFbKey());
       const data=await res.json();
@@ -4029,21 +4074,28 @@ async function removeFromLog(){
         method:'PUT',headers:{'Content-Type':'application/json'},
         body:JSON.stringify(remaining)
       });
-      toast(`${toWipe.size} repair${toWipe.size>1?'s':''} permanently deleted from Firebase`,'ok');
+      // Wipe Firebase deleted node entirely
+      await fetch(getFbUrl()+'/lopeztechrepairs/deleted.json?auth='+getFbKey(),{
+        method:'PUT',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify([])
+      });
     } catch(e){
-      toast('Firebase delete failed: '+e.message,'err');
+      toast('Firebase wipe failed: '+e.message,'err');
       return;
     }
   }
 
-  lsSave(LS_DEL,toKeep);
+  repairs=repairs.filter(r=>!toWipe.has(r.ID));
+  lsSave(LS_R,repairs);
+  lsSave(LS_DEL,[]);
   selectedDeleted.clear();
+
+  toast(`All ${toWipe.size} deleted repair${toWipe.size>1?'s':''} permanently wiped`,'ok');
+  renderRepairs();updateStats();
   const pg=document.getElementById('view-deleted');
   if(pg)renderDeletedPage(pg);
   const nb=document.getElementById('nb-deleted');
-  if(nb)nb.textContent=toKeep.length;
-  // Refresh local repairs list
-  if(hasCloud()) pullFromCloud();
+  if(nb)nb.textContent=0;
 }
 
 function restoreFromSearch(id, deletedAt){
