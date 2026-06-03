@@ -2846,19 +2846,9 @@ function upPrev(){
   OLD_upPrev_body();
 }
 function OLD_upPrev_body(){
+  // quality text and ticket ID removed — only keep togQual/togMiscDesc
   togQual();togMiscDesc();
-  const dev=document.getElementById('f-device').value.trim();
-  const cat=document.getElementById('f-cat2').value;
-  const qual=document.getElementById('f-qual').value;
-  const loc=document.getElementById('f-loc2').value;
-  const misc=document.getElementById('f-misc-desc')?.value.trim()||'';
-  const showQ=document.getElementById('qualfield').style.display!=='none';
-  if(!dev){document.getElementById('rprev').style.display='none';return;}
-  // Repair title is exactly what user typed — no category appended
-  document.getElementById('rprev').style.display='block';
-  document.getElementById('rpname').textContent=dev||'—';
-  document.getElementById('rpqual').textContent=showQ?qual:cat==='Misc. Labor'&&misc?misc:'';
-  document.getElementById('rpid').textContent=editId||(loc==='Crosby'?'CRO':'DAY')+'-???';
+  document.getElementById('rprev').style.display='none';
 }
 
 function calcM(){ /* parts cost section removed */ }
