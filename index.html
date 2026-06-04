@@ -5626,10 +5626,11 @@ function slCalcEntry(){
   var tax = (pay==='Credit/Debit') ? combinedAmt*0.0825 : 0;
   var total = combinedAmt + tax + tip;
   var prev = document.getElementById('sl-entry-preview');
-  if(amt>0){
+  if(amt>0||tip>0){
     var parts = [];
-    if(bundledPrice>0) parts.push('Repair $'+amt.toFixed(2)+' + Acc $'+bundledPrice.toFixed(2));
-    if(pay==='Credit/Debit') parts.push('<span style="color:var(--amber);">Tax $'+tax.toFixed(2)+'</span>');
+    if(amt>0&&bundledPrice>0) parts.push('Repair $'+amt.toFixed(2)+' + Acc $'+bundledPrice.toFixed(2));
+    else if(amt>0) parts.push('$'+amt.toFixed(2));
+    if(pay==='Credit/Debit'&&amt>0) parts.push('<span style="color:var(--amber);">Tax $'+tax.toFixed(2)+'</span>');
     if(tip>0) parts.push('Tip $'+tip.toFixed(2));
     prev.innerHTML = (parts.length ? parts.join(' · ') + ' → ' : '') + '<strong>Total $'+total.toFixed(2)+'</strong>';
   } else {
@@ -5678,7 +5679,7 @@ function slAddEntry(){
   var loc  = document.getElementById('sl-loc').value;
 
   if(!name){ toast('Enter an item or repair name','err'); document.getElementById('sl-name').focus(); return; }
-  if(amt<=0){ toast('Enter an amount','err'); document.getElementById('sl-amount').focus(); return; }
+  if(amt<=0 && tip<=0){ toast('Enter an amount or tip','err'); document.getElementById('sl-tip').focus(); return; }
   if(!loc){ toast('Select a location','err'); const el=document.getElementById('sl-loc'); if(el){el.style.border='2px solid var(--red)';el.focus();el.onchange=function(){el.style.border='';};} return; }
 
   // Check for bundled accessory
