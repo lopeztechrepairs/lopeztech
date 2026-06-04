@@ -220,10 +220,11 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 .ret-btns{display:flex;gap:6px;flex-wrap:wrap;}
 
 /* PANEL */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:200;display:none;justify-content:flex-end;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;}
 .overlay.open{display:flex;}
-.panel{width:540px;max-width:96vw;height:100vh;background:var(--bg);border-left:1px solid var(--border);overflow:hidden;box-shadow:-6px 0 24px rgba(0,0,0,.14);animation:pin .2s ease;display:flex;flex-direction:column;}
-@keyframes pin{from{transform:translateX(20px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.panel{width:600px;max-width:96vw;max-height:92vh;background:var(--bg);border-radius:16px;border:1px solid var(--border);overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.28);animation:pfade .2s ease;display:flex;flex-direction:column;}
+@keyframes pfade{from{transform:scale(.97) translateY(8px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+@keyframes pin{from{transform:scale(.97) translateY(8px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
 .phd{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg);position:sticky;top:0;z-index:5;}
 .ptitle{font-size:15px;font-weight:600;color:var(--text);}
 .psub{font-size:10px;color:var(--text3);margin-top:2px;font-family:'Geist Mono',monospace;}
@@ -434,7 +435,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 
 
 /* ── REDESIGNED REPAIR PANEL ── */
-.panel{width:540px;max-width:96vw;height:100vh;background:var(--bg);border-left:1px solid var(--border);display:flex;flex-direction:column;box-shadow:-6px 0 24px rgba(0,0,0,.14);animation:pin .2s ease;}
+.panel{width:600px;max-width:96vw;max-height:92vh;background:var(--bg);border-radius:16px;border:1px solid var(--border);display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.28);animation:pfade .2s ease;}
 .phd{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg);position:sticky;top:0;z-index:5;}
 .ptitle{font-size:15px;font-weight:700;color:var(--text);}
 .psub{font-size:10px;color:var(--text3);margin-top:2px;font-family:'Geist Mono',monospace;}
@@ -449,7 +450,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 .ptab:hover:not(.active){color:var(--text);}
 .tc{display:none;padding:15px 18px;}
 .tc.active{display:block;}
-.panel-body{flex:1;overflow-y:auto;min-height:0;}
+.panel-body{flex:1;overflow-y:auto;min-height:0;overscroll-behavior:contain;}
 /* Summary card */
 .p-summary{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:14px;}
 .p-summary-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:7px;line-height:1.3;}
@@ -751,9 +752,9 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
       </div>
     </div>
 
-    <!-- TABS — Customer moved to header chip -->
+    <!-- TABS -->
     <div class="ptabs">
-      <div class="ptab" onclick="stab('customer')">Customer</div>
+      <div class="ptab" id="tab-customer" onclick="stab('customer')">Customer</div>
       <div class="ptab active" onclick="stab('repair')">Repair</div>
       <div class="ptab" onclick="stab('activity')">Activity</div>
       <div class="ptab" onclick="stab('print')">Print</div>
@@ -2502,7 +2503,20 @@ function openRepair(id){
   editId=id;addons=[];
   document.getElementById('panel-ov').classList.add('open');
   custResetTab();
-  stab(id?'repair':'customer');renderTemplates();
+
+  // Customer tab: visible for new repairs only, hidden for existing
+  const custTab=document.getElementById('tab-customer');
+  const custChip=document.getElementById('cust-chip');
+  if(id){
+    if(custTab)custTab.style.display='none';
+    if(custChip)custChip.style.display='flex';
+    stab('repair');
+  } else {
+    if(custTab)custTab.style.display='';
+    if(custChip)custChip.style.display='none';
+    stab('customer');
+  }
+  renderTemplates();
   setTimeout(()=>{syncStatusPillFromSelect();},50);
 
   if(id){
@@ -2755,7 +2769,10 @@ function syncStatusPillFromSelect(){
 }
 
 function stab(t){
-  document.querySelectorAll('.ptab').forEach((el,i)=>el.classList.toggle('active',['customer','repair','activity','print'][i]===t));
+  document.querySelectorAll('.ptab').forEach(el=>{
+    const onclick=el.getAttribute('onclick')||'';
+    el.classList.toggle('active', onclick.includes(`'${t}'`));
+  });
   document.querySelectorAll('.tc').forEach(el=>el.classList.remove('active'));
   const savebar=document.getElementById('p-savebar');
   if(savebar) savebar.style.display = t==='repair'?'flex':'none';
