@@ -1414,13 +1414,13 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 
 <!-- COMPLETION POPUP MODAL -->
 <div class="cov" id="complete-popup">
-  <div class="cmodal" style="max-width:520px;padding:0;overflow:hidden;display:flex;flex-direction:column;max-height:88vh;">
+  <div class="cmodal" style="max-width:520px;">
 
-    <!-- HEADER: title + tech chip + close -->
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;">
+    <!-- HEADER -->
+    <div class="chd">
       <div>
-        <div style="font-size:14px;font-weight:600;color:var(--text);">✓ Complete Repair</div>
-        <div style="font-size:10px;color:var(--text3);" id="cp-modal-sub">—</div>
+        <div class="ctitle">✓ Complete Repair</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:1px;" id="cp-modal-sub">—</div>
       </div>
       <div style="display:flex;align-items:center;gap:7px;">
         <!-- Tech chip -->
@@ -1430,7 +1430,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
             <span id="cp-tech-name" style="font-size:11px;font-weight:500;color:var(--text);">Select</span>
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;color:var(--text3);"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
-          <div id="cp-tech-drop" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--bg);border:1px solid var(--border2);border-radius:10px;box-shadow:var(--shadow2);z-index:50;overflow:hidden;min-width:120px;">
+          <div id="cp-tech-drop" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--bg);border:1px solid var(--border2);border-radius:10px;box-shadow:var(--shadow2);z-index:600;overflow:hidden;min-width:120px;">
             <div onclick="pickCPTech('Saul')" style="padding:8px 14px;font-size:12px;cursor:pointer;color:var(--text);" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">Saul</div>
             <div onclick="pickCPTech('David')" style="padding:8px 14px;font-size:12px;cursor:pointer;color:var(--text);" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">David</div>
             <div onclick="pickCPTech('Juan')" style="padding:8px 14px;font-size:12px;cursor:pointer;color:var(--text);" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">Juan</div>
@@ -1441,10 +1441,10 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
       </div>
     </div>
 
-    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:11px;overflow-y:auto;flex:1;min-height:0;">
+    <div class="cbody">
 
       <!-- Repair info bar -->
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <div>
           <div id="cp-info-name" style="font-size:13px;font-weight:600;color:var(--text);">—</div>
           <div id="cp-info-sub" style="font-size:10px;color:var(--text3);margin-top:1px;">—</div>
@@ -1452,9 +1452,9 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
         <div id="cp-info-quote" style="font-size:14px;font-weight:700;color:var(--green2);">$0.00</div>
       </div>
 
-      <!-- PAYMENT — expandable block -->
-      <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
-        <div onclick="toggleCPSection('payment')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 13px;cursor:pointer;background:var(--bg2);user-select:none;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='var(--bg2)'">
+      <!-- PAYMENT expandable -->
+      <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;">
+        <div onclick="toggleCPSection('payment')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 13px;cursor:pointer;background:var(--bg2);user-select:none;">
           <div style="display:flex;align-items:center;gap:7px;">
             <div style="width:24px;height:24px;border-radius:6px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;">💳</div>
             <div>
@@ -1466,11 +1466,10 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
         </div>
         <div id="cp-body-payment" style="padding:13px;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--border);">
 
-          <!-- Method + Amount -->
           <div>
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Method &amp; Amount</div>
             <div id="cp-pay-rows" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;">
-              <div class="cp-pay-row" style="display:flex;gap:6px;align-items:flex-end;">
+              <div class="cp-pay-row" style="display:flex;gap:6px;">
                 <div style="flex:1;">
                   <select class="cp-pay-method fsel" onchange="calcCP()" style="font-size:12px;width:100%;" id="cp-pay">
                     <option value="cash">Cash</option>
@@ -1491,7 +1490,6 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 
           <div style="height:1px;background:var(--border);"></div>
 
-          <!-- Discount -->
           <div>
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Discount ($)</div>
             <input id="cp-discount" type="number" step="0.01" min="0" placeholder="0.00" oninput="calcCP()" class="fsel" style="width:130px;font-size:12px;"/>
@@ -1499,7 +1497,6 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 
           <div style="height:1px;background:var(--border);"></div>
 
-          <!-- Deposit -->
           <div>
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Deposit</div>
             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--text);margin-bottom:7px;">
@@ -1524,10 +1521,8 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
             </div>
           </div>
 
-          <div style="height:1px;background:var(--border);"></div>
-
-          <!-- Surcharge -->
           <div id="cp-surcharge-row" style="display:none;">
+            <div style="height:1px;background:var(--border);margin-bottom:10px;"></div>
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Card Surcharge</div>
             <div style="display:flex;align-items:center;gap:8px;">
               <input type="checkbox" id="cp-surcharge-chk" onchange="calcCP()" style="width:14px;height:14px;accent-color:var(--navy);">
@@ -1539,7 +1534,6 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 
           <div style="height:1px;background:var(--border);"></div>
 
-          <!-- Tip -->
           <div>
             <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Tip ($)</div>
             <input id="cp-tip-manual" type="number" step="0.01" min="0" placeholder="0.00" class="fsel" style="width:130px;" oninput="cpTipAmt=parseFloat(this.value)||0;calcCP();"/>
@@ -1548,9 +1542,9 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
         </div>
       </div>
 
-      <!-- ADD-ONS — expandable -->
-      <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
-        <div onclick="toggleCPSection('addons')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 13px;cursor:pointer;background:var(--bg2);user-select:none;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='var(--bg2)'">
+      <!-- ADD-ONS expandable -->
+      <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;">
+        <div onclick="toggleCPSection('addons')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 13px;cursor:pointer;background:var(--bg2);user-select:none;">
           <div style="display:flex;align-items:center;gap:7px;">
             <div style="width:24px;height:24px;border-radius:6px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;">➕</div>
             <div>
@@ -1561,7 +1555,6 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
           <svg id="cp-chev-addons" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--text3);transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div id="cp-body-addons" style="display:none;padding:13px;border-top:1px solid var(--border);">
-          <!-- Dropdown selector + price input -->
           <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
             <select id="cp-addon-select" onchange="cpShowAddonPrice(this)" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-size:12px;font-family:'Geist',sans-serif;">
               <option value="">— Select add-on —</option>
@@ -1575,32 +1568,30 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
               <option>iPhone Reset</option>
               <option value="Custom">+ Custom</option>
             </select>
-            <input id="cp-addon-price" type="number" step="0.01" placeholder="Price $" style="display:none;width:90px;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-size:12px;" oninput="calcCP()"/>
+            <input id="cp-addon-price" type="number" step="0.01" placeholder="Price $" style="display:none;width:90px;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-size:12px;"/>
             <button onclick="cpAddSelectedAddon()" style="background:var(--navy);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Geist',sans-serif;">Add</button>
           </div>
-          <!-- Custom name field -->
           <div id="cp-custom-name-wrap" style="display:none;margin-bottom:8px;">
             <input id="cp-custom-name" type="text" placeholder="Custom item name" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-size:12px;"/>
           </div>
-          <!-- Added items list -->
           <div id="cp-addons-list" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
         </div>
       </div>
 
-      <!-- COMPLETION NOTES — standalone -->
-      <div>
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Completion Notes <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;">— stored on repair</span></div>
-        <textarea id="cp-completion-note" placeholder="e.g. Customer picked up, advised on battery health, swapped screen…" style="width:100%;min-height:56px;resize:vertical;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:12px;font-family:'Geist',sans-serif;color:var(--text);outline:none;line-height:1.5;"></textarea>
+      <!-- COMPLETION NOTES -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Completion Notes <span style="font-weight:400;text-transform:none;letter-spacing:0;">— stored on repair</span></div>
+        <textarea id="cp-completion-note" placeholder="e.g. Customer picked up, advised on battery health…" style="width:100%;min-height:56px;resize:vertical;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:12px;font-family:'Geist',sans-serif;color:var(--text);outline:none;line-height:1.5;"></textarea>
       </div>
 
       <!-- SUMMARY -->
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:11px 13px;" id="cp-summary">
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0;"><span>Repair Amount</span><span id="cp-show-price">$0.00</span></div>
         <div id="cp-addons-summary"></div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:#dc2626;padding:2px 0;" id="cp-discount-line" style="display:none;"><span>Discount</span><span id="cp-show-discount">-$0.00</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--green);padding:2px 0;" id="cp-deposit-line" style="display:none;"><span>Deposit Paid</span><span id="cp-show-deposit">-$0.00</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#dc2626;padding:2px 0;" id="cp-discount-line"><span>Discount</span><span id="cp-show-discount">-$0.00</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--green);padding:2px 0;" id="cp-deposit-line"><span>Deposit Paid</span><span id="cp-show-deposit">-$0.00</span></div>
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0;"><span>Tax (8.25%)</span><span id="cp-show-tax">$0.00</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0;" id="cp-surcharge-line" style="display:none;"><span>Surcharge</span><span id="cp-show-surcharge">$0.00</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0;" id="cp-surcharge-line"><span>Surcharge</span><span id="cp-show-surcharge">$0.00</span></div>
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0;"><span>Tip</span><span id="cp-show-tip">$0.00</span></div>
         <div id="cp-split-summary"></div>
         <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--border);margin-top:7px;padding-top:8px;"><span>Total Due</span><span id="cp-show-total">$0.00</span></div>
@@ -1608,13 +1599,14 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 
     </div>
 
-    <div class="cfoot" style="flex-shrink:0;">
+    <div class="cfoot">
       <button class="btn" onclick="closeM('complete-popup')">Cancel</button>
       <button class="btn" onclick="printCPReceipt()" title="Print Receipt" style="padding:8px 12px;">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;vertical-align:middle;"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
       </button>
       <button class="btn green" onclick="preConfirmComplete()">Complete &amp; Log Sale</button>
     </div>
+
   </div>
 </div>
 
