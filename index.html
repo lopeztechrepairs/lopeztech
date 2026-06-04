@@ -3947,11 +3947,10 @@ function renderPastDue(pg){
 
 function renderSearch(pg){
   pg.innerHTML=`<div class="ptop">Customer Search</div><div class="psub2">Search by name or phone (any format)</div>
-    <div style="position:relative;max-width:380px;margin-bottom:14px;">
+    <div style="position:relative;max-width:420px;margin-bottom:14px;">
       <svg style="position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--text3);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
       <input class="sinput" id="cs-in" type="text" placeholder="Name or phone…" oninput="doSearch()" style="padding-left:28px;width:100%;"/>
     </div><div id="cs-res"></div>`;
-  // Show all customers immediately on load
   setTimeout(()=>doSearch(),0);
 }
 
@@ -3959,91 +3958,89 @@ function doSearch(){
   const q=(document.getElementById('cs-in')?.value||'').toLowerCase().trim();
   const el=document.getElementById('cs-res');if(!el)return;
   const qR=q.replace(/\D/g,'');
-  const seen=new Set(),results=[];
+  const seen=new Set(),customers=[];
 
-  // Build unique customer list from all repairs
   repairs.forEach(r=>{
-    const key=(r.CustomerName||'')+'|'+(r.Phone1||'');
+    const key=(r.CustomerName||'').trim()+'|'+phoneRaw(r.Phone1||'');
     if(seen.has(key))return;
     const nm=(r.CustomerName||'').toLowerCase();
     const matchName=!q||nm.includes(q);
-    const matchPhone=qR.length>=3&&(phoneRaw(r.Phone1).includes(qR)||phoneRaw(r.Phone2||'').includes(qR));
-    if(matchName||matchPhone){
-      seen.add(key);
-      results.push({name:r.CustomerName,ph1:r.Phone1,ph2:r.Phone2,flagged:r.Flagged,flagReason:r.FlagReason,
-        history:repairs.filter(x=>x.CustomerName===r.CustomerName&&phoneRaw(x.Phone1)===phoneRaw(r.Phone1))});
-    }
+    const matchPhone=qR.length>=3&&(phoneRaw(r.Phone1||'').includes(qR)||phoneRaw(r.Phone2||'').includes(qR));
+    if(!matchName&&!matchPhone)return;
+    seen.add(key);
+    const hist=repairs.filter(x=>x.CustomerName===r.CustomerName&&phoneRaw(x.Phone1)===phoneRaw(r.Phone1));
+    // Find most used location
+    const locCounts={};
+    hist.forEach(h=>{if(h.Location){locCounts[h.Location]=(locCounts[h.Location]||0)+1;}});
+    const topLoc=Object.entries(locCounts).sort((a,b)=>b[1]-a[1])[0];
+    customers.push({name:r.CustomerName||'—',ph1:r.Phone1||'',ph2:r.Phone2||'',hist,topLoc:topLoc?topLoc[0]:null});
   });
 
-  // Also search deleted repairs
-  const cutoff=new Date(Date.now()-30*86400000).toISOString();
-  const allDeleted=lsLoad(LS_DEL,[]).filter(x=>x.DeletedAt>cutoff);
-  allDeleted.forEach(d=>{
-    const key=(d.CustomerName||'')+'|'+(d.Phone1||'');
-    if(seen.has(key))return;
-    const nm=(d.CustomerName||'').toLowerCase();
-    const matchName=!q||nm.includes(q);
-    const matchPhone=qR.length>=3&&phoneRaw(d.Phone1||'').includes(qR);
-    if(matchName||matchPhone){
-      seen.add(key);
-      results.push({name:d.CustomerName,ph1:d.Phone1,ph2:d.Phone2,flagged:false,flagReason:'',history:[]});
-    }
-  });
+  customers.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
 
-  // Sort alphabetically by name
-  results.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-
-  if(!results.length){
+  if(!customers.length){
     el.innerHTML='<div style="color:var(--text3);font-size:12px;padding:10px 0;">No customers found.</div>';
     return;
   }
 
-  // Show count
-  const countBar=`<div style="font-size:11px;color:var(--text3);margin-bottom:10px;">${results.length} customer${results.length!==1?'s':''} ${q?'matching "'+q+'"':'total'}</div>`;
+  const countLine=`<div style="font-size:11px;color:var(--text3);margin-bottom:10px;">${customers.length} customer${customers.length!==1?'s':''} ${q?'matching "'+q+'"':'total'}</div>`;
 
-  el.innerHTML=countBar+results.map(c=>{
-    const deletedForCust=allDeleted.filter(d=>{
-      const nameMatch=(d.CustomerName||'').toLowerCase()===(c.name||'').toLowerCase();
-      const phoneMatch=!c.ph1||phoneRaw(d.Phone1||'')=== phoneRaw(c.ph1||'');
-      return nameMatch&&phoneMatch;
-    });
-    const openCount=c.history.filter(h=>h.Status!=='Completed').length;
-    const completedCount=c.history.filter(h=>h.Status==='Completed').length;
-    return`<div class="cres">
-      ${c.flagged?`<div style="background:var(--redbg);border:1px solid var(--red);border-radius:5px;padding:5px 9px;font-size:11px;color:var(--red);margin-bottom:7px;">⚑ FLAGGED: ${c.flagReason||'See notes'}</div>`:''}
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-        <div>
-          <div style="font-size:13px;font-weight:600;">${c.name||'—'}${c.flagged?' 🚩':''}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px;">${fmtPhoneDisp(c.ph1)}${c.ph2?' · '+fmtPhoneDisp(c.ph2):''}</div>
+  el.innerHTML=countLine+customers.map((c,i)=>{
+    const open=c.hist.filter(h=>h.Status!=='Completed'&&h.Status!=='Past Due').length;
+    const done=c.hist.filter(h=>h.Status==='Completed').length;
+    const statusColor=open?'var(--blue)':'var(--green2)';
+    return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:7px;overflow:hidden;">
+      <!-- Header row — click to expand -->
+      <div onclick="toggleCustCard(${i})" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;user-select:none;" id="cs-hdr-${i}">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:34px;height:34px;border-radius:50%;background:var(--navybg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);flex-shrink:0;">${(c.name).split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text);">${escH(c.name)}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:1px;">${c.ph1?fmtPhoneDisp(c.ph1):'No phone'}${c.ph2?' · '+fmtPhoneDisp(c.ph2):''}</div>
+          </div>
         </div>
-        <div style="display:flex;gap:5px;flex-shrink:0;">
-          ${openCount?`<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--bluebg);color:var(--blue);border:1px solid var(--blue);">${openCount} open</span>`:''}
-          ${completedCount?`<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--greenbg);color:var(--green2);border:1px solid var(--green);">${completedCount} done</span>`:''}
-          ${deletedForCust.length?`<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--redbg);color:var(--red);border:1px solid var(--red);">🗑 ${deletedForCust.length}</span>`:''}
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <div style="text-align:right;">
+            <div style="font-size:11px;font-weight:600;color:${statusColor};">${c.hist.length} repair${c.hist.length!==1?'s':''}</div>
+            ${c.topLoc?`<div style="font-size:10px;color:var(--text3);">📍 ${c.topLoc}</div>`:''}
+          </div>
+          <svg id="cs-chev-${i}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--text3);transition:transform .2s;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
       </div>
-      <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:7px;">
-        ${c.history.map(h=>`<div style="font-size:11px;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border);cursor:pointer;display:flex;gap:8px;align-items:center;" onclick="showView('repairs');setTimeout(()=>openRepair('${h.ID}'),100)">
-          <span style="font-family:'Geist Mono',monospace;font-size:10px;color:var(--text3);flex-shrink:0;">${h.ID}</span>
-          <span style="flex:1;">${h.RepairName||'—'}</span>
-          <span style="color:${h.Status==='Completed'?'var(--green)':h.Status==='Past Due'?'var(--red)':'var(--blue)'};">${h.Status}</span>
-        </div>`).join('')}
-        ${deletedForCust.length?`<div style="font-size:10px;font-weight:600;color:var(--red);margin:6px 0 3px;text-transform:uppercase;letter-spacing:.4px;">Recently Deleted:</div>`:''}
-        ${deletedForCust.map(d=>{
-          const daysLeft=30-Math.floor((new Date()-new Date(d.DeletedAt))/86400000);
-          const safeId=(d.ID||'').replace(/'/g,"\'");
-          const safeAt=(d.DeletedAt||'').replace(/'/g,"\'");
-          return`<div style="font-size:11px;color:var(--red);padding:4px 0;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center;">
-            <span style="font-family:'Geist Mono',monospace;font-size:10px;flex-shrink:0;">${d.ID||'—'}</span>
-            <span style="flex:1;">🗑 ${d.RepairName||'—'}</span>
-            <span style="font-size:10px;color:var(--text3);flex-shrink:0;">${daysLeft}d</span>
-            <button onclick="restoreFromSearch('${safeId}','${safeAt}')" style="background:var(--greenbg);border:1px solid var(--green);color:var(--green2);border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600;cursor:pointer;font-family:'Geist',sans-serif;white-space:nowrap;flex-shrink:0;">↩ Restore</button>
-          </div>`;
-        }).join('')}
+      <!-- Expandable history -->
+      <div id="cs-body-${i}" style="display:none;border-top:1px solid var(--border);">
+        <!-- Stats bar -->
+        <div style="display:flex;gap:6px;padding:8px 14px;background:var(--bg2);flex-wrap:wrap;">
+          ${open?`<span style="font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--bluebg);color:var(--blue);border:1px solid var(--blue);">${open} open</span>`:''}
+          ${done?`<span style="font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--greenbg);color:var(--green2);border:1px solid var(--green);">${done} completed</span>`:''}
+          ${c.topLoc?`<span style="font-size:10px;font-weight:500;padding:2px 9px;border-radius:20px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);">📍 Mostly ${c.topLoc}</span>`:''}
+        </div>
+        <!-- Repair list -->
+        ${c.hist.sort((a,b)=>new Date(b.CreatedAt||0)-new Date(a.CreatedAt||0)).map(h=>`
+          <div onclick="showView('repairs');setTimeout(()=>openRepair('${h.ID}'),100)" style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;gap:10px;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escH(h.RepairName||h.Device||'—')}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:1px;">${h.DropoffDate||''} ${h.Location?'· '+h.Location:''}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+              ${h.Quote&&parseFloat(h.Quote)>0?`<span style="font-size:11px;font-weight:600;color:var(--green2);">$${parseFloat(h.Quote).toFixed(2)}</span>`:''}
+              <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:${h.Status==='Completed'?'var(--greenbg)':h.Status==='In Progress'?'var(--redbg)':'var(--bg3)'};color:${h.Status==='Completed'?'var(--green2)':h.Status==='In Progress'?'var(--red)':'var(--text3)'};border:1px solid ${h.Status==='Completed'?'var(--green)':h.Status==='In Progress'?'var(--red)':'var(--border)'};">${h.Status}</span>
+            </div>
+          </div>`).join('')}
       </div>
     </div>`;
   }).join('');
 }
+
+function toggleCustCard(i){
+  const body=document.getElementById('cs-body-'+i);
+  const chev=document.getElementById('cs-chev-'+i);
+  if(!body)return;
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  if(chev)chev.style.transform=open?'':'rotate(180deg)';
+}
+
 
 function renderDaily(pg){
   pg.innerHTML=`<div class="ptop">Daily Summary</div><div class="psub2">Revenue and repair activity</div>
