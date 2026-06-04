@@ -2218,8 +2218,20 @@ function renderRepairs(){
     board.appendChild(kol);
   });
 
+  // Save scroll positions of each column before wiping the DOM
+  const scrollSave={};
+  document.querySelectorAll('.kol-body').forEach(el=>{
+    if(el.id)scrollSave[el.id]=el.scrollTop;
+  });
+
   list.innerHTML='';
   list.appendChild(board);
+
+  // Restore scroll positions after render
+  Object.keys(scrollSave).forEach(id=>{
+    const el=document.getElementById(id);
+    if(el&&scrollSave[id]>0)el.scrollTop=scrollSave[id];
+  });
 
   updateStats();renderStatusBar();renderRecentBar();
   const nba=document.getElementById('nb-all'),nbp=document.getElementById('nb-past');
