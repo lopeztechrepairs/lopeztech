@@ -460,6 +460,9 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 .status-pills{display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;cursor:grab;padding-bottom:3px;margin-bottom:11px;}
 .status-pills::-webkit-scrollbar{display:none;}
 .status-pills.dragging{cursor:grabbing;}
+.cat-chip{font-size:11px;font-weight:500;padding:4px 11px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text3);cursor:pointer;transition:all .12s;font-family:'Geist',sans-serif;white-space:nowrap;}
+.cat-chip.selected{background:var(--navybg);color:var(--navy);border-color:var(--navy);font-weight:600;}
+.cat-chip:hover:not(.selected){background:var(--bg3);color:var(--text2);}
 .spill{font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text3);transition:all .15s;user-select:none;flex-shrink:0;white-space:nowrap;}
 .spill:hover{border-color:var(--border2);color:var(--text);}
 .spill.active-intake{background:#f1f0fe;color:#4c2fad;border-color:#a39be8;}
@@ -560,7 +563,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
       <div class="nsec">Tools</div>
       <div class="ni" id="ni-search" onclick="showView('search')" title="Customer Search">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <span class="ni-label">Customer Search</span>
+        <span class="ni-label">Record Search</span>
       </div>
       <div class="ni admin-only" id="ni-daily" onclick="showView('daily')" title="Daily Summary">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
@@ -885,22 +888,31 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
           <input id="f-device" type="text" placeholder="e.g. iPhone 11 Screen Repair, PS5 HDMI Port" oninput="upPrev();devSuggest();updateDevicePreview()" autocomplete="off"/>
           <div class="dev-drop" id="dev-drop"></div>
         </div>
-        <div class="fgrid" style="margin-bottom:0;">
-          <div class="ff">
-            <label>Repair Category *</label>
-            <select id="f-cat2" onchange="upPrev();togQual();togMiscDesc();updateDevicePreview()">
-              <option value="">Select category…</option>
-              <option>Display/Screen</option><option>Digitizer (iPad only)</option><option>Battery</option>
-              <option>Charging Port</option><option>Front Camera</option><option>Rear Camera</option>
-              <option>Ear Speaker</option><option>Loud Speaker</option><option>Back Glass</option>
-              <option>HDMI Port (Game Console only)</option><option>Software/OS</option>
-              <option>Motherboard</option><option>SSD/HDD Repair</option><option>RAM Repair</option>
-              <option>Misc. Labor</option>
-            </select>
+        <!-- Multi-select category chips -->
+        <div class="ff">
+          <label>Repair Category * <span style="font-size:10px;font-weight:400;color:var(--text3);">— select one or more</span></label>
+          <!-- hidden field keeps backward compat -->
+          <input type="hidden" id="f-cat2"/>
+          <div id="cat-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+            <button type="button" class="cat-chip" data-cat="Display/Screen" onclick="toggleCatChip(this)">Display/Screen</button>
+            <button type="button" class="cat-chip" data-cat="Digitizer (iPad only)" onclick="toggleCatChip(this)">Digitizer</button>
+            <button type="button" class="cat-chip" data-cat="Battery" onclick="toggleCatChip(this)">Battery</button>
+            <button type="button" class="cat-chip" data-cat="Charging Port" onclick="toggleCatChip(this)">Charging Port</button>
+            <button type="button" class="cat-chip" data-cat="Front Camera" onclick="toggleCatChip(this)">Front Camera</button>
+            <button type="button" class="cat-chip" data-cat="Rear Camera" onclick="toggleCatChip(this)">Rear Camera</button>
+            <button type="button" class="cat-chip" data-cat="Ear Speaker" onclick="toggleCatChip(this)">Ear Speaker</button>
+            <button type="button" class="cat-chip" data-cat="Loud Speaker" onclick="toggleCatChip(this)">Loud Speaker</button>
+            <button type="button" class="cat-chip" data-cat="Back Glass" onclick="toggleCatChip(this)">Back Glass</button>
+            <button type="button" class="cat-chip" data-cat="HDMI Port (Game Console only)" onclick="toggleCatChip(this)">HDMI Port</button>
+            <button type="button" class="cat-chip" data-cat="Software/OS" onclick="toggleCatChip(this)">Software/OS</button>
+            <button type="button" class="cat-chip" data-cat="Motherboard" onclick="toggleCatChip(this)">Motherboard</button>
+            <button type="button" class="cat-chip" data-cat="SSD/HDD Repair" onclick="toggleCatChip(this)">SSD/HDD</button>
+            <button type="button" class="cat-chip" data-cat="RAM Repair" onclick="toggleCatChip(this)">RAM</button>
+            <button type="button" class="cat-chip" data-cat="Misc. Labor" onclick="toggleCatChip(this)">Misc. Labor</button>
           </div>
-          <div class="ff" id="qualfield" style="display:none;"><label>Screen Quality</label>
-            <select id="f-qual" onchange="upPrev()"><option>OEM</option><option>Prem. OLED</option><option>Aftermarket Basic</option></select>
-          </div>
+        </div>
+        <div class="ff" id="qualfield" style="display:none;"><label>Screen Quality</label>
+          <select id="f-qual" onchange="upPrev()"><option>OEM</option><option>Prem. OLED</option><option>Aftermarket Basic</option></select>
         </div>
         <div class="ff s2" id="misc-desc-field" style="display:none;">
           <label>Labor Description</label>
@@ -2497,7 +2509,7 @@ function fillFromHistory(id,mode){
   const r=repairs.find(x=>x.ID===id);if(!r)return;
   closeM('ret-modal');stab('repair');
   document.getElementById('f-device').value=r.Device||'';
-  document.getElementById('f-cat2').value=r.Category||'';
+  const _catVal=r.Categories&&r.Categories.length?r.Categories.join(','):(r.Category||'');setSelectedCats(_catVal);
   document.getElementById('f-qual').value=r.Quality||'OEM';
   if(r.Category==='Misc. Labor'&&r.MiscDesc)document.getElementById('f-misc-desc').value=r.MiscDesc||'';
   togQual();togMiscDesc();
@@ -2635,7 +2647,7 @@ function openRepair(id){
     }
     // flag removed
     document.getElementById('f-device').value=r.Device||'';
-    document.getElementById('f-cat2').value=r.Category||'';
+    const _catVal=r.Categories&&r.Categories.length?r.Categories.join(','):(r.Category||'');setSelectedCats(_catVal);
     document.getElementById('f-qual').value=r.Quality||'OEM';
     document.getElementById('f-imei').value=r.IMEI||'';
     document.getElementById('f-pass').value=r.Passcode||'';
@@ -2674,6 +2686,7 @@ function openRepair(id){
     ['f-cname','f-ph1','f-ph2','f-cnotes','f-device','f-imei','f-pass','f-quote'].forEach(i=>{const el=document.getElementById(i);if(el){el.value='';el.classList&&el.classList.remove('filled');}});
     const fmd=document.getElementById('f-misc-desc');if(fmd)fmd.value='';
     document.getElementById('f-cat2').value='';
+    setSelectedCats('');
     document.getElementById('f-qual').value='OEM';
     document.getElementById('f-tech2').value='';
     document.getElementById('f-loc2').value='';
@@ -2896,10 +2909,11 @@ function toggleRepairSection(id){
 
 function updateDevicePreview(){
   const dev=document.getElementById('f-device')?.value||'';
-  const cat=document.getElementById('f-cat2')?.value||'';
+  const cats=getSelectedCats();
+  const catStr=cats.map(c=>c.replace(' (iPad only)','').replace(' (Game Console only)','')).join(' + ');
   const el=document.getElementById('device-section-preview');
   if(!el)return;
-  if(dev||cat){el.textContent=[dev,cat].filter(Boolean).join(' · ');}
+  if(dev||catStr){el.textContent=[dev,catStr].filter(Boolean).join(' · ');}
   else{el.textContent='Tap to expand';}
 }
 
@@ -2913,18 +2927,56 @@ function updateAssignPreview(){
   el.textContent=parts.length?parts.join(' · '):'Tap to expand';
 }
 
+function getSelectedCats(){
+  return [...document.querySelectorAll('#cat-chips .cat-chip.selected')].map(el=>el.dataset.cat);
+}
+
+function setSelectedCats(catStr){
+  // catStr can be comma-separated or a single value
+  const cats=(catStr||'').split(',').map(s=>s.trim()).filter(Boolean);
+  document.querySelectorAll('#cat-chips .cat-chip').forEach(el=>{
+    el.classList.toggle('selected', cats.includes(el.dataset.cat));
+  });
+  syncCatField();
+}
+
+function syncCatField(){
+  const cats=getSelectedCats();
+  // Keep hidden field as first selected for backward compat
+  const hidden=document.getElementById('f-cat2');
+  if(hidden)hidden.value=cats[0]||'';
+  togQual();togMiscDesc();updateDevicePreview();upPrev();
+}
+
+function toggleCatChip(el){
+  el.classList.toggle('selected');
+  syncCatField();
+  // Auto-build repair title if title field is empty or was auto-generated
+  const titleEl=document.getElementById('f-device');
+  const cats=getSelectedCats();
+  if(titleEl&&(!titleEl.value.trim()||titleEl.dataset.autogen==='1')){
+    if(cats.length>0){
+      // Title is just the category labels joined — user fills in device prefix
+      titleEl.dataset.autogen='1';
+    } else {
+      titleEl.dataset.autogen='';
+    }
+  }
+  upPrev();updateDevicePreview();
+}
+
 function togQual(){
-  const c=document.getElementById('f-cat2').value;
-  const dev=(document.getElementById('f-device').value||'').toLowerCase();
-  const isScreen=c.includes('Display')||c.includes('Screen');
+  const cats=getSelectedCats();
+  const dev=(document.getElementById('f-device')?.value||'').toLowerCase();
+  const isScreen=cats.some(c=>c.includes('Display')||c.includes('Screen'));
   const isQB=QUAL_BRANDS.some(b=>dev.includes(b));
   document.getElementById('qualfield').style.display=(isScreen&&isQB)?'block':'none';
 }
 
 function togMiscDesc(){
-  const c=document.getElementById('f-cat2').value;
+  const cats=getSelectedCats();
   const fd=document.getElementById('misc-desc-field');
-  if(fd)fd.style.display=c==='Misc. Labor'?'block':'none';
+  if(fd)fd.style.display=cats.includes('Misc. Labor')?'block':'none';
 }
 
 function togFlag(){document.getElementById('flagr-field').style.display=document.getElementById('f-flag').checked?'block':'none';}
@@ -3020,9 +3072,10 @@ async function saveRepair(){
   }
   const cname=document.getElementById('f-cname').value.trim();
   const dev=document.getElementById('f-device').value.trim();
-  const cat=document.getElementById('f-cat2').value;
+  const selectedCats=getSelectedCats();
+  const cat=selectedCats[0]||''; // first cat for backward compat
   if(!cname){toast('Customer name is required','err');stab('customer');return;}
-  if(!dev||!cat){toast('Device and category required','err');stab('repair');return;}
+  if(!dev||!selectedCats.length){toast('Device title and at least one category required','err');stab('repair');return;}
   const tech=document.getElementById('f-tech2').value;
   if(!tech){
     toast('A technician must be selected','err');
@@ -3050,7 +3103,7 @@ async function saveRepair(){
     CustomerNotes:document.getElementById('f-cnotes').value.trim(),
     Flagged:false,
     FlagReason:'',
-    Device:dev,Category:cat,Quality:qual,RepairName:repairName,MiscDesc:misc,
+    Device:dev,Category:cat,Categories:selectedCats,Quality:qual,RepairName:repairName,MiscDesc:misc,
     IMEI:document.getElementById('f-imei').value.trim(),
     Passcode:document.getElementById('f-pass').value.trim(),
     AssignedTo:document.getElementById('f-tech2').value,
@@ -3946,10 +3999,10 @@ function renderPastDue(pg){
 }
 
 function renderSearch(pg){
-  pg.innerHTML=`<div class="ptop">Customer Search</div><div class="psub2">Search by name or phone (any format)</div>
+  pg.innerHTML=`<div class="ptop">Record Search</div><div class="psub2">Search customers by name or phone · Search repairs by device or title</div>
     <div style="position:relative;max-width:420px;margin-bottom:14px;">
       <svg style="position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--text3);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input class="sinput" id="cs-in" type="text" placeholder="Name or phone…" oninput="doSearch()" style="padding-left:28px;width:100%;"/>
+      <input class="sinput" id="cs-in" type="text" placeholder="Customer name, phone, or repair title…" oninput="doSearch()" style="padding-left:28px;width:100%;"/>
     </div><div id="cs-res"></div>`;
   setTimeout(()=>doSearch(),0);
 }
@@ -3964,12 +4017,13 @@ function doSearch(){
     const key=(r.CustomerName||'').trim()+'|'+phoneRaw(r.Phone1||'');
     if(seen.has(key))return;
     const nm=(r.CustomerName||'').toLowerCase();
+    const repairTitle=(r.RepairName||r.Device||'').toLowerCase();
     const matchName=!q||nm.includes(q);
     const matchPhone=qR.length>=3&&(phoneRaw(r.Phone1||'').includes(qR)||phoneRaw(r.Phone2||'').includes(qR));
-    if(!matchName&&!matchPhone)return;
+    const matchRepair=q.length>=3&&repairTitle.includes(q);
+    if(!matchName&&!matchPhone&&!matchRepair)return;
     seen.add(key);
     const hist=repairs.filter(x=>x.CustomerName===r.CustomerName&&phoneRaw(x.Phone1)===phoneRaw(r.Phone1));
-    // Find most used location
     const locCounts={};
     hist.forEach(h=>{if(h.Location){locCounts[h.Location]=(locCounts[h.Location]||0)+1;}});
     const topLoc=Object.entries(locCounts).sort((a,b)=>b[1]-a[1])[0];
