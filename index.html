@@ -719,7 +719,10 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
           <div style="padding:13px 14px 10px;border-bottom:1px solid var(--border);">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
               <div id="cp-av" style="width:38px;height:38px;border-radius:50%;background:var(--navybg);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--navy);flex-shrink:0;">?</div>
-              <div><div id="cp-name" style="font-size:14px;font-weight:600;color:var(--text);">—</div><div id="cp-sub" style="font-size:11px;color:var(--text3);">—</div></div>
+              <div style="flex:1;min-width:0;">
+                <input id="cp-name" type="text" onblur="saveChipField('name',this.value)" style="font-size:14px;font-weight:600;color:var(--text);border:none;background:transparent;font-family:'Geist',sans-serif;outline:none;width:100%;padding:0;" placeholder="Customer name"/>
+                <div id="cp-sub" style="font-size:11px;color:var(--text3);">—</div>
+              </div>
             </div>
             <div id="cp-badges" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
           </div>
@@ -2727,9 +2730,9 @@ function populateCustChip(r){
   const ph=document.getElementById('cust-chip-phone');if(ph)ph.textContent=r.Phone1||'—';
   // Popup fields
   const cpAv=document.getElementById('cp-av');if(cpAv)cpAv.textContent=ini;
-  const cpNm=document.getElementById('cp-name');if(cpNm)cpNm.textContent=r.CustomerName||'—';
-  const cpPh1=document.getElementById('cp-ph1');if(cpPh1)cpPh1.value=r.Phone1||'';
-  const cpPh2=document.getElementById('cp-ph2');if(cpPh2)cpPh2.value=r.Phone2||'';
+  const cpNm=document.getElementById('cp-name');if(cpNm)cpNm.value=r.CustomerName||'—';
+  const cpPh1=document.getElementById('cp-ph1');if(cpPh1)cpPh1.value=fmtPhoneDisp(r.Phone1)||'';
+  const cpPh2=document.getElementById('cp-ph2');if(cpPh2)cpPh2.value=fmtPhoneDisp(r.Phone2)||'';
   // Hide saved indicators
   const s1=document.getElementById('cp-ph1-saved');if(s1)s1.style.display='none';
   const s2=document.getElementById('cp-ph2-saved');if(s2)s2.style.display='none';
@@ -2814,25 +2817,55 @@ function saveChipPhone(field,val){
   const r=repairs.find(x=>x.ID===editId);
   if(!r)return;
   const fkey=field==='ph1'?'Phone1':'Phone2';
-  if(val===(r[fkey]||''))return;
-  // Update all repairs for this customer
+  // Normalize to formatted display value
+  const formatted=fmtPhoneDisp(val.replace(/\D/g,''))||val;
+  if(formatted===(r[fkey]||''))return;
   repairs.forEach(x=>{
     if(x.CustomerName===r.CustomerName&&phoneRaw(x.Phone1)===phoneRaw(r.Phone1)){
-      x[fkey]=val;
+      x[fkey]=formatted;
     }
   });
+  // Update input to show formatted value
+  const inp=document.getElementById(`cp-${field}`);
+  if(inp)inp.value=formatted;
   // Sync panel form fields
   const ff=document.getElementById(field==='ph1'?'f-ph1':'f-ph2');
-  if(ff)ff.value=val;
+  if(ff)ff.value=formatted;
   // Update chip header phone
-  if(field==='ph1'){const cp=document.getElementById('cust-chip-phone');if(cp)cp.textContent=val||'—';}
+  if(field==='ph1'){const cp=document.getElementById('cust-chip-phone');if(cp)cp.textContent=formatted||'—';}
   // Show ✓ indicator
   const sv=document.getElementById(`cp-${field}-saved`);
   if(sv){sv.style.display='inline';setTimeout(()=>{sv.style.display='none';},2000);}
   lsSave(LS_R,repairs);
   schedulePush();
-  logAct(r,`${field==='ph1'?'Primary':'Alt'} phone updated`,getActiveUser()||'Staff');
+  logAct(r,`${field==='ph1'?'Primary':'Alt'} phone updated to ${formatted}`,getActiveUser()||'Staff');
   toast(`${field==='ph1'?'Primary':'Alt'} phone saved`,'ok');
+}
+
+function saveChipField(field,val){
+  if(!editId)return;
+  const r=repairs.find(x=>x.ID===editId);
+  if(!r)return;
+  val=(val||'').trim();
+  if(!val||val===r.CustomerName)return;
+  const oldName=r.CustomerName;
+  // Update all repairs for this customer
+  repairs.forEach(x=>{
+    if(x.CustomerName===oldName&&phoneRaw(x.Phone1)===phoneRaw(r.Phone1)){
+      x.CustomerName=val;
+    }
+  });
+  // Update chip header
+  const chipName=document.getElementById('cust-chip-name');if(chipName)chipName.textContent=val;
+  const cpAv=document.getElementById('cp-av');
+  if(cpAv)cpAv.textContent=val.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  // Sync panel form
+  const ff=document.getElementById('f-cname');if(ff)ff.value=val;
+  const si=document.getElementById('cust-search');if(si)si.value=val;
+  lsSave(LS_R,repairs);
+  schedulePush();
+  logAct(r,`Customer name updated from ${oldName} to ${val}`,getActiveUser()||'Staff');
+  toast('Customer name saved','ok');
 }
 
 function toggleChipHistory(){
