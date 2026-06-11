@@ -4786,6 +4786,23 @@ async function pullFromCloud(silent=false){
       const del=Array.isArray(data.deleted)?data.deleted:Object.values(data.deleted);
       lsSave(LS_DEL,del.filter(Boolean));
     }
+    // Sync notifications
+    if(data.notifications&&typeof pushNotif==='function'){
+      try{
+        const incoming=Array.isArray(data.notifications)?data.notifications:Object.values(data.notifications);
+        const local=lsLoad(LS_NOTIF,[]);
+        const localIds=new Set(local.map(n=>n.id));
+        const merged=[...local];
+        incoming.forEach(n=>{if(n&&n.id&&!localIds.has(n.id))merged.push(n);});
+        merged.sort((a,b)=>b.createdAt-a.createdAt);
+        const cutoff=Date.now()-NOTIF_TTL;
+        const pruned=merged.filter(n=>n.createdAt>cutoff);
+        lsSave(LS_NOTIF,pruned);
+        if(typeof updateBellDot==='function')updateBellDot();
+        const np=document.getElementById('notif-panel');
+        if(np&&np.classList.contains('open')&&typeof renderNotifPanel==='function')renderNotifPanel();
+      }catch(e){}
+    }
     autoPastDue();renderRepairs();updateStats();renderStatusBar();renderRecentBar();
     lastSync=Date.now();
     if(!silent)toast('Synced ✓','ok');
@@ -4811,6 +4828,7 @@ async function pushAllToCloud(){
       techs:getTechs(),
       templates:getTpls(),
       deleted:lsLoad(LS_DEL,[]),
+      notifications:lsLoad(LS_NOTIF,[]),
       meta:{lastUpdated:new Date().toISOString(),updatedBy:cu?.name||'Unknown'}
     });
     lastSync=Date.now();
@@ -6893,29 +6911,7 @@ function clearAllNotifs(){
   updateBellDot();
 }
 
-// Pull notifications from Firebase on every cloud sync
-const _origPull=pullFromCloud;
-async function pullFromCloud(silent=false){
-  await _origPull(silent);
-  if(hasCloud()){
-    try{
-      const res=await fetch(getFbUrl()+'/lopeztechrepairs/notifications.json?auth='+getFbKey());
-      const data=await res.json();
-      if(Array.isArray(data)&&data.length){
-        const local=getNotifs();
-        const localIds=new Set(local.map(n=>n.id));
-        const merged=[...local];
-        data.forEach(n=>{if(n&&n.id&&!localIds.has(n.id))merged.push(n);});
-        merged.sort((a,b)=>b.createdAt-a.createdAt);
-        const cutoff=Date.now()-NOTIF_TTL;
-        const pruned=merged.filter(n=>n.createdAt>cutoff);
-        saveNotifs(pruned);
-        updateBellDot();
-        if(document.getElementById('notif-panel').classList.contains('open'))renderNotifPanel();
-      }
-    }catch(e){}
-  }
-}
+// Pull notifs on cloud sync handled inside existing pullFromCloud below
 
 // Update bell dot every 30 seconds for TTL countdown
 setInterval(()=>{pruneNotifs();updateBellDot();},30000);
