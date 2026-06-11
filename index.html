@@ -1760,6 +1760,33 @@ function lsLoad(k,d){try{return JSON.parse(localStorage.getItem(k)||'null')??d;}
 function lsSave(k,v){localStorage.setItem(k,JSON.stringify(v));}
 function getApi(){return localStorage.getItem(LS_API)||'';}
 
+// Notification constants and helpers — defined early so pushNotif works everywhere
+const LS_NOTIF='lt_notif_v1';
+const NOTIF_TTL=12*60*60*1000;
+function getNotifs(){return lsLoad(LS_NOTIF,[]);}
+function saveNotifs(notifs){lsSave(LS_NOTIF,notifs);}
+function pruneNotifs(){
+  const cutoff=Date.now()-NOTIF_TTL;
+  const notifs=getNotifs().filter(n=>n.createdAt>cutoff);
+  saveNotifs(notifs);return notifs;
+}
+function pushNotif(type,text,repairId,repairName,author,location){
+  try{
+    const notifs=pruneNotifs();
+    const n={id:'n_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),type,text,repairId,repairName,author:author||'Staff',location:location||'',createdAt:Date.now(),read:false};
+    notifs.unshift(n);
+    saveNotifs(notifs);
+    // Fire-and-forget to Firebase — don't let failure crash caller
+    try{
+      if(typeof hasCloud==='function'&&hasCloud()){
+        fetch(getFbUrl()+'/lopeztechrepairs/notifications.json?auth='+getFbKey(),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(notifs)}).catch(()=>{});
+      }
+    }catch(e){}
+    if(typeof updateBellDot==='function')updateBellDot();
+    const np=document.getElementById('notif-panel');
+    if(np&&np.classList.contains('open')&&typeof renderNotifPanel==='function')renderNotifPanel();
+  }catch(e){console.warn('pushNotif error:',e);}
+}
 // Parts inventory removed — stubs to prevent errors
 function searchPartsUsed(){}
 function saveParts(){}
@@ -3145,7 +3172,12 @@ function calcM(){ /* parts cost section removed */ }
 
 // ── SAVE REPAIR ──
 async function saveRepair(){
-  if(!checkRole('user')){toast('Access denied','err');return;}
+  if(!cu){toast('Please log in first','err');return;}
+  if(!checkRole('user')){toast('Access denied — you do not have permission to save repairs','err');return;}
+  // Use active user if set, otherwise fall back to logged-in user
+  if(!activeUser && cu){
+    activeUser = cu.name||'Staff';
+  }
   const stat_early=document.getElementById('f-status').value;
   // If targeting Completed, skip form validation and go straight to the popup
   // (no active user required — the popup itself handles the completion)
@@ -3192,8 +3224,23 @@ async function saveRepair(){
   const dev=document.getElementById('f-device').value.trim();
   const selectedCats=getSelectedCats();
   const cat=selectedCats[0]||''; // first cat for backward compat
-  if(!cname){toast('Customer name is required','err');stab('customer');return;}
-  if(!dev||!selectedCats.length){toast('Device title and at least one category required','err');stab('repair');return;}
+  if(!cname){
+    toast('Customer name is required — go to the Customer tab first','err');
+    stab('customer');
+    const el=document.getElementById('f-cname');
+    if(el){el.style.border='2px solid var(--red)';el.focus();el.oninput=function(){el.style.border='';};}
+    return;
+  }
+  if(!dev||!selectedCats.length){
+    toast('Enter a repair title and select at least one category','err');
+    // Make sure device section is open
+    const sd=document.getElementById('rsec-device');
+    const chev=document.getElementById('chev-device');
+    if(sd&&sd.style.display==='none'){sd.style.display='block';if(chev)chev.style.transform='rotate(180deg)';}
+    const el=document.getElementById('f-device');
+    if(el&&!dev)el.focus();
+    return;
+  }
   const tech=document.getElementById('f-tech2').value;
   if(!tech){
     toast('A technician must be selected','err');
@@ -6740,48 +6787,6 @@ async function slConfirmSync(){
 // ═══════════════════════════════════════════════════
 // ── NOTIFICATION SYSTEM ──
 // ═══════════════════════════════════════════════════
-const LS_NOTIF='lt_notif_v1';
-const NOTIF_TTL=12*60*60*1000; // 12 hours
-
-function getNotifs(){
-  return lsLoad(LS_NOTIF,[]);
-}
-function saveNotifs(notifs){
-  lsSave(LS_NOTIF,notifs);
-}
-
-function pruneNotifs(){
-  const cutoff=Date.now()-NOTIF_TTL;
-  const notifs=getNotifs().filter(n=>n.createdAt>cutoff);
-  saveNotifs(notifs);
-  return notifs;
-}
-
-function pushNotif(type,text,repairId,repairName,author,location){
-  const notifs=pruneNotifs();
-  const n={
-    id:'n_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
-    type,text,repairId,repairName,
-    author:author||getActiveUser()||'Staff',
-    location:location||'',
-    createdAt:Date.now(),
-    read:false
-  };
-  notifs.unshift(n);
-  saveNotifs(notifs);
-  // Push to Firebase so whole team sees it
-  if(hasCloud()){
-    fetch(getFbUrl()+'/lopeztechrepairs/notifications.json?auth='+getFbKey(),{
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(notifs)
-    }).catch(()=>{});
-  }
-  updateBellDot();
-  if(document.getElementById('notif-panel').classList.contains('open')){
-    renderNotifPanel();
-  }
-}
 
 function updateBellDot(){
   const notifs=pruneNotifs();
