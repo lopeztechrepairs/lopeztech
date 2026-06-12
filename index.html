@@ -171,7 +171,56 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 .sw svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--text3);}
 .sinput{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:7px 10px 7px 28px;font-family:'Geist',sans-serif;font-size:12px;color:var(--text);outline:none;transition:border-color .15s;}
 .sinput:focus{border-color:var(--blue);}
-/* CUSTOMER TABLE */
+/* NEW REPAIR MODAL */
+.nr-section{margin-bottom:18px;}
+.nr-section-hdr{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--navy);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--navybg);}
+.nr-section-hdr svg{width:14px;height:14px;flex-shrink:0;}
+.nr-row{display:flex;gap:10px;margin-bottom:10px;}
+.nr-row .ff{flex:1;margin-bottom:0;}
+.nr-row .ff:last-child{margin-bottom:0;}
+.nr-field{display:flex;flex-direction:column;gap:3px;margin-bottom:10px;}
+.nr-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;}
+.nr-input{background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Geist',sans-serif;color:var(--text);outline:none;width:100%;transition:border-color .15s;}
+.nr-input:focus{border-color:var(--navy);}
+.nr-input::placeholder{color:var(--text3);}
+/* Device type chips */
+.dev-type-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+.dev-type-chip{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;border-radius:10px;border:2px solid var(--border);background:var(--bg2);cursor:pointer;transition:all .15s;min-width:72px;flex:1;}
+.dev-type-chip:hover{border-color:var(--border2);background:var(--bg3);}
+.dev-type-chip.selected{border-color:var(--navy);background:var(--navybg);}
+.dev-type-chip .dt-icon{font-size:22px;line-height:1;}
+.dev-type-chip .dt-label{font-size:11px;font-weight:600;color:var(--text2);}
+.dev-type-chip.selected .dt-label{color:var(--navy);}
+/* Service chips */
+.svc-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.svc-chip{font-size:12px;font-weight:500;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;transition:all .12s;user-select:none;}
+.svc-chip:hover{border-color:var(--border2);background:var(--bg3);}
+.svc-chip.selected{background:var(--navybg);color:var(--navy);border-color:var(--navy);font-weight:700;}
+.svc-chip.misc{border-style:dashed;}
+/* Sub-select */
+.svc-sub{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;padding:8px 10px;background:var(--bg2);border-radius:8px;border:1px solid var(--border);}
+.svc-sub-chip{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg);color:var(--text2);cursor:pointer;transition:all .12s;}
+.svc-sub-chip.selected{background:var(--bluebg);color:var(--blue);border-color:var(--blue);font-weight:700;}
+/* Collapsible toggle */
+.nr-collapse-toggle{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;padding:4px 0;user-select:none;}
+.nr-collapse-toggle:hover{color:var(--text);}
+.nr-collapse-body{margin-top:8px;}
+/* Auto-suggest dropdown */
+.nr-suggest{position:absolute;top:100%;left:0;right:0;background:var(--bg);border:1px solid var(--border2);border-radius:8px;box-shadow:var(--shadow2);z-index:50;max-height:180px;overflow-y:auto;display:none;}
+.nr-suggest.open{display:block;}
+.nr-suggest-item{padding:9px 12px;cursor:pointer;font-size:13px;border-bottom:0.5px solid var(--border);}
+.nr-suggest-item:last-child{border-bottom:none;}
+.nr-suggest-item:hover{background:var(--bg2);}
+.nr-suggest-name{font-weight:600;color:var(--text);}
+.nr-suggest-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+
+/* CREATOR SELECTOR */
+.creator-card{display:flex;flex-direction:column;align-items:center;gap:7px;padding:16px 12px;border-radius:12px;border:2px solid var(--border);background:var(--bg2);cursor:pointer;transition:all .15s;text-align:center;}
+.creator-card:hover{border-color:var(--navy);background:var(--navybg);}
+.creator-card:active{transform:scale(.97);}
+.creator-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
+.creator-name{font-size:13px;font-weight:600;color:var(--text);line-height:1.2;}
+.creator-role{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;}
 .cust-table{width:100%;border-collapse:collapse;margin-top:4px;}
 .cust-table th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);padding:8px 14px;text-align:left;border-bottom:2px solid var(--border);background:var(--bg2);}
 .cust-table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
@@ -943,6 +992,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
       <!-- Live summary -->
       <div class="p-summary" id="p-summary" style="display:none;margin:10px 18px 0;">
         <div class="p-summary-name" id="rpname">—</div>
+        <div id="p-summary-createdby" style="font-size:10px;color:var(--text3);margin-bottom:5px;display:none;">🖊 Created by <span id="p-createdby-name"></span></div>
         <div class="p-summary-badges" id="p-summary-badges"></div>
       </div>
       <div id="rprev" style="display:none!important;"><div id="rpqual"></div><div id="rpid"></div></div>
@@ -2160,6 +2210,11 @@ function openSettings(){
         <div class="ff"><label>Role</label><select id="st-role" class="fsel" style="width:100%;"><option value="user">Technician</option><option value="admin">Admin</option></select></div>
       </div>
       <button class="btn blue" onclick="settingsAddTech()">Add Technician</button>
+      ${checkRole('admin')?`
+      <div style="border-top:1px solid var(--border);margin:20px 0 14px;"></div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;">Repair Services</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Manage the repair service list shown when creating new repairs.</div>
+      <button class="btn blue" onclick="closeM('settings-modal');openSvcSettings();">⚙️ Manage Repair Services</button>`:''}
     </div>`;
   document.getElementById('settings-modal').classList.add('open');
 }
@@ -3082,10 +3137,25 @@ function toggleNewMenu(){
   const open=m.style.display==='none'||m.style.display==='';
   m.style.display=open?'block':'none';
 }
+let nrCreatedBy='';
+
 function openNewRepair(){
-  document.getElementById('new-menu').style.display='none';
-  openRepair(null);
+  try{
+    document.getElementById('new-menu').style.display='none';
+    nrCreatedBy='';
+    document.getElementById('creator-modal').classList.add('open');
+  }catch(e){
+    console.error('openNewRepair error:',e);
+    toast('Error: '+e.message,'err');
+  }
 }
+
+function nrPickCreator(name){
+  nrCreatedBy=name;
+  closeM('creator-modal');
+  openNewRepairModal();
+}
+
 function openQuickSale(){
   document.getElementById('new-menu').style.display='none';
   // Reset cart
@@ -3266,6 +3336,15 @@ function upPrev(){
     summary.style.display=name?'block':'none';
     const nameEl=document.getElementById('rpname');
     if(nameEl)nameEl.textContent=name||'—';
+    // Show CreatedBy if present on the repair
+    const cbEl=document.getElementById('p-summary-createdby');
+    const cbName=document.getElementById('p-createdby-name');
+    if(cbEl&&cbName){
+      const r=editId?repairs.find(x=>x.ID===editId):null;
+      const cb=r?.CreatedBy||'';
+      cbEl.style.display=cb?'block':'none';
+      cbName.textContent=cb;
+    }
     const badgesEl=document.getElementById('p-summary-badges');
     if(badgesEl){
       const statusColor=status==='Completed'?'background:#e3fafc;color:#0a6678;border:1px solid #39c5cf':
@@ -7171,7 +7250,380 @@ function clearAllNotifs(){
   updateBellDot();
 }
 
-// Pull notifs on cloud sync handled inside existing pullFromCloud below
+
+<script>
+// ═══════════════════════════════════════════════════
+// ── NEW REPAIR MODAL ──
+// ═══════════════════════════════════════════════════
+const LS_SVC='lt_svc_v1';
+
+const DEFAULT_SERVICES={
+  phone:[
+    {id:'screen',label:'Screen Repair',sub:null},
+    {id:'battery',label:'Battery Repair',sub:null},
+    {id:'charging',label:'Charging Port Repair',sub:null},
+    {id:'rearglass',label:'Rear Glass Repair',sub:null,phoneOnly:true},
+    {id:'camera',label:'Camera Repair',sub:['Front Camera','Rear Camera','Both']},
+    {id:'speaker',label:'Speaker Repair',sub:['Ear Speaker','Loud Speaker','Both']},
+    {id:'motherboard',label:'Motherboard Repair',sub:null},
+    {id:'data',label:'Data Transfer',sub:null},
+    {id:'frame',label:'Frame Repair',sub:null},
+    {id:'software',label:'Software Repair / Unlocking',sub:null},
+    {id:'misc',label:'Misc. Labor',sub:null,misc:true},
+  ],
+  computer:[
+    {id:'screen',label:'Screen Repair',sub:null},
+    {id:'battery',label:'Battery Repair',sub:null},
+    {id:'charging',label:'Charging Port Repair',sub:null},
+    {id:'usb',label:'USB Port Repair',sub:null},
+    {id:'hinge',label:'Hinge Repair',sub:null},
+    {id:'ssd',label:'SSD Repair / Upgrade',sub:null},
+    {id:'hdd',label:'HDD Repair / Upgrade',sub:null},
+    {id:'ram',label:'Memory RAM Repair / Upgrade',sub:null},
+    {id:'virus',label:'Virus / Malware Removal',sub:null},
+    {id:'os',label:'System OS Repair / Upgrade',sub:null},
+    {id:'data',label:'Data Recovery / Transfer',sub:null},
+    {id:'misc',label:'Misc. Labor',sub:null,misc:true},
+  ],
+  console:[
+    {id:'screen',label:'Screen Repair',sub:null},
+    {id:'battery',label:'Battery Repair',sub:null},
+    {id:'charging',label:'Charging Port Repair',sub:null},
+    {id:'hdmi',label:'HDMI Repair',sub:null},
+    {id:'storage',label:'Storage Memory Repair',sub:null},
+    {id:'overheat',label:'Overheating Repair',sub:null},
+    {id:'misc',label:'Misc. Labor',sub:null,misc:true},
+  ]
+};
+
+function getSvcList(cat){
+  const stored=lsLoad(LS_SVC,null);
+  return stored?.[cat]||DEFAULT_SERVICES[cat]||[];
+}
+
+function saveSvcList(cat,list){
+  const all=lsLoad(LS_SVC,{})||{};
+  all[cat]=list;
+  lsSave(LS_SVC,all);
+}
+
+// State
+let nrDevType='',nrSelectedSvc=[],nrSubSelections={};
+
+function openNewRepairModal(){
+  try{
+  document.getElementById('new-menu').style.display='none';
+  // Reset
+  nrDevType='';nrSelectedSvc=[];nrSubSelections={};
+  ['nr-name','nr-ph1','nr-ph2','nr-device','nr-issue','nr-imei','nr-pass','nr-misc-text','nr-quote'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const qual=document.getElementById('nr-qual');if(qual)qual.value='';
+  document.querySelectorAll('.dev-type-chip').forEach(c=>c.classList.remove('selected'));
+  const svcs=document.getElementById('nr-svc-section');if(svcs)svcs.style.display='none';
+  const devs=document.getElementById('nr-device-section');if(devs)devs.style.display='none';
+  const asgn=document.getElementById('nr-assign-section');if(asgn)asgn.style.display='none';
+  const sug=document.getElementById('nr-suggest');if(sug)sug.classList.remove('open');
+  const ib=document.getElementById('nr-imei-body');if(ib)ib.style.display='none';
+  const ic=document.getElementById('nr-imei-chev');if(ic)ic.style.transform='';
+  // Set today's date
+  const d=document.getElementById('nr-dropoff');if(d)d.value=todayStr();
+  // Populate tech dropdown
+  const tsel=document.getElementById('nr-tech');
+  if(tsel){
+    tsel.innerHTML='<option value="">— Unassigned —</option>';
+    try{getActiveTechs().forEach(t=>{tsel.innerHTML+=`<option value="${t.name}">${t.name}</option>`;});}catch(e){}
+  }
+  const modal=document.getElementById('new-repair-modal');
+  if(!modal){toast('New repair modal not found','err');return;}
+  modal.classList.add('open');
+  setTimeout(()=>document.getElementById('nr-name')?.focus(),100);
+  }catch(e){console.error('openNewRepairModal error:',e);toast('Error: '+e.message,'err');}
+}
+
+function nrSelectDevType(el){
+  const type=el.dataset.type;
+  // If already selected, deselect it
+  if(nrDevType===type){
+    el.classList.remove('selected');
+    nrDevType='';nrSelectedSvc=[];nrSubSelections={};
+    document.getElementById('nr-svc-section').style.display='none';
+    document.getElementById('nr-device-section').style.display='none';
+    document.getElementById('nr-assign-section').style.display='none';
+    document.getElementById('nr-svc-chips').innerHTML='';
+    document.getElementById('nr-svc-sub').innerHTML='';
+    return;
+  }
+  document.querySelectorAll('.dev-type-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  nrDevType=type;
+  nrSelectedSvc=[];nrSubSelections={};
+  nrRenderSvcChips();
+  document.getElementById('nr-svc-section').style.display='block';
+  document.getElementById('nr-device-section').style.display='block';
+  document.getElementById('nr-assign-section').style.display='block';
+  document.getElementById('nr-qual-field').style.display='none';
+  document.getElementById('nr-misc-wrap').style.display='none';
+  document.getElementById('nr-svc-sub').innerHTML='';
+}
+
+function nrRenderSvcChips(){
+  try{
+    const cat=nrDevType==='tablet'?'phone':nrDevType;
+    const list=getSvcList(cat);
+    const isPhone=nrDevType==='phone';
+    const container=document.getElementById('nr-svc-chips');
+    if(!container)return;
+    container.innerHTML=list.filter(s=>!s.phoneOnly||isPhone).map(s=>`
+      <div class="svc-chip${nrSelectedSvc.includes(s.id)?' selected':''}${s.misc?' misc':''}"
+        data-id="${s.id}" onclick="nrToggleSvc('${s.id}')">${escH(s.label)}</div>`).join('');
+  }catch(e){toast('Error loading services: '+e.message,'err');console.error(e);}
+}
+
+function nrToggleSvc(id){
+  try{
+    const cat=nrDevType==='tablet'?'phone':nrDevType;
+    const svc=getSvcList(cat).find(s=>s.id===id);
+    if(!svc)return;
+    const idx=nrSelectedSvc.indexOf(id);
+    if(idx>=0){nrSelectedSvc.splice(idx,1);delete nrSubSelections[id];}
+    else nrSelectedSvc.push(id);
+    nrRenderSvcChips();
+    nrRenderSubSelects();
+    document.getElementById('nr-qual-field').style.display=nrSelectedSvc.includes('screen')?'block':'none';
+    document.getElementById('nr-misc-wrap').style.display=nrSelectedSvc.includes('misc')?'block':'none';
+  }catch(e){toast('Error selecting service: '+e.message,'err');console.error(e);}
+}
+
+function nrRenderSubSelects(){
+  try{
+    const cat=nrDevType==='tablet'?'phone':nrDevType;
+    const list=getSvcList(cat);
+    const container=document.getElementById('nr-svc-sub');
+    if(!container)return;
+    let html='';
+    nrSelectedSvc.forEach(id=>{
+      const svc=list.find(s=>s.id===id);
+      if(svc?.sub){
+        html+=`<div style="margin-bottom:6px;">
+          <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">${escH(svc.label)} — select option:</div>
+          <div class="svc-sub">
+            ${svc.sub.map(opt=>`<div class="svc-sub-chip${(nrSubSelections[id]||[]).includes(opt)?' selected':''}"
+              onclick="nrToggleSub('${id}','${opt.replace(/'/g,"\\'")}')">${escH(opt)}</div>`).join('')}
+          </div>
+        </div>`;
+      }
+    });
+    container.innerHTML=html;
+  }catch(e){toast('Error rendering options: '+e.message,'err');console.error(e);}
+}
+
+function nrToggleSub(svcId,opt){
+  try{
+    if(!nrSubSelections[svcId])nrSubSelections[svcId]=[];
+    const arr=nrSubSelections[svcId];
+    if(opt==='Both'){nrSubSelections[svcId]=['Both'];}
+    else{
+      const bi=arr.indexOf('Both');if(bi>=0)arr.splice(bi,1);
+      const i=arr.indexOf(opt);
+      if(i>=0)arr.splice(i,1);else arr.push(opt);
+    }
+    nrRenderSubSelects();
+  }catch(e){toast('Error: '+e.message,'err');console.error(e);}
+}
+
+function nrAutoCapFirst(el){
+  const v=el.value;
+  if(v.length===1)el.value=v.toUpperCase();
+  else if(v.length>1&&el.selectionStart===1)el.value=v[0].toUpperCase()+v.slice(1);
+}
+
+function nrAutoCapName(el){
+  // Cap first letter of each word
+  const pos=el.selectionStart;
+  el.value=el.value.replace(/\b\w/g,c=>c.toUpperCase());
+  try{el.setSelectionRange(pos,pos);}catch(e){}
+}
+
+function nrFmtPhone(el){
+  let v=el.value.replace(/\D/g,'').slice(0,10);
+  if(v.length>6)v=`(${v.slice(0,3)}) ${v.slice(3,6)}-${v.slice(6)}`;
+  else if(v.length>3)v=`(${v.slice(0,3)}) ${v.slice(3)}`;
+  else if(v.length)v=`(${v}`;
+  el.value=v;
+}
+
+function nrToggleImei(toggle){
+  const body=document.getElementById('nr-imei-body');
+  const chev=document.getElementById('nr-imei-chev');
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  if(chev)chev.style.transform=open?'':'rotate(180deg)';
+}
+
+function nrSuggest(){
+  const q=(document.getElementById('nr-name')?.value||'').toLowerCase().trim();
+  const ph=(document.getElementById('nr-ph1')?.value||'').replace(/\D/g,'');
+  const drop=document.getElementById('nr-suggest');
+  if(!drop)return;
+  if(!q&&ph.length<4){drop.classList.remove('open');return;}
+  const seen=new Set(),matches=[];
+  repairs.forEach(r=>{
+    const key=(r.CustomerName||'')+'|'+(r.Phone1||'');
+    if(seen.has(key))return;
+    const nm=(r.CustomerName||'').toLowerCase();
+    const matchN=q&&nm.includes(q);
+    const matchP=ph.length>=4&&phoneRaw(r.Phone1||'').includes(ph);
+    if(matchN||matchP){seen.add(key);matches.push(r);}
+  });
+  if(!matches.length){drop.classList.remove('open');return;}
+  drop.innerHTML=matches.slice(0,6).map(r=>`
+    <div class="nr-suggest-item" onclick="nrPickCustomer(${JSON.stringify(r.CustomerName||'').replace(/"/g,'&quot;')},${JSON.stringify(r.Phone1||'').replace(/"/g,'&quot;')},${JSON.stringify(r.Phone2||'').replace(/"/g,'&quot;')})">
+      <div class="nr-suggest-name">${escH(r.CustomerName||'—')}</div>
+      <div class="nr-suggest-sub">${fmtPhoneDisp(r.Phone1)}${r.Phone2?' · '+fmtPhoneDisp(r.Phone2):''}</div>
+    </div>`).join('');
+  drop.classList.add('open');
+}
+
+function nrPickCustomer(name,ph1,ph2){
+  const n=document.getElementById('nr-name');if(n)n.value=name;
+  const p1=document.getElementById('nr-ph1');if(p1)p1.value=fmtPhoneDisp(ph1)||'';
+  const p2=document.getElementById('nr-ph2');if(p2)p2.value=fmtPhoneDisp(ph2)||'';
+  document.getElementById('nr-suggest').classList.remove('open');
+}
+
+// Close suggest on outside click
+document.addEventListener('click',function(e){
+  if(!e.target.closest('#nr-name')&&!e.target.closest('#nr-ph1')&&!e.target.closest('#nr-suggest')){
+    const d=document.getElementById('nr-suggest');if(d)d.classList.remove('open');
+  }
+});
+
+function nrBuildRepairName(){
+  const cat=nrDevType==='tablet'?'phone':nrDevType;
+  const list=getSvcList(cat);
+  const device=document.getElementById('nr-device')?.value.trim()||'';
+  const parts=nrSelectedSvc.map(id=>{
+    const svc=list.find(s=>s.id===id);
+    if(!svc)return'';
+    if(svc.misc){const mt=document.getElementById('nr-misc-text')?.value.trim();return mt||'Misc. Labor';}
+    const sub=nrSubSelections[id];
+    if(sub&&sub.length)return`${svc.label} (${sub.join(' & ')})`;
+    return svc.label;
+  }).filter(Boolean);
+  return device?(device+(parts.length?' – '+parts.join(' + '):'')):parts.join(' + ');
+}
+
+function nrSave(){
+  try{
+  if(!cu){toast('Please log in first','err');return;}
+  if(!checkRole('user')){toast('Access denied','err');return;}
+  const name=(document.getElementById('nr-name')?.value||'').trim();
+  const ph1=(document.getElementById('nr-ph1')?.value||'').trim();
+  const loc=(document.getElementById('nr-loc')?.value||'').trim();
+  const device=(document.getElementById('nr-device')?.value||'').trim();
+  if(!name){toast('Customer name is required','err');document.getElementById('nr-name')?.focus();return;}
+  if(!ph1){toast('Primary phone number is required','err');document.getElementById('nr-ph1')?.focus();return;}
+  if(!nrDevType){toast('Select a device type','err');return;}
+  if(!nrSelectedSvc.length){toast('Select at least one repair service','err');return;}
+  if(!device){toast('Enter the device name','err');document.getElementById('nr-device')?.focus();return;}
+  if(!loc){toast('Select a store location','err');document.getElementById('nr-loc')?.focus();return;}
+  // Validate sub-selections
+  const cat=nrDevType==='tablet'?'phone':nrDevType;
+  const list=getSvcList(cat);
+  for(const id of nrSelectedSvc){
+    const svc=list.find(s=>s.id===id);
+    if(svc?.sub&&!(nrSubSelections[id]?.length)){
+      toast(`Select an option for ${svc.label}`,'err');return;
+    }
+  }
+  const repairName=nrBuildRepairName();
+  const issueNotes=(document.getElementById('nr-issue')?.value||'').trim();
+  const qual=(document.getElementById('nr-qual')?.value||'');
+  const newId=genId(loc);
+  const nr={
+    ID:newId,
+    CustomerName:name,
+    Phone1:ph1,
+    Phone2:(document.getElementById('nr-ph2')?.value||'').trim(),
+    CustomerNotes:'',
+    Flagged:false,FlagReason:'',
+    Device:device,
+    Category:list.find(s=>s.id===nrSelectedSvc[0])?.label||'',
+    Categories:nrSelectedSvc.map(id=>list.find(s=>s.id===id)?.label||id),
+    RepairName:repairName,
+    Quality:qual,
+    IMEI:(document.getElementById('nr-imei')?.value||'').trim(),
+    Passcode:(document.getElementById('nr-pass')?.value||'').trim(),
+    AssignedTo:(document.getElementById('nr-tech')?.value||''),
+    Location:loc,
+    Status:'Intake & Acceptance',
+    DropoffDate:(document.getElementById('nr-dropoff')?.value||todayStr()),
+    Quote:(document.getElementById('nr-quote')?.value||''),
+    DeviceType:nrDevType,
+    CreatedBy:nrCreatedBy||getActiveUser()||cu?.name||'Staff',
+    Notes:'',HandoffNotes:'',ActivityLog:[],_local:true,
+    CreatedAt:new Date().toISOString()
+  };
+  // Store issue notes as first note
+  if(issueNotes){
+    nr.NotesArr=[{text:issueNotes,by:nrCreatedBy||getActiveUser()||cu?.name||'Staff',ts:nowTs(),type:'intake'}];
+    nr.Notes=`[${nowTs()} — ${nrCreatedBy||getActiveUser()||'Staff'}] ${issueNotes}`;
+  }
+  logAct(nr,`Task created by ${nrCreatedBy||getActiveUser()||'Staff'}`,nrCreatedBy||getActiveUser()||cu?.name);
+  pushNotif('new',`${nrCreatedBy||getActiveUser()||'Staff'} created ${repairName} for ${name}`,newId,repairName,nrCreatedBy||getActiveUser(),loc);
+  repairs.unshift(nr);
+  renderRepairs();
+  closeM('new-repair-modal');
+  toast(`Repair ${newId} created`,'ok');
+  pushAllToCloud();
+  }catch(e){toast('Error creating repair: '+e.message,'err');console.error('nrSave error:',e);}
+}
+
+// ── SERVICE SETTINGS ──
+let svcSettingsCat='phone';
+function openSvcSettings(){
+  svcSettingsCat='phone';
+  document.querySelectorAll('#svc-cat-tabs .btn').forEach(b=>b.classList.toggle('active',b.dataset.cat==='phone'));
+  nrRenderSvcSettings();
+  document.getElementById('svc-settings-modal').classList.add('open');
+}
+
+function svcSettingsTab(el){
+  svcSettingsCat=el.dataset.cat;
+  document.querySelectorAll('#svc-cat-tabs .btn').forEach(b=>b.classList.toggle('active',b===el));
+  nrRenderSvcSettings();
+}
+
+function nrRenderSvcSettings(){
+  const list=getSvcList(svcSettingsCat);
+  const el=document.getElementById('svc-settings-list');
+  if(!el)return;
+  el.innerHTML=list.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:7px;">
+      <span style="flex:1;font-size:13px;color:var(--text);">${escH(s.label)}</span>
+      ${s.misc?'':`<button class="btn sm red" onclick="svcRemoveService(${i})" style="padding:3px 8px;font-size:10px;">Remove</button>`}
+    </div>`).join('');
+}
+
+function svcAddService(){
+  const inp=document.getElementById('svc-new-name');
+  const name=(inp?.value||'').trim();
+  if(!name){toast('Enter a service name','err');return;}
+  const list=getSvcList(svcSettingsCat);
+  list.splice(list.length-1,0,{id:'custom_'+Date.now(),label:name,sub:null});
+  saveSvcList(svcSettingsCat,list);
+  nrRenderSvcSettings();
+  if(inp)inp.value='';
+  toast('Service added','ok');
+}
+
+function svcRemoveService(idx){
+  const list=getSvcList(svcSettingsCat);
+  list.splice(idx,1);
+  saveSvcList(svcSettingsCat,list);
+  nrRenderSvcSettings();
+  toast('Service removed','ok');
+}
+
 
 // Update bell dot every 30 seconds for TTL countdown
 setInterval(()=>{pruneNotifs();updateBellDot();},30000);
@@ -7211,6 +7663,226 @@ document.addEventListener('DOMContentLoaded',()=>{setTimeout(updateBellDot,1000)
     <div class="cfoot">
       <button class="btn" onclick="closeM('chip-edit-modal')">Cancel</button>
       <button class="btn blue" onclick="saveChipEditModal()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW REPAIR MODAL (unified single window) -->
+<div class="cov" id="new-repair-modal">
+  <div class="cmodal" style="max-width:580px;">
+    <div class="chd">
+      <div>
+        <div class="ctitle">New Repair Ticket</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:1px;">Log the device, customer, and what they're paying</div>
+      </div>
+      <button class="cclose" onclick="closeM('new-repair-modal')">✕</button>
+    </div>
+    <div class="cbody" style="max-height:75vh;overflow-y:auto;">
+
+      <!-- ① CUSTOMER -->
+      <div class="nr-section">
+        <div class="nr-section-hdr">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Customer
+        </div>
+        <div class="nr-row">
+          <div class="ff" style="position:relative;">
+            <label class="nr-label">Name *</label>
+            <input class="nr-input" id="nr-name" type="text" placeholder="Jane Doe" oninput="nrAutoCapName(this);nrSuggest()" autocomplete="off"/>
+            <div class="nr-suggest" id="nr-suggest"></div>
+          </div>
+        </div>
+        <div class="nr-row">
+          <div class="ff">
+            <label class="nr-label">Primary Phone *</label>
+            <input class="nr-input" id="nr-ph1" type="tel" placeholder="(832) 000-0000" oninput="nrFmtPhone(this);nrSuggest()"/>
+          </div>
+          <div class="ff">
+            <label class="nr-label">Alt Phone</label>
+            <input class="nr-input" id="nr-ph2" type="tel" placeholder="Optional" oninput="nrFmtPhone(this)"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- ② DEVICE TYPE -->
+      <div class="nr-section">
+        <div class="nr-section-hdr">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+          Device Type
+        </div>
+        <div class="dev-type-chips" id="nr-dev-types">
+          <div class="dev-type-chip" data-type="phone" onclick="nrSelectDevType(this)">
+            <span class="dt-icon">📱</span><span class="dt-label">Phone</span>
+          </div>
+          <div class="dev-type-chip" data-type="tablet" onclick="nrSelectDevType(this)">
+            <span class="dt-icon">📟</span><span class="dt-label">Tablet</span>
+          </div>
+          <div class="dev-type-chip" data-type="computer" onclick="nrSelectDevType(this)">
+            <span class="dt-icon">💻</span><span class="dt-label">Computer</span>
+          </div>
+          <div class="dev-type-chip" data-type="console" onclick="nrSelectDevType(this)">
+            <span class="dt-icon">🎮</span><span class="dt-label">Game Console</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ③ REPAIR SERVICES (shown after device type selected) -->
+      <div class="nr-section" id="nr-svc-section" style="display:none;">
+        <div class="nr-section-hdr">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+          Repair Services <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3);margin-left:4px;">— select all that apply</span>
+        </div>
+        <div class="svc-chips" id="nr-svc-chips"></div>
+        <div id="nr-svc-sub" style="margin-top:8px;"></div>
+        <!-- Misc Labor open field -->
+        <div id="nr-misc-wrap" style="display:none;margin-top:8px;">
+          <input class="nr-input" id="nr-misc-text" type="text" placeholder="Describe the misc. labor…" oninput="nrAutoCapFirst(this)"/>
+        </div>
+      </div>
+
+      <!-- ④ DEVICE NAME + ISSUE NOTES -->
+      <div class="nr-section" id="nr-device-section" style="display:none;">
+        <div class="nr-section-hdr">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Device &amp; Issue
+        </div>
+        <div class="nr-field">
+          <label class="nr-label">Device Name *</label>
+          <input class="nr-input" id="nr-device" type="text" placeholder="e.g. iPhone 15 Pro Max, Dell XPS 15…" oninput="nrAutoCapFirst(this)" autocomplete="off"/>
+        </div>
+        <!-- Screen Quality — only for screen repair -->
+        <div class="nr-field" id="nr-qual-field" style="display:none;">
+          <label class="nr-label">Screen Quality</label>
+          <select class="nr-input" id="nr-qual">
+            <option value="">— Select quality —</option>
+            <option>OEM</option>
+            <option>Premium OLED</option>
+            <option>Aftermarket Basic</option>
+          </select>
+        </div>
+        <div class="nr-field">
+          <label class="nr-label">Reported Issue / Intake Notes</label>
+          <textarea class="nr-input" id="nr-issue" rows="3" placeholder="Describe what the customer reported, visible damage, condition on drop-off…" oninput="nrAutoCapFirst(this)" style="resize:vertical;min-height:72px;"></textarea>
+        </div>
+        <!-- IMEI / Passcode — collapsed by default -->
+        <div>
+          <div class="nr-collapse-toggle" onclick="nrToggleImei(this)">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;transition:transform .2s;" id="nr-imei-chev"><polyline points="6 9 12 15 18 9"/></svg>
+            IMEI / Serial # &amp; Passcode (optional)
+          </div>
+          <div class="nr-collapse-body" id="nr-imei-body" style="display:none;">
+            <div class="nr-row">
+              <div class="ff">
+                <label class="nr-label">IMEI / Serial #</label>
+                <input class="nr-input" id="nr-imei" type="text" placeholder="Optional" style="font-family:'Geist Mono',monospace;font-size:12px;"/>
+              </div>
+              <div class="ff">
+                <label class="nr-label">Passcode</label>
+                <input class="nr-input" id="nr-pass" type="text" placeholder="Optional"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑤ ASSIGNMENT -->
+      <div class="nr-section" id="nr-assign-section" style="display:none;">
+        <div class="nr-section-hdr">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          Assignment
+        </div>
+        <div class="nr-row">
+          <div class="ff">
+            <label class="nr-label">Technician</label>
+            <select class="nr-input" id="nr-tech"></select>
+          </div>
+          <div class="ff">
+            <label class="nr-label">Store Location *</label>
+            <select class="nr-input" id="nr-loc">
+              <option value="">— Select —</option>
+              <option>Dayton</option>
+              <option>Crosby</option>
+            </select>
+          </div>
+        </div>
+        <div class="nr-row">
+          <div class="ff">
+            <label class="nr-label">Drop-off Date</label>
+            <input class="nr-input" id="nr-dropoff" type="date"/>
+          </div>
+          <div class="ff">
+            <label class="nr-label">Quote ($)</label>
+            <input class="nr-input" id="nr-quote" type="number" placeholder="0.00" step="0.01" min="0"/>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="cfoot">
+      <button class="btn" onclick="closeM('new-repair-modal')">Cancel</button>
+      <button class="btn blue" onclick="nrSave()">Create Repair</button>
+    </div>
+  </div>
+</div>
+
+<!-- REPAIR SERVICES SETTINGS MODAL (admin only) -->
+<div class="cov" id="svc-settings-modal">
+  <div class="cmodal" style="max-width:540px;">
+    <div class="chd">
+      <div class="ctitle">⚙️ Repair Services</div>
+      <button class="cclose" onclick="closeM('svc-settings-modal')">✕</button>
+    </div>
+    <div class="cbody">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">Add, rename, or remove repair services per device category. Changes apply instantly across the app.</div>
+      <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;" id="svc-cat-tabs">
+        <button class="btn sm active" data-cat="phone" onclick="svcSettingsTab(this)">📱 Phone/Tablet</button>
+        <button class="btn sm" data-cat="computer" onclick="svcSettingsTab(this)">💻 Computer</button>
+        <button class="btn sm" data-cat="console" onclick="svcSettingsTab(this)">🎮 Console</button>
+      </div>
+      <div id="svc-settings-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div>
+      <div style="display:flex;gap:7px;">
+        <input class="fsel" id="svc-new-name" type="text" placeholder="New service name…" style="flex:1;" onkeydown="if(event.key==='Enter')svcAddService()"/>
+        <button class="btn blue" onclick="svcAddService()">+ Add</button>
+      </div>
+    </div>
+    <div class="cfoot">
+      <button class="btn" onclick="closeM('svc-settings-modal')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- WHO IS CREATING? SELECTOR -->
+<div class="cov" id="creator-modal">
+  <div class="cmodal" style="max-width:360px;">
+    <div class="chd">
+      <div>
+        <div class="ctitle">Who is creating this ticket?</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">Select your name to continue</div>
+      </div>
+    </div>
+    <div class="cbody">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="creator-card" onclick="nrPickCreator('Saul Lopez')">
+          <div class="creator-av" style="background:#e8eaf0;color:#111827;">SL</div>
+          <div class="creator-name">Saul Lopez</div>
+          <div class="creator-role">Owner</div>
+        </div>
+        <div class="creator-card" onclick="nrPickCreator('David Thompson')">
+          <div class="creator-av" style="background:#111827;color:#fff;">DT</div>
+          <div class="creator-name">David Thompson</div>
+          <div class="creator-role">Technician</div>
+        </div>
+        <div class="creator-card" onclick="nrPickCreator('Juan Reynoso')">
+          <div class="creator-av" style="background:var(--tealbg);color:var(--teal2);">JR</div>
+          <div class="creator-name">Juan Reynoso</div>
+          <div class="creator-role">Technician</div>
+        </div>
+        <div class="creator-card" onclick="nrPickCreator('Noemy Olvera')">
+          <div class="creator-av" style="background:var(--purplebg);color:var(--purple2);">NO</div>
+          <div class="creator-name">Noemy Olvera</div>
+          <div class="creator-role">Front Desk</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
