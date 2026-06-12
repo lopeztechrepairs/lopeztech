@@ -171,6 +171,33 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 .sw svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--text3);}
 .sinput{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:7px 10px 7px 28px;font-family:'Geist',sans-serif;font-size:12px;color:var(--text);outline:none;transition:border-color .15s;}
 .sinput:focus{border-color:var(--blue);}
+/* CUSTOMER TABLE */
+.cust-table{width:100%;border-collapse:collapse;margin-top:4px;}
+.cust-table th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);padding:8px 14px;text-align:left;border-bottom:2px solid var(--border);background:var(--bg2);}
+.cust-table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.cust-table tr.cust-row:hover td{background:var(--bg2);cursor:pointer;}
+.cust-table tr:last-child td{border-bottom:none;}
+.cust-rep-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text2);}
+/* CUSTOMER PROFILE PAGE */
+.cp-back{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;margin-bottom:16px;}
+.cp-back:hover{color:var(--text);}
+.cp-header{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:flex-start;gap:16px;margin-bottom:14px;flex-wrap:wrap;}
+.cp-av-xl{width:56px;height:56px;border-radius:50%;background:var(--navybg);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--navy);flex-shrink:0;}
+.cp-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.cp-stat{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
+.cp-stat-val{font-size:20px;font-weight:700;color:var(--text);}
+.cp-stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.cp-section{background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+.cp-section-hdr{padding:11px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);background:var(--bg2);display:flex;align-items:center;justify-content:space-between;}
+.cp-repair-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;gap:10px;}
+.cp-repair-row:last-child{border-bottom:none;}
+.cp-repair-row:hover{background:var(--bg2);}
+.cp-edit-field{display:flex;align-items:center;gap:8px;padding:9px 16px;border-bottom:1px solid var(--border);}
+.cp-edit-field:last-child{border-bottom:none;}
+.cp-edit-label{font-size:11px;color:var(--text3);width:90px;flex-shrink:0;}
+.cp-edit-input{flex:1;border:1px solid transparent;background:transparent;font-size:13px;color:var(--text);font-family:'Geist',sans-serif;outline:none;padding:4px 7px;border-radius:6px;transition:border-color .15s,background .15s;}
+.cp-edit-input:focus{background:var(--bg2);border-color:var(--border2);}
+.cp-saved-tick{font-size:10px;font-weight:600;color:var(--green2);margin-left:4px;display:none;}
 .fsel{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:6px 8px;font-family:'Geist',sans-serif;font-size:12px;color:var(--text);outline:none;cursor:pointer;}
 .fsel option{background:var(--bg);}
 
@@ -734,6 +761,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
     </div>
     <div id="view-pastdue" class="dpage"></div>
     <div id="view-search" class="dpage"></div>
+    <div id="view-customer-profile" class="dpage"></div>
     <div id="view-daily" class="dpage admin-only"></div>
     <div id="view-perf" class="dpage admin-only"></div>
     <div id="view-techs" class="dpage admin-only"></div>
@@ -4155,6 +4183,7 @@ function showView(id){
   pg.classList.add('active');
   if(id==='pastdue')renderPastDue(pg);
   if(id==='search')renderSearch(pg);
+  if(id==='customer-profile'){}// rendered by openCustomerProfile
   if(id==='daily')renderDaily(pg);
   if(id==='perf'){openSettings();return;}
   if(id==='techs'){openSettings();return;}
@@ -4178,17 +4207,36 @@ function renderPastDue(pg){
 }
 
 function renderSearch(pg){
-  pg.innerHTML=`<div class="ptop">Record Search</div><div class="psub2">Search customers by name or phone · Search repairs by device or title</div>
-    <div style="position:relative;max-width:420px;margin-bottom:14px;">
-      <svg style="position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--text3);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input class="sinput" id="cs-in" type="text" placeholder="Customer name, phone, or repair title…" oninput="doSearch()" style="padding-left:28px;width:100%;"/>
-    </div><div id="cs-res"></div>`;
+  pg.innerHTML=`
+    <div class="ptop">Record Search</div>
+    <div class="psub2">Search by customer name, phone number, or repair title</div>
+    <div style="position:relative;max-width:480px;margin-bottom:16px;">
+      <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text3);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input class="sinput" id="cs-in" type="text" placeholder="Customer name, phone, or repair title…" oninput="doSearch()" style="padding-left:30px;font-size:13px;"/>
+    </div>
+    <div id="cs-count" style="font-size:11px;color:var(--text3);margin-bottom:10px;"></div>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <table class="cust-table">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Phone Numbers</th>
+            <th style="text-align:center;">Repairs</th>
+            <th style="text-align:right;">Lifetime Spend</th>
+            <th style="width:32px;"></th>
+          </tr>
+        </thead>
+        <tbody id="cs-tbody"></tbody>
+      </table>
+    </div>`;
   setTimeout(()=>doSearch(),0);
 }
 
 function doSearch(){
   const q=(document.getElementById('cs-in')?.value||'').toLowerCase().trim();
-  const el=document.getElementById('cs-res');if(!el)return;
+  const tbody=document.getElementById('cs-tbody');
+  const countEl=document.getElementById('cs-count');
+  if(!tbody)return;
   const qR=q.replace(/\D/g,'');
   const seen=new Set(),customers=[];
 
@@ -4203,75 +4251,181 @@ function doSearch(){
     if(!matchName&&!matchPhone&&!matchRepair)return;
     seen.add(key);
     const hist=repairs.filter(x=>x.CustomerName===r.CustomerName&&phoneRaw(x.Phone1)===phoneRaw(r.Phone1));
+    const spend=hist.reduce((s,h)=>s+parseFloat(h.Quote||0),0);
+    const earliest=hist.map(h=>h.DropoffDate||h.CreatedAt||'').filter(Boolean).sort()[0]||'';
     const locCounts={};
-    hist.forEach(h=>{if(h.Location){locCounts[h.Location]=(locCounts[h.Location]||0)+1;}});
+    hist.forEach(h=>{if(h.Location)locCounts[h.Location]=(locCounts[h.Location]||0)+1;});
     const topLoc=Object.entries(locCounts).sort((a,b)=>b[1]-a[1])[0];
-    customers.push({name:r.CustomerName||'—',ph1:r.Phone1||'',ph2:r.Phone2||'',hist,topLoc:topLoc?topLoc[0]:null});
+    customers.push({name:r.CustomerName||'—',ph1:r.Phone1||'',ph2:r.Phone2||'',hist,spend,earliest,topLoc:topLoc?topLoc[0]:null});
   });
 
   customers.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
 
+  if(countEl)countEl.textContent=`${customers.length} customer${customers.length!==1?'s':''} ${q?'matching "'+q+'"':'total'}`;
+
   if(!customers.length){
-    el.innerHTML='<div style="color:var(--text3);font-size:12px;padding:10px 0;">No customers found.</div>';
+    tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">No customers found</td></tr>`;
     return;
   }
 
-  const countLine=`<div style="font-size:11px;color:var(--text3);margin-bottom:10px;">${customers.length} customer${customers.length!==1?'s':''} ${q?'matching "'+q+'"':'total'}</div>`;
-
-  el.innerHTML=countLine+customers.map((c,i)=>{
-    const open=c.hist.filter(h=>h.Status!=='Completed'&&h.Status!=='Past Due').length;
-    const done=c.hist.filter(h=>h.Status==='Completed').length;
-    const statusColor=open?'var(--blue)':'var(--green2)';
-    return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:7px;overflow:hidden;">
-      <!-- Header row — click to expand -->
-      <div onclick="toggleCustCard(${i})" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;user-select:none;" id="cs-hdr-${i}">
+  tbody.innerHTML=customers.map((c,i)=>{
+    const ini=(c.name).split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const sinceStr=c.earliest?c.earliest.slice(0,7):'';
+    return`<tr class="cust-row" onclick="openCustomerProfile(${i})" data-idx="${i}">
+      <td>
         <div style="display:flex;align-items:center;gap:10px;">
-          <div style="width:34px;height:34px;border-radius:50%;background:var(--navybg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);flex-shrink:0;">${(c.name).split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--navybg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);flex-shrink:0;">${ini}</div>
           <div>
             <div style="font-size:13px;font-weight:600;color:var(--text);">${escH(c.name)}</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:1px;">${c.ph1?fmtPhoneDisp(c.ph1):'No phone'}${c.ph2?' · '+fmtPhoneDisp(c.ph2):''}</div>
+            <div style="font-size:10px;color:var(--text3);">${sinceStr?'Customer since '+sinceStr:''}${c.topLoc?' · 📍 '+c.topLoc:''}</div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-          <div style="text-align:right;">
-            <div style="font-size:11px;font-weight:600;color:${statusColor};">${c.hist.length} repair${c.hist.length!==1?'s':''}</div>
-            ${c.topLoc?`<div style="font-size:10px;color:var(--text3);">📍 ${c.topLoc}</div>`:''}
-          </div>
-          <svg id="cs-chev-${i}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--text3);transition:transform .2s;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
+      </td>
+      <td>
+        <div style="font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:2px;">
+          ${c.ph1?`<span style="display:flex;align-items:center;gap:5px;"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;color:var(--text3);flex-shrink:0;"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.19 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.36-.36a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 15z"/></svg>${fmtPhoneDisp(c.ph1)}</span>`:'<span style="color:var(--text3);font-size:11px;">No phone</span>'}
+          ${c.ph2?`<span style="display:flex;align-items:center;gap:5px;color:var(--text3);"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;flex-shrink:0;"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.19 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.36-.36a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 15z"/></svg>${fmtPhoneDisp(c.ph2)}</span>`:''}
         </div>
-      </div>
-      <!-- Expandable history -->
-      <div id="cs-body-${i}" style="display:none;border-top:1px solid var(--border);">
-        <!-- Stats bar -->
-        <div style="display:flex;gap:6px;padding:8px 14px;background:var(--bg2);flex-wrap:wrap;">
-          ${open?`<span style="font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--bluebg);color:var(--blue);border:1px solid var(--blue);">${open} open</span>`:''}
-          ${done?`<span style="font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--greenbg);color:var(--green2);border:1px solid var(--green);">${done} completed</span>`:''}
-          ${c.topLoc?`<span style="font-size:10px;font-weight:500;padding:2px 9px;border-radius:20px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);">📍 Mostly ${c.topLoc}</span>`:''}
-        </div>
-        <!-- Repair list -->
-        ${c.hist.sort((a,b)=>new Date(b.CreatedAt||0)-new Date(a.CreatedAt||0)).map(h=>`
-          <div onclick="showView('repairs');setTimeout(()=>openRepair('${h.ID}'),100)" style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;gap:10px;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escH(h.RepairName||h.Device||'—')}</div>
-              <div style="font-size:10px;color:var(--text3);margin-top:1px;">${h.DropoffDate||''} ${h.Location?'· '+h.Location:''}</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-              ${h.Quote&&parseFloat(h.Quote)>0?`<span style="font-size:11px;font-weight:600;color:var(--green2);">$${parseFloat(h.Quote).toFixed(2)}</span>`:''}
-              <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:${h.Status==='Completed'?'var(--greenbg)':h.Status==='In Progress'?'var(--redbg)':'var(--bg3)'};color:${h.Status==='Completed'?'var(--green2)':h.Status==='In Progress'?'var(--red)':'var(--text3)'};border:1px solid ${h.Status==='Completed'?'var(--green)':h.Status==='In Progress'?'var(--red)':'var(--border)'};">${h.Status}</span>
-            </div>
-          </div>`).join('')}
-      </div>
-    </div>`;
+      </td>
+      <td style="text-align:center;"><span class="cust-rep-badge">${c.hist.length}</span></td>
+      <td style="text-align:right;font-size:13px;font-weight:600;color:var(--text);">$${c.spend.toFixed(2)}</td>
+      <td style="text-align:right;color:var(--text3);">›</td>
+    </tr>`;
   }).join('');
+
+  // Store customers list for profile access
+  window._csCustomers=customers;
+}
+
+function openCustomerProfile(idx){
+  const c=window._csCustomers?.[idx];
+  if(!c)return;
+  const pg=document.getElementById('view-customer-profile');
+  if(!pg)return;
+  // Switch to profile view
+  document.querySelectorAll('.dpage').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-repairs').style.display='none';
+  document.querySelectorAll('.ni').forEach(el=>el.classList.remove('active'));
+  pg.classList.add('active');
+
+  const ini=c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const totalSpend=c.hist.reduce((s,h)=>s+parseFloat(h.Quote||0),0);
+  const completed=c.hist.filter(h=>h.Status==='Completed').length;
+  const open=c.hist.filter(h=>h.Status!=='Completed'&&h.Status!=='Past Due').length;
+  const lastRepair=c.hist.sort((a,b)=>new Date(b.CreatedAt||0)-new Date(a.CreatedAt||0))[0];
+  const lastDate=lastRepair?.DropoffDate||lastRepair?.CreatedAt?.slice(0,10)||'—';
+  const earliest=c.hist.map(h=>h.DropoffDate||h.CreatedAt||'').filter(Boolean).sort()[0]||'';
+
+  pg.innerHTML=`
+    <div class="cp-back" onclick="showView('search')">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Record Search
+    </div>
+
+    <!-- Header -->
+    <div class="cp-header">
+      <div class="cp-av-xl">${ini}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:2px;">${escH(c.name)}</div>
+        <div style="font-size:12px;color:var(--text3);">${earliest?'Customer since '+earliest.slice(0,7):''}${c.topLoc?' · 📍 Mostly '+c.topLoc:''}</div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+          ${open?`<span style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:var(--bluebg);color:var(--blue);border:1px solid var(--blue);">${open} open</span>`:''}
+          ${completed?`<span style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:var(--greenbg);color:var(--green2);border:1px solid var(--green);">${completed} completed</span>`:''}
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="cp-stat-grid">
+      <div class="cp-stat"><div class="cp-stat-val">${c.hist.length}</div><div class="cp-stat-lbl">Total Repairs</div></div>
+      <div class="cp-stat"><div class="cp-stat-val">$${totalSpend.toFixed(2)}</div><div class="cp-stat-lbl">Lifetime Spend</div></div>
+      <div class="cp-stat"><div class="cp-stat-val">${c.topLoc||'—'}</div><div class="cp-stat-lbl">Top Location</div></div>
+      <div class="cp-stat"><div class="cp-stat-val">${lastDate}</div><div class="cp-stat-lbl">Last Visit</div></div>
+    </div>
+
+    <!-- Contact info — editable -->
+    <div class="cp-section">
+      <div class="cp-section-hdr">
+        <span>Contact Information</span>
+        <span style="font-size:10px;font-weight:400;color:var(--text3);">Click any field to edit</span>
+      </div>
+      <div class="cp-edit-field">
+        <span class="cp-edit-label">Full Name</span>
+        <input class="cp-edit-input" id="cpe-name" type="text" value="${escH(c.name)}" onblur="saveProfileField('name',this,${idx})"/>
+        <span class="cp-saved-tick" id="cpe-name-tick">✓ Saved</span>
+      </div>
+      <div class="cp-edit-field">
+        <span class="cp-edit-label">Primary Phone</span>
+        <input class="cp-edit-input" id="cpe-ph1" type="tel" value="${fmtPhoneDisp(c.ph1)}" oninput="fmtProfilePhone(this)" onblur="saveProfileField('ph1',this,${idx})"/>
+        <span class="cp-saved-tick" id="cpe-ph1-tick">✓ Saved</span>
+      </div>
+      <div class="cp-edit-field">
+        <span class="cp-edit-label">Alt Phone</span>
+        <input class="cp-edit-input" id="cpe-ph2" type="tel" value="${fmtPhoneDisp(c.ph2)}" placeholder="Add alt phone…" oninput="fmtProfilePhone(this)" onblur="saveProfileField('ph2',this,${idx})"/>
+        <span class="cp-saved-tick" id="cpe-ph2-tick">✓ Saved</span>
+      </div>
+    </div>
+
+    <!-- Repair history -->
+    <div class="cp-section">
+      <div class="cp-section-hdr">
+        <span>Repair History</span>
+        <span style="font-size:11px;font-weight:400;color:var(--text3);">${c.hist.length} repair${c.hist.length!==1?'s':''}</span>
+      </div>
+      ${c.hist.sort((a,b)=>new Date(b.CreatedAt||0)-new Date(a.CreatedAt||0)).map(h=>{
+        const statusColor=h.Status==='Completed'?'var(--green)':h.Status==='In Progress'?'var(--red)':h.Status==='Awaiting Parts'?'var(--amber)':h.Status==='Ready for Pickup'?'var(--blue)':'var(--text3)';
+        const statusBg=h.Status==='Completed'?'var(--greenbg)':h.Status==='In Progress'?'var(--redbg)':h.Status==='Awaiting Parts'?'var(--amberbg)':h.Status==='Ready for Pickup'?'var(--bluebg)':'var(--bg3)';
+        return`<div class="cp-repair-row" onclick="showView('repairs');setTimeout(()=>openRepair('${h.ID}'),150)">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escH(h.RepairName||h.Device||'—')}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">${h.DropoffDate?fmtDate(h.DropoffDate):'—'}${h.Location?' · '+h.Location:''}${h.AssignedTo?' · '+h.AssignedTo:''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            ${h.Quote&&parseFloat(h.Quote)>0?`<span style="font-size:13px;font-weight:600;color:var(--text);">$${parseFloat(h.Quote).toFixed(2)}</span>`:''}
+            <span style="font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px;background:${statusBg};color:${statusColor};border:1px solid ${statusColor};">${h.Status}</span>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--text3);"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function fmtProfilePhone(el){
+  let v=el.value.replace(/\D/g,'').slice(0,10);
+  if(v.length>6)v=`(${v.slice(0,3)}) ${v.slice(3,6)}-${v.slice(6)}`;
+  else if(v.length>3)v=`(${v.slice(0,3)}) ${v.slice(3)}`;
+  else if(v.length)v=`(${v}`;
+  el.value=v;
+}
+
+function saveProfileField(field,el,idx){
+  const c=window._csCustomers?.[idx];
+  if(!c)return;
+  const val=(el.value||'').trim();
+  const fkey=field==='name'?'CustomerName':field==='ph1'?'Phone1':'Phone2';
+  const oldVal=field==='name'?c.name:field==='ph1'?c.ph1:c.ph2;
+  if(val===fmtPhoneDisp(oldVal)||val===oldVal)return;
+  // Update all repairs for this customer
+  repairs.forEach(r=>{
+    if(r.CustomerName===c.name&&phoneRaw(r.Phone1)===phoneRaw(c.ph1)){
+      r[fkey]=val;
+    }
+  });
+  // Update local cache
+  if(field==='name')c.name=val;
+  else if(field==='ph1')c.ph1=val;
+  else c.ph2=val;
+  // Show saved tick
+  const tick=document.getElementById(`cpe-${field}-tick`);
+  if(tick){tick.style.display='inline';setTimeout(()=>tick.style.display='none',2000);}
+  lsSave(LS_R,repairs);
+  schedulePush();
+  toast(`${field==='name'?'Name':field==='ph1'?'Primary phone':'Alt phone'} updated`,'ok');
+  pushNotif('edit',`${getActiveUser()||'Staff'} updated ${field==='name'?'name':'phone'} for ${c.name}`,null,null,getActiveUser(),'');
 }
 
 function toggleCustCard(i){
-  const body=document.getElementById('cs-body-'+i);
-  const chev=document.getElementById('cs-chev-'+i);
-  if(!body)return;
-  const open=body.style.display!=='none';
-  body.style.display=open?'none':'block';
-  if(chev)chev.style.transform=open?'':'rotate(180deg)';
+  // legacy — no longer used but keep to avoid errors
 }
 
 
