@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#0F2236"/>
 <title>Lopez Tech Repairs — Time Clock</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -183,8 +187,106 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .form-input{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius2);padding:8px 12px;font-size:13px;font-family:inherit;color:var(--text);outline:none;width:100%;}
 .form-input:focus{border-color:var(--navy);}
 
-/* Paystub print */
-@media print{
+/* ── MOBILE SAFE AREAS (iPhone notch/home bar) ── */
+body{padding-bottom:env(safe-area-inset-bottom);}
+.app-header,.clock-topbar{padding-top:max(16px,env(safe-area-inset-top));}
+
+/* ── MOBILE OVERRIDES ── */
+@media(max-width:600px){
+  /* Header */
+  .brand-name{font-size:15px;}
+  .brand-sub{font-size:10px;}
+  .live-time{font-size:11px;}
+  .hdr-btn{padding:5px 10px;font-size:11px;}
+
+  /* Login */
+  .center-wrap{padding:12px;align-items:flex-start;padding-top:20px;}
+  .card{max-width:100%;}
+  .card-hdr{padding:18px 16px;}
+  .card-hdr-title{font-size:17px;}
+  .card-body{padding:16px;}
+  .emp-grid{grid-template-columns:1fr 1fr;gap:8px;}
+  .emp-card{padding:12px 8px;}
+  .emp-av{width:40px;height:40px;font-size:13px;}
+  .emp-name{font-size:12px;}
+  .emp-role{font-size:9px;}
+
+  /* PIN pad — bigger tap targets on mobile */
+  .pin-btn{padding:18px;font-size:22px;}
+  .pin-dot{width:16px;height:16px;}
+
+  /* Clock view */
+  .clock-topbar{padding:10px 14px;flex-wrap:wrap;gap:8px;}
+  .clock-topbar>div:last-child{width:100%;display:flex;justify-content:flex-end;}
+  .clock-time{font-size:42px;}
+  .clock-date{font-size:12px;}
+  .clock-main{padding:20px 16px;gap:16px;}
+  .clock-btns{max-width:100%;width:100%;}
+  .clock-btn{padding:18px;font-size:16px;}
+  .session-timer{font-size:13px;}
+  .loc-chips{gap:6px;}
+  .loc-chip{padding:8px 16px;font-size:12px;}
+  .today-summary{width:100%;max-width:100%;}
+
+  /* Admin layout */
+  .admin-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .admin-tabs::-webkit-scrollbar{display:none;}
+  .admin-tab{white-space:nowrap;padding:10px 14px;font-size:12px;}
+  .admin-content{padding:12px;}
+
+  /* Summary grid — 2 col on mobile */
+  .summary-grid{grid-template-columns:1fr 1fr;gap:8px;}
+  .summary-card{padding:12px;}
+  .summary-val{font-size:18px;}
+  .summary-lbl{font-size:9px;}
+
+  /* Week picker */
+  .week-picker{padding:10px 12px;}
+  .week-label{font-size:12px;}
+
+  /* Employee section header — stack on small screens */
+  .emp-section-hdr{flex-direction:column;align-items:flex-start;gap:8px;}
+  .emp-section-stats{width:100%;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border);}
+
+  /* Time table — scrollable */
+  .time-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .time-table td,.time-table th{padding:7px 10px;font-size:11px;white-space:nowrap;}
+
+  /* Pay footer — stack */
+  .pay-footer{flex-direction:column;gap:10px;align-items:flex-start;}
+  .pay-footer-amount{font-size:18px;}
+
+  /* Settings */
+  .settings-row{flex-direction:column;align-items:flex-start;gap:8px;}
+  .settings-input{width:100%!important;}
+
+  /* Modals — full screen on mobile */
+  .modal-overlay{padding:0;align-items:flex-end;}
+  .modal{max-width:100%;border-radius:20px 20px 0 0;max-height:92vh;display:flex;flex-direction:column;}
+  .modal-body{overflow-y:auto;flex:1;}
+  .form-row{flex-direction:column;gap:8px;}
+  .modal-footer{padding-bottom:max(14px,env(safe-area-inset-bottom));}
+
+  /* Paystub modal — centered on mobile */
+  #paystub-modal.open{align-items:center;padding:12px;}
+  #paystub-modal .modal{border-radius:16px;max-height:90vh;}
+
+  /* Timecard view */
+  #tc-content{padding:12px;}
+  .tc-week-label{font-size:12px!important;}
+}
+
+/* Touch active states for mobile */
+@media(hover:none){
+  .emp-card:active{border-color:var(--navy);background:#e8f0f8;transform:scale(.98);}
+  .clock-btn:active{transform:scale(.97);}
+  .pin-btn:active{background:var(--navy);color:#fff;transform:scale(.95);}
+  .loc-chip:active{background:var(--navy);color:#fff;}
+}
+
+/* Prevent double-tap zoom on buttons */
+button,.emp-card,.loc-chip,.svc-chip,.admin-tab{touch-action:manipulation;}
+
   body>*{display:none!important;}
   #paystub-print{display:block!important;}
 }
@@ -792,7 +894,7 @@ function renderTimecard(){
     days[e.date].push(e);
   });
 
-  let html='<div style="overflow-x:auto;"><table class="time-table"><thead><tr><th>Day</th><th>Clock In</th><th>Clock Out</th><th>Lunch</th><th>Breaks</th><th>Paid Hrs</th></tr></thead><tbody>';
+  let html='<div class="time-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><table class="time-table"><thead><tr><th>Day</th><th>Clock In</th><th>Clock Out</th><th>Lunch</th><th>Breaks</th><th>Paid Hrs</th></tr></thead><tbody>';
   Object.keys(days).sort().forEach(date=>{
     days[date].forEach(e=>{
       const cin=new Date(e.clockIn).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
@@ -920,7 +1022,7 @@ function renderAdminTimecards(){
           <div class="emp-stat"><div class="emp-stat-val">$${pay.toFixed(2)}</div><div class="emp-stat-lbl">Pay</div></div>
         </div>
       </div>
-      <div style="overflow-x:auto;">
+      <div class="time-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
         <table class="time-table">
           <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Lunch</th><th>Breaks</th><th>Paid</th><th></th></tr></thead>
           <tbody>${rows}</tbody>
