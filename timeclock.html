@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lopez Tech Repairs — Time Clock</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0F2236;--navy2:#1a3550;--blue:#1971c2;--bluebg:#e7f5ff;
+  --green:#2f9e44;--greenbg:#ebfbee;--green2:#237032;
+  --red:#c92a2a;--redbg:#fff5f5;--red2:#a61e1e;
+  --amber:#e67700;--amberbg:#fff3bf;--amber2:#b35900;
+  --bg:#f8f6f2;--bg2:#fff;--bg3:#f0ede8;
+  --border:#e5e0d8;--border2:#ccc8c0;
+  --text:#1a1a1a;--text2:#3d3d3d;--text3:#8a8178;
+  --shadow:0 4px 20px rgba(0,0,0,.10);
+  --shadow2:0 8px 32px rgba(0,0,0,.15);
+  --radius:12px;--radius2:8px;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── VIEWS ── */
+.view{display:none;min-height:100vh;flex-direction:column;}
+.view.active{display:flex;}
+
+/* ── HEADER ── */
+.app-header{background:var(--navy);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.brand{display:flex;flex-direction:column;}
+.brand-name{font-size:18px;font-weight:800;color:#fff;letter-spacing:-.3px;}
+.brand-sub{font-size:11px;color:rgba(255,255,255,.5);letter-spacing:.5px;text-transform:uppercase;margin-top:1px;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.hdr-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:var(--radius2);padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;}
+.hdr-btn:hover{background:rgba(255,255,255,.2);}
+.live-time{font-size:13px;font-weight:600;color:rgba(255,255,255,.7);font-variant-numeric:tabular-nums;}
+
+/* ── LOGIN / PIN VIEW ── */
+.center-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;}
+.card{background:var(--bg2);border-radius:16px;box-shadow:var(--shadow2);overflow:hidden;width:100%;max-width:420px;}
+.card-hdr{background:var(--navy);padding:24px;text-align:center;}
+.card-hdr-title{font-size:20px;font-weight:800;color:#fff;}
+.card-hdr-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:4px;}
+.card-body{padding:24px;}
+
+/* Employee selector grid */
+.emp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;}
+.emp-card{border:2px solid var(--border);border-radius:var(--radius);padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .15s;background:var(--bg);}
+.emp-card:hover{border-color:var(--navy);background:var(--bg3);}
+.emp-card.selected{border-color:var(--navy);background:#e8f0f8;}
+.emp-av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;}
+.emp-name{font-size:13px;font-weight:700;color:var(--text);text-align:center;line-height:1.2;}
+.emp-role{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;}
+
+/* PIN pad */
+.pin-display{display:flex;gap:10px;justify-content:center;margin:16px 0;}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);background:transparent;transition:background .15s;}
+.pin-dot.filled{background:var(--navy);border-color:var(--navy);}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.pin-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius2);padding:14px;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text);transition:all .15s;}
+.pin-btn:hover{background:var(--bg3);border-color:var(--border2);}
+.pin-btn:active{transform:scale(.96);}
+.pin-btn.del{font-size:14px;color:var(--text3);}
+.pin-btn.zero{grid-column:2;}
+.pin-error{color:var(--red);font-size:12px;text-align:center;min-height:18px;margin-top:8px;}
+
+/* ── CLOCK VIEW ── */
+.clock-view{flex:1;display:flex;flex-direction:column;}
+.clock-topbar{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+.clock-emp-info{display:flex;align-items:center;gap:10px;}
+.clock-emp-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
+.clock-emp-name{font-size:14px;font-weight:700;color:var(--text);}
+.clock-status-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:1.5px solid;}
+.status-out{background:var(--redbg);color:var(--red);border-color:var(--red);}
+.status-in{background:var(--greenbg);color:var(--green2);border-color:var(--green);}
+.status-lunch{background:var(--amberbg);color:var(--amber2);border-color:var(--amber);}
+.status-break{background:var(--bluebg);color:var(--blue);border-color:var(--blue);}
+
+.clock-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;gap:24px;}
+.clock-display{text-align:center;}
+.clock-time{font-size:56px;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums;letter-spacing:-2px;line-height:1;}
+.clock-date{font-size:14px;color:var(--text3);margin-top:6px;font-weight:500;}
+.session-timer{font-size:15px;font-weight:600;color:var(--text2);background:var(--bg3);padding:8px 20px;border-radius:20px;font-variant-numeric:tabular-nums;}
+
+.loc-select-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.loc-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;}
+.loc-chips{display:flex;gap:8px;}
+.loc-chip{padding:8px 20px;border-radius:20px;border:2px solid var(--border);background:var(--bg2);font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;}
+.loc-chip.selected{border-color:var(--navy);background:var(--navy);color:#fff;}
+
+.clock-btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:320px;}
+.clock-btn{padding:16px;border-radius:var(--radius);border:none;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.clock-btn:active{transform:scale(.98);}
+.btn-clockin{background:var(--navy);color:#fff;box-shadow:0 4px 16px rgba(15,34,54,.3);}
+.btn-clockin:hover{background:var(--navy2);}
+.btn-clockout{background:var(--red);color:#fff;box-shadow:0 4px 16px rgba(201,42,42,.3);}
+.btn-clockout:hover{background:var(--red2);}
+.btn-lunch{background:var(--amber);color:#fff;}
+.btn-lunch:hover{background:var(--amber2);}
+.btn-break{background:var(--blue);color:#fff;}
+.btn-break:hover{background:#1560a8;}
+.btn-disabled{background:var(--bg3);color:var(--text3);cursor:not-allowed;box-shadow:none;}
+
+.today-summary{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;width:100%;max-width:320px;}
+.today-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:10px;}
+.today-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid var(--border);}
+.today-row:last-child{border-bottom:none;font-weight:700;font-size:13px;color:var(--navy);}
+
+/* ── ADMIN VIEW ── */
+.admin-layout{flex:1;display:flex;flex-direction:column;}
+.admin-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+.admin-tab{padding:12px 20px;font-size:13px;font-weight:600;color:var(--text3);border-bottom:3px solid transparent;cursor:pointer;transition:all .15s;}
+.admin-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+.admin-content{flex:1;overflow-y:auto;padding:20px;}
+
+/* Summary cards */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;}
+.summary-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+.summary-val{font-size:24px;font-weight:800;color:var(--navy);}
+.summary-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;}
+
+/* Week picker */
+.week-picker{display:flex;align-items:center;gap:12px;margin-bottom:16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;}
+.week-nav{background:none;border:1px solid var(--border);border-radius:6px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background .15s;}
+.week-nav:hover{background:var(--bg3);}
+.week-label{flex:1;text-align:center;font-size:13px;font-weight:700;color:var(--text);}
+
+/* Employee time cards */
+.emp-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;}
+.emp-section-hdr{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--bg3);}
+.emp-section-left{display:flex;align-items:center;gap:10px;}
+.emp-section-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;}
+.emp-section-name{font-size:14px;font-weight:700;color:var(--text);}
+.emp-section-stats{display:flex;gap:12px;}
+.emp-stat{text-align:right;}
+.emp-stat-val{font-size:14px;font-weight:700;color:var(--navy);}
+.emp-stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;}
+
+/* Time entries table */
+.time-table{width:100%;border-collapse:collapse;}
+.time-table th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);padding:8px 16px;text-align:left;border-bottom:1px solid var(--border);}
+.time-table td{padding:8px 16px;font-size:12px;border-bottom:1px solid var(--border);color:var(--text2);}
+.time-table tr:last-child td{border-bottom:none;}
+.time-table tr:hover td{background:var(--bg);}
+.flag-row td{background:#fff8f8!important;}
+.flag-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:var(--redbg);color:var(--red);border:1px solid var(--red);}
+.edit-btn{background:none;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text3);transition:all .15s;}
+.edit-btn:hover{border-color:var(--navy);color:var(--navy);}
+
+/* Pay summary footer */
+.pay-footer{padding:14px 16px;border-top:2px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg3);}
+.pay-footer-detail{font-size:12px;color:var(--text3);}
+.pay-footer-amount{font-size:16px;font-weight:800;color:var(--navy);}
+.paystub-btn{background:var(--navy);color:#fff;border:none;border-radius:var(--radius2);padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s;}
+.paystub-btn:hover{background:var(--navy2);}
+
+/* Settings tab */
+.settings-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
+.settings-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border-bottom:none;}
+.settings-label{font-size:13px;font-weight:600;color:var(--text);}
+.settings-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.settings-input{background:var(--bg);border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;color:var(--text);outline:none;width:100px;text-align:right;}
+.settings-input:focus{border-color:var(--navy);}
+
+/* Modals */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border-radius:16px;box-shadow:var(--shadow2);width:100%;max-width:480px;overflow:hidden;}
+.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-size:15px;font-weight:700;color:var(--text);}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text3);padding:2px 6px;}
+.modal-body{padding:20px;}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+.btn{padding:8px 18px;border-radius:var(--radius2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;border:1.5px solid var(--border);background:var(--bg);color:var(--text);transition:all .15s;}
+.btn:hover{background:var(--bg3);}
+.btn-primary{background:var(--navy);color:#fff;border-color:var(--navy);}
+.btn-primary:hover{background:var(--navy2);}
+.btn-danger{background:var(--red);color:#fff;border-color:var(--red);}
+.form-row{display:flex;gap:10px;margin-bottom:12px;}
+.form-field{display:flex;flex-direction:column;gap:4px;flex:1;}
+.form-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;}
+.form-input{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius2);padding:8px 12px;font-size:13px;font-family:inherit;color:var(--text);outline:none;width:100%;}
+.form-input:focus{border-color:var(--navy);}
+
+/* Paystub print */
+@media print{
+  body>*{display:none!important;}
+  #paystub-print{display:block!important;}
+}
+#paystub-print{display:none;font-family:'Segoe UI',sans-serif;max-width:700px;margin:0 auto;padding:32px;color:#1a1a1a;}
+
+/* Alert/toast */
+.tc-toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;}
+.tc-toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN VIEW ── -->
+<div class="view active" id="view-login">
+  <div style="background:var(--navy);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+    <div class="brand">
+      <div class="brand-name">Lopez Tech Repairs</div>
+      <div class="brand-sub">Time Clock System</div>
+    </div>
+    <div class="live-time" id="header-time-login"></div>
+  </div>
+  <div class="center-wrap">
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-hdr-title" id="login-title">Select Your Name</div>
+        <div class="card-hdr-sub" id="login-sub">Who are you clocking in as?</div>
+      </div>
+      <div class="card-body">
+        <!-- Step 1: Employee selection -->
+        <div id="step-select">
+          <div class="emp-grid">
+            <div class="emp-card" data-emp="David Thompson" onclick="selectEmployee(this)">
+              <div class="emp-av" style="background:#d4edda;color:#27500A;">DT</div>
+              <div class="emp-name">David Thompson</div>
+              <div class="emp-role">Technician</div>
+            </div>
+            <div class="emp-card" data-emp="Juan Reynoso" onclick="selectEmployee(this)">
+              <div class="emp-av" style="background:#fde8c0;color:#633806;">JR</div>
+              <div class="emp-name">Juan Reynoso</div>
+              <div class="emp-role">Technician</div>
+            </div>
+            <div class="emp-card" data-emp="Noemy Olvera" onclick="selectEmployee(this)">
+              <div class="emp-av" style="background:#e8e6ff;color:#3C3489;">NO</div>
+              <div class="emp-name">Noemy Olvera</div>
+              <div class="emp-role">Front Desk</div>
+            </div>
+            <div class="emp-card" data-emp="admin" onclick="selectEmployee(this)">
+              <div class="emp-av" style="background:#1a3550;color:#fff;">SL</div>
+              <div class="emp-name">Admin</div>
+              <div class="emp-role">Owner</div>
+            </div>
+          </div>
+        </div>
+        <!-- Step 2: PIN entry -->
+        <div id="step-pin" style="display:none;">
+          <div id="pin-prompt" style="font-size:13px;font-weight:600;color:var(--text2);text-align:center;margin-bottom:12px;">Enter your PIN</div>
+          <div class="pin-display" id="pin-display">
+            <div class="pin-dot" id="d0"></div>
+            <div class="pin-dot" id="d1"></div>
+            <div class="pin-dot" id="d2"></div>
+            <div class="pin-dot" id="d3"></div>
+          </div>
+          <div class="pin-pad">
+            <button class="pin-btn" onclick="pinPress('1')">1</button>
+            <button class="pin-btn" onclick="pinPress('2')">2</button>
+            <button class="pin-btn" onclick="pinPress('3')">3</button>
+            <button class="pin-btn" onclick="pinPress('4')">4</button>
+            <button class="pin-btn" onclick="pinPress('5')">5</button>
+            <button class="pin-btn" onclick="pinPress('6')">6</button>
+            <button class="pin-btn" onclick="pinPress('7')">7</button>
+            <button class="pin-btn" onclick="pinPress('8')">8</button>
+            <button class="pin-btn" onclick="pinPress('9')">9</button>
+            <button class="pin-btn zero" onclick="pinPress('0')">0</button>
+            <button class="pin-btn del" onclick="pinDel()">⌫</button>
+          </div>
+          <div class="pin-error" id="pin-error"></div>
+          <button class="btn" onclick="backToSelect()" style="width:100%;margin-top:8px;">← Back</button>
+        </div>
+        <!-- Step 3: Setup PIN (first time) -->
+        <div id="step-setup" style="display:none;">
+          <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:16px;">First time setup — create a 4-digit PIN</div>
+          <div class="form-field" style="margin-bottom:10px;">
+            <label class="form-label">Address</label>
+            <input class="form-input" id="setup-address" type="text" placeholder="123 Main St, City TX 77000"/>
+          </div>
+          <div class="form-field" style="margin-bottom:10px;">
+            <label class="form-label">Last 4 of SSN</label>
+            <input class="form-input" id="setup-ssn" type="password" maxlength="4" placeholder="••••"/>
+          </div>
+          <div class="form-field" style="margin-bottom:10px;">
+            <label class="form-label">Create PIN (4 digits)</label>
+            <input class="form-input" id="setup-pin" type="password" maxlength="4" placeholder="••••"/>
+          </div>
+          <div class="form-field" style="margin-bottom:16px;">
+            <label class="form-label">Confirm PIN</label>
+            <input class="form-input" id="setup-pin2" type="password" maxlength="4" placeholder="••••"/>
+          </div>
+          <button class="clock-btn btn-clockin" onclick="finishSetup()" style="width:100%;">Save & Continue</button>
+          <div class="pin-error" id="setup-error"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CLOCK VIEW ── -->
+<div class="view" id="view-clock">
+  <div style="background:var(--navy);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;">
+    <div class="brand">
+      <div class="brand-name">Lopez Tech Repairs</div>
+      <div class="brand-sub">Time Clock</div>
+    </div>
+    <div class="live-time" id="header-time-clock"></div>
+  </div>
+  <div class="clock-topbar">
+    <div class="clock-emp-info">
+      <div class="clock-emp-av" id="clock-av" style="background:#d4edda;color:#27500A;">DT</div>
+      <div>
+        <div class="clock-emp-name" id="clock-name">David Thompson</div>
+        <div class="clock-status-badge status-out" id="clock-status">Clocked Out</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="hdr-btn" onclick="showView('timecard')">My Time Card</button>
+      <button class="hdr-btn" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="clock-main">
+    <div class="clock-display">
+      <div class="clock-time" id="clock-big">00:00:00</div>
+      <div class="clock-date" id="clock-date"></div>
+    </div>
+    <div class="session-timer" id="session-timer" style="display:none;">Session: <span id="session-elapsed">00:00:00</span></div>
+    <div class="loc-select-wrap">
+      <div class="loc-label">Store Location</div>
+      <div class="loc-chips">
+        <div class="loc-chip selected" id="loc-dayton" onclick="selectLoc('Dayton')">📍 Dayton</div>
+        <div class="loc-chip" id="loc-crosby" onclick="selectLoc('Crosby')">📍 Crosby</div>
+      </div>
+    </div>
+    <div class="clock-btns" id="clock-btns">
+      <button class="clock-btn btn-clockin" id="btn-clockin" onclick="clockAction('in')">🟢 Clock In</button>
+    </div>
+    <div class="today-summary" id="today-summary"></div>
+  </div>
+</div>
+
+<!-- ── TIMECARD VIEW (Employee) ── -->
+<div class="view" id="view-timecard">
+  <div style="background:var(--navy);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;">
+    <div class="brand">
+      <div class="brand-name">Lopez Tech Repairs</div>
+      <div class="brand-sub">My Time Card</div>
+    </div>
+  </div>
+  <div style="padding:0 0 0;flex:1;overflow-y:auto;">
+    <div style="padding:16px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);background:var(--bg2);">
+      <button class="btn" onclick="showView('clock')">← Back to Clock</button>
+      <div class="week-label" id="tc-week-label" style="flex:1;text-align:center;font-size:13px;font-weight:700;"></div>
+      <button class="week-nav" onclick="tcNavWeek(-1)">‹</button>
+      <button class="week-nav" onclick="tcNavWeek(1)">›</button>
+    </div>
+    <div style="padding:20px;" id="tc-content"></div>
+  </div>
+</div>
+
+<!-- ── ADMIN VIEW ── -->
+<div class="view" id="view-admin">
+  <div style="background:var(--navy);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;">
+    <div class="brand">
+      <div class="brand-name">Lopez Tech Repairs</div>
+      <div class="brand-sub">Admin — Time Management</div>
+    </div>
+    <button class="hdr-btn" onclick="logout()">Sign Out</button>
+  </div>
+  <div class="admin-layout">
+    <div class="admin-tabs">
+      <div class="admin-tab active" onclick="adminTab('overview',this)">Overview</div>
+      <div class="admin-tab" onclick="adminTab('timecards',this)">Time Cards</div>
+      <div class="admin-tab" onclick="adminTab('flags',this)">Flags</div>
+      <div class="admin-tab" onclick="adminTab('settings',this)">Settings</div>
+    </div>
+    <div class="admin-content" id="admin-content"></div>
+  </div>
+</div>
+
+<!-- EDIT ENTRY MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">Edit Time Entry</div>
+      <button class="modal-close" onclick="closeModal('edit-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Date</label>
+          <input class="form-input" id="edit-date" type="date"/>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Employee</label>
+          <select class="form-input" id="edit-emp"></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Clock In</label>
+          <input class="form-input" id="edit-in" type="time"/>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Clock Out</label>
+          <input class="form-input" id="edit-out" type="time"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Lunch Break</label>
+          <select class="form-input" id="edit-lunch">
+            <option value="0">No lunch</option>
+            <option value="30">30 min</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Quick Breaks</label>
+          <select class="form-input" id="edit-breaks">
+            <option value="0">None</option>
+            <option value="1">1 break (15 min)</option>
+            <option value="2">2 breaks (30 min)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Location</label>
+          <select class="form-input" id="edit-loc">
+            <option>Dayton</option>
+            <option>Crosby</option>
+          </select>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);">Note: edits are logged for transparency.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('edit-modal')">Cancel</button>
+      <button class="btn btn-danger" id="edit-delete-btn" onclick="deleteEntry()">Delete</button>
+      <button class="btn btn-primary" onclick="saveEditEntry()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYSTUB MODAL -->
+<div class="modal-overlay" id="paystub-modal">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-hdr">
+      <div class="modal-title">Paystub Preview</div>
+      <button class="modal-close" onclick="closeModal('paystub-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="paystub-preview" style="max-height:70vh;overflow-y:auto;"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('paystub-modal')">Close</button>
+      <button class="btn btn-primary" onclick="printPaystub()">🖨 Print / Save PDF</button>
+    </div>
+  </div>
+</div>
+
+<div id="paystub-print"></div>
+<div class="tc-toast" id="tc-toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// LOPEZ TECH — TIME CLOCK
+// Firebase config — same as main app
+// ═══════════════════════════════════════
+const FB_URL='https://lopeztechrepairs-default-rtdb.firebaseio.com';
+const FB_KEY=''; // filled from localStorage if available
+const LS_FB='lt_fb_url';
+const LS_FK='lt_fb_key';
+const LS_TC='lt_tc_v1'; // timeclock entries
+const LS_EMP='lt_emp_v1'; // employee profiles
+
+function getFbUrl(){return(localStorage.getItem(LS_FB)||'').replace(/\/$/,'');}
+function getFbKey(){return localStorage.getItem(LS_FK)||'';}
+function hasCloud(){return getFbUrl()&&getFbKey();}
+function lsLoad(k,d){try{return JSON.parse(localStorage.getItem(k)||'null')??d;}catch(e){return d;}}
+function lsSave(k,v){localStorage.setItem(k,JSON.stringify(v));}
+
+// ── STATE ──
+let currentEmp=null; // logged in employee
+let pinBuffer='';
+let pinMode='enter'; // 'enter' | 'setup'
+let entries=lsLoad(LS_TC,[]); // all time entries
+let empProfiles=lsLoad(LS_EMP,{
+  'David Thompson':{rate:14,pin:null,address:'',ssn4:''},
+  'Juan Reynoso':{rate:10,pin:null,address:'',ssn4:''},
+  'Noemy Olvera':{rate:10,pin:null,address:'',ssn4:''},
+});
+let selectedLoc='Dayton';
+let sessionStart=null;
+let sessionInterval=null;
+let currentWeekOffset=0;
+let adminWeekOffset=0;
+let editingEntryId=null;
+let paystubTarget=null;
+
+// Admin PIN
+const ADMIN_PIN='7679';
+
+// ── INIT ──
+setInterval(updateClocks,1000);
+updateClocks();
+loadFromCloud();
+
+function updateClocks(){
+  const now=new Date();
+  const t=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const d=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const el1=document.getElementById('header-time-login');if(el1)el1.textContent=t;
+  const el2=document.getElementById('header-time-clock');if(el2)el2.textContent=t;
+  const el3=document.getElementById('clock-big');if(el3)el3.textContent=t;
+  const el4=document.getElementById('clock-date');if(el4)el4.textContent=d;
+  if(sessionStart){
+    const elapsed=Math.floor((Date.now()-sessionStart)/1000);
+    const h=Math.floor(elapsed/3600).toString().padStart(2,'0');
+    const m=Math.floor((elapsed%3600)/60).toString().padStart(2,'0');
+    const s=(elapsed%60).toString().padStart(2,'0');
+    const el=document.getElementById('session-elapsed');if(el)el.textContent=`${h}:${m}:${s}`;
+  }
+}
+
+// ── VIEWS ──
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+id)?.classList.add('active');
+  if(id==='clock')renderClockView();
+  if(id==='timecard')renderTimecard();
+  if(id==='admin'){adminTab('overview',document.querySelector('.admin-tab'));}
+}
+
+// ── LOGIN FLOW ──
+function selectEmployee(card){
+  document.querySelectorAll('.emp-card').forEach(c=>c.classList.remove('selected'));
+  card.classList.add('selected');
+  const emp=card.dataset.emp;
+  document.getElementById('login-title').textContent=emp==='admin'?'Admin Access':emp;
+  document.getElementById('login-sub').textContent='Enter your PIN';
+  document.getElementById('step-select').style.display='none';
+  document.getElementById('step-pin').style.display='block';
+  currentEmp=emp;
+  pinBuffer='';
+  updatePinDisplay();
+  document.getElementById('pin-error').textContent='';
+  if(emp!=='admin'){
+    const profile=empProfiles[emp];
+    if(!profile||!profile.pin){
+      // First time setup
+      document.getElementById('login-title').textContent='First Time Setup';
+      document.getElementById('login-sub').textContent='Create your PIN to continue';
+      document.getElementById('step-pin').style.display='none';
+      document.getElementById('step-setup').style.display='block';
+    }
+  }
+}
+
+function backToSelect(){
+  document.getElementById('step-select').style.display='block';
+  document.getElementById('step-pin').style.display='none';
+  document.getElementById('step-setup').style.display='none';
+  document.getElementById('login-title').textContent='Select Your Name';
+  document.getElementById('login-sub').textContent='Who are you clocking in as?';
+  document.querySelectorAll('.emp-card').forEach(c=>c.classList.remove('selected'));
+  pinBuffer='';currentEmp=null;
+}
+
+function pinPress(digit){
+  if(pinBuffer.length>=4)return;
+  pinBuffer+=digit;
+  updatePinDisplay();
+  if(pinBuffer.length===4)setTimeout(checkPin,100);
+}
+
+function pinDel(){
+  pinBuffer=pinBuffer.slice(0,-1);
+  updatePinDisplay();
+  document.getElementById('pin-error').textContent='';
+}
+
+function updatePinDisplay(){
+  for(let i=0;i<4;i++){
+    document.getElementById('d'+i)?.classList.toggle('filled',i<pinBuffer.length);
+  }
+}
+
+function checkPin(){
+  if(currentEmp==='admin'){
+    if(pinBuffer===ADMIN_PIN){showView('admin');}
+    else{
+      document.getElementById('pin-error').textContent='Incorrect PIN';
+      pinBuffer='';updatePinDisplay();
+    }
+    return;
+  }
+  const profile=empProfiles[currentEmp];
+  if(pinBuffer===profile?.pin){
+    showView('clock');
+  } else {
+    document.getElementById('pin-error').textContent='Incorrect PIN. Try again.';
+    pinBuffer='';updatePinDisplay();
+  }
+}
+
+function finishSetup(){
+  const addr=(document.getElementById('setup-address')?.value||'').trim();
+  const ssn=(document.getElementById('setup-ssn')?.value||'').trim();
+  const pin=(document.getElementById('setup-pin')?.value||'').trim();
+  const pin2=(document.getElementById('setup-pin2')?.value||'').trim();
+  const err=document.getElementById('setup-error');
+  if(!addr){err.textContent='Address required';return;}
+  if(ssn.length!==4||!/^\d{4}$/.test(ssn)){err.textContent='Enter last 4 digits of SSN';return;}
+  if(pin.length!==4||!/^\d{4}$/.test(pin)){err.textContent='PIN must be 4 digits';return;}
+  if(pin!==pin2){err.textContent='PINs do not match';return;}
+  empProfiles[currentEmp]={...empProfiles[currentEmp],pin,address:addr,ssn4:ssn};
+  lsSave(LS_EMP,empProfiles);
+  saveEmpToCloud();
+  showView('clock');
+}
+
+function logout(){
+  currentEmp=null;pinBuffer='';
+  sessionStart=null;
+  clearInterval(sessionInterval);
+  document.getElementById('session-timer').style.display='none';
+  backToSelect();
+  showView('login');
+}
+
+// ── CLOCK VIEW ──
+function renderClockView(){
+  if(!currentEmp)return;
+  const profile=empProfiles[currentEmp];
+  // Avatar
+  const ini=currentEmp.split(' ').map(w=>w[0]).join('');
+  const avColors={'David Thompson':'#d4edda;color:#27500A','Juan Reynoso':'#fde8c0;color:#633806','Noemy Olvera':'#e8e6ff;color:#3C3489'};
+  const av=document.getElementById('clock-av');
+  if(av){av.textContent=ini;av.style.cssText=`background:${avColors[currentEmp]||'#e8eaf0;color:#111'};width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;`;}
+  document.getElementById('clock-name').textContent=currentEmp;
+  renderClockButtons();
+  renderTodaySummary();
+}
+
+function getOpenEntry(){
+  return entries.find(e=>e.emp===currentEmp&&!e.clockOut&&!e.flagged);
+}
+
+function getStatus(){
+  const open=getOpenEntry();
+  if(!open)return'out';
+  if(open.onLunch)return'lunch';
+  if(open.onBreak)return'break';
+  return'in';
+}
+
+function renderClockButtons(){
+  const status=getStatus();
+  const open=getOpenEntry();
+  const badgeEl=document.getElementById('clock-status');
+  const btnsEl=document.getElementById('clock-btns');
+  const sessionEl=document.getElementById('session-timer');
+
+  const labels={'out':'Clocked Out','in':'Clocked In','lunch':'On Lunch','break':'On Break'};
+  const bclass={'out':'status-out','in':'status-in','lunch':'status-lunch','break':'status-break'};
+  badgeEl.textContent=labels[status];
+  badgeEl.className='clock-status-badge '+bclass[status];
+
+  if(status==='in'||status==='lunch'||status==='break'){
+    sessionStart=open.clockIn;
+    sessionEl.style.display='block';
+  } else {
+    sessionStart=null;
+    sessionEl.style.display='none';
+  }
+
+  let html='';
+  if(status==='out'){
+    html=`<button class="clock-btn btn-clockin" onclick="clockAction('in')">🟢 Clock In</button>`;
+  } else {
+    html=`<button class="clock-btn btn-clockout" onclick="clockAction('out')">🔴 Clock Out</button>`;
+    if(status==='in'){
+      html+=`<button class="clock-btn btn-lunch" onclick="clockAction('lunch-out')">🍽 Start Lunch Break</button>`;
+      html+=`<button class="clock-btn btn-break" onclick="clockAction('break-out')">☕ Quick Break (15 min)</button>`;
+    }
+    if(status==='lunch'){
+      html+=`<button class="clock-btn btn-clockin" onclick="clockAction('lunch-in')" style="background:var(--green);">↩ End Lunch Break</button>`;
+    }
+    if(status==='break'){
+      html+=`<button class="clock-btn btn-clockin" onclick="clockAction('break-in')" style="background:var(--green);">↩ End Quick Break</button>`;
+    }
+  }
+  btnsEl.innerHTML=html;
+}
+
+function clockAction(action){
+  const now=Date.now();
+  const open=getOpenEntry();
+
+  if(action==='in'){
+    if(!selectedLoc){toast('Select a store location first');return;}
+    const entry={
+      id:'tc_'+now+'_'+Math.random().toString(36).slice(2,5),
+      emp:currentEmp,
+      location:selectedLoc,
+      clockIn:now,
+      clockOut:null,
+      lunchMinutes:0,
+      breakMinutes:0,
+      lunchStart:null,
+      breakStart:null,
+      onLunch:false,
+      onBreak:false,
+      date:new Date().toISOString().split('T')[0],
+      edited:false,
+      flagged:false
+    };
+    entries.push(entry);
+    toast('Clocked in at '+new Date(now).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}));
+  }
+  if(action==='out'&&open){
+    // Check if open for more than 16 hours — flag
+    const hrs=(now-open.clockIn)/3600000;
+    if(hrs>16){open.flagged=true;open.flagReason='Session over 16 hours — needs review';}
+    if(open.onLunch){open.lunchMinutes+=30;open.onLunch=false;open.lunchStart=null;}
+    if(open.onBreak){open.breakMinutes+=15;open.onBreak=false;open.breakStart=null;}
+    open.clockOut=now;
+    toast('Clocked out. Good work!');
+  }
+  if(action==='lunch-out'&&open){
+    open.onLunch=true;open.lunchStart=now;
+    toast('Lunch started — 30 min unpaid');
+    // Auto end lunch after 30 min
+    setTimeout(()=>{
+      const e=entries.find(x=>x.id===open.id);
+      if(e&&e.onLunch){e.onLunch=false;e.lunchMinutes+=30;e.lunchStart=null;saveEntries();renderClockButtons();renderTodaySummary();toast('Lunch ended automatically');}
+    },30*60*1000);
+  }
+  if(action==='lunch-in'&&open&&open.onLunch){
+    open.onLunch=false;open.lunchMinutes+=30;open.lunchStart=null;
+    toast('Lunch ended. Back to work!');
+  }
+  if(action==='break-out'&&open){
+    open.onBreak=true;open.breakStart=now;
+    toast('Quick break started — 15 min unpaid');
+    setTimeout(()=>{
+      const e=entries.find(x=>x.id===open.id);
+      if(e&&e.onBreak){e.onBreak=false;e.breakMinutes+=15;e.breakStart=null;saveEntries();renderClockButtons();renderTodaySummary();toast('Break ended automatically');}
+    },15*60*1000);
+  }
+  if(action==='break-in'&&open&&open.onBreak){
+    open.onBreak=false;open.breakMinutes+=15;open.breakStart=null;
+    toast('Break ended. Back to it!');
+  }
+
+  saveEntries();
+  renderClockButtons();
+  renderTodaySummary();
+}
+
+function renderTodaySummary(){
+  const today=new Date().toISOString().split('T')[0];
+  const todayEntries=entries.filter(e=>e.emp===currentEmp&&e.date===today);
+  const el=document.getElementById('today-summary');
+  if(!todayEntries.length){el.innerHTML='<div class="today-title">Today</div><div style="font-size:12px;color:var(--text3);">No entries yet today</div>';return;}
+
+  let totalMs=0,lunchMin=0,breakMin=0;
+  todayEntries.forEach(e=>{
+    const out=e.clockOut||Date.now();
+    totalMs+=(out-e.clockIn);
+    lunchMin+=e.lunchMinutes||0;
+    breakMin+=e.breakMinutes||0;
+  });
+  const unpaidMin=lunchMin+breakMin;
+  const paidMs=totalMs-(unpaidMin*60000);
+  const paidHrs=Math.max(0,paidMs/3600000);
+  const rate=empProfiles[currentEmp]?.rate||10;
+
+  el.innerHTML=`<div class="today-title">Today's Summary</div>
+    <div class="today-row"><span>Total time</span><span>${fmtHrs(totalMs/3600000)}</span></div>
+    <div class="today-row"><span>Lunch (unpaid)</span><span>${lunchMin} min</span></div>
+    <div class="today-row"><span>Breaks (unpaid)</span><span>${breakMin} min</span></div>
+    <div class="today-row"><span>Paid hours</span><span>${fmtHrs(paidHrs)}</span></div>
+    <div class="today-row"><span>Est. pay today</span><span>$${(paidHrs*rate).toFixed(2)}</span></div>`;
+}
+
+// ── TIMECARD VIEW (Employee) ──
+function renderTimecard(){
+  const week=getWeekRange(currentWeekOffset);
+  document.getElementById('tc-week-label').textContent=`Week of ${fmtDate(week.start)} – ${fmtDate(week.end)}`;
+  const empEntries=entries.filter(e=>e.emp===currentEmp&&e.date>=week.start&&e.date<=week.end&&!e.flagged);
+  const content=document.getElementById('tc-content');
+  if(!empEntries.length){content.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);">No entries for this week</div>';return;}
+
+  const rate=empProfiles[currentEmp]?.rate||10;
+  let totalPaidHrs=0;
+  const days={};
+  empEntries.forEach(e=>{
+    if(!days[e.date])days[e.date]=[];
+    days[e.date].push(e);
+  });
+
+  let html='<div style="overflow-x:auto;"><table class="time-table"><thead><tr><th>Day</th><th>Clock In</th><th>Clock Out</th><th>Lunch</th><th>Breaks</th><th>Paid Hrs</th></tr></thead><tbody>';
+  Object.keys(days).sort().forEach(date=>{
+    days[date].forEach(e=>{
+      const cin=new Date(e.clockIn).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+      const cout=e.clockOut?new Date(e.clockOut).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'—';
+      const paidHrs=calcPaidHrs(e);
+      totalPaidHrs+=paidHrs;
+      html+=`<tr><td>${fmtDate(date)}</td><td>${cin}</td><td>${cout}</td><td>${e.lunchMinutes} min</td><td>${e.breakMinutes} min</td><td><strong>${fmtHrs(paidHrs)}</strong></td></tr>`;
+    });
+  });
+  html+=`</tbody></table></div>`;
+  html+=`<div class="pay-footer" style="margin-top:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);">
+    <div><div class="pay-footer-detail">Week total · $${rate}/hr</div><div class="pay-footer-detail" style="margin-top:2px;">Mon–Sat</div></div>
+    <div class="pay-footer-amount">${fmtHrs(totalPaidHrs)} · $${(totalPaidHrs*rate).toFixed(2)}</div>
+  </div>`;
+  content.innerHTML=html;
+}
+
+function tcNavWeek(dir){currentWeekOffset+=dir;renderTimecard();}
+
+// ── ADMIN ──
+function adminTab(tab,el){
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  else document.querySelectorAll('.admin-tab')[['overview','timecards','flags','settings'].indexOf(tab)]?.classList.add('active');
+  const content=document.getElementById('admin-content');
+  if(tab==='overview')renderAdminOverview();
+  if(tab==='timecards')renderAdminTimecards();
+  if(tab==='flags')renderAdminFlags();
+  if(tab==='settings')renderAdminSettings();
+}
+
+function renderAdminOverview(){
+  const week=getWeekRange(adminWeekOffset);
+  const emps=['David Thompson','Juan Reynoso','Noemy Olvera'];
+  let totalPayout=0;
+  let cardHtml='';
+  emps.forEach(emp=>{
+    const empEntries=entries.filter(e=>e.emp===emp&&e.date>=week.start&&e.date<=week.end&&!e.flagged&&e.clockOut);
+    const rate=empProfiles[emp]?.rate||10;
+    const hrs=empEntries.reduce((s,e)=>s+calcPaidHrs(e),0);
+    const pay=hrs*rate;
+    totalPayout+=pay;
+    const status=getEmpCurrentStatus(emp);
+    cardHtml+=`<div class="summary-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div class="clock-status-badge ${status.cls}" style="font-size:10px;">${status.label}</div>
+      </div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px;">${emp.split(' ')[0]}</div>
+      <div class="summary-val">${fmtHrs(hrs)}</div>
+      <div class="summary-lbl">$${pay.toFixed(2)} this week</div>
+    </div>`;
+  });
+  const flagCount=entries.filter(e=>e.flagged).length;
+  document.getElementById('admin-content').innerHTML=`
+    <div style="margin-bottom:16px;">
+      <div class="week-picker">
+        <button class="week-nav" onclick="adminWeekOffset--;renderAdminOverview()">‹</button>
+        <div class="week-label">Week of ${fmtDate(week.start)} – ${fmtDate(week.end)}</div>
+        <button class="week-nav" onclick="adminWeekOffset++;renderAdminOverview()">›</button>
+      </div>
+      ${flagCount>0?`<div style="background:var(--redbg);border:1px solid var(--red);border-radius:var(--radius2);padding:10px 14px;margin-bottom:12px;font-size:12px;font-weight:600;color:var(--red);">⚑ ${flagCount} session${flagCount>1?'s':''} flagged for review — check the Flags tab</div>`:''}
+    </div>
+    <div class="summary-grid">${cardHtml}
+      <div class="summary-card" style="border:2px solid var(--navy);">
+        <div class="summary-val">$${totalPayout.toFixed(2)}</div>
+        <div class="summary-lbl">Total weekly payout</div>
+      </div>
+    </div>`;
+}
+
+function getEmpCurrentStatus(emp){
+  const open=entries.find(e=>e.emp===emp&&!e.clockOut&&!e.flagged);
+  if(!open)return{label:'Clocked Out',cls:'status-out'};
+  if(open.onLunch)return{label:'On Lunch',cls:'status-lunch'};
+  if(open.onBreak)return{label:'On Break',cls:'status-break'};
+  return{label:'Clocked In',cls:'status-in'};
+}
+
+function renderAdminTimecards(){
+  const week=getWeekRange(adminWeekOffset);
+  const emps=['David Thompson','Juan Reynoso','Noemy Olvera'];
+  let html=`<div class="week-picker" style="margin-bottom:16px;">
+    <button class="week-nav" onclick="adminWeekOffset--;adminTab('timecards')">‹</button>
+    <div class="week-label">Week of ${fmtDate(week.start)} – ${fmtDate(week.end)}</div>
+    <button class="week-nav" onclick="adminWeekOffset++;adminTab('timecards')">›</button>
+  </div>`;
+
+  emps.forEach(emp=>{
+    const empEntries=entries.filter(e=>e.emp===emp&&e.date>=week.start&&e.date<=week.end&&!e.flagged).sort((a,b)=>a.clockIn-b.clockIn);
+    const rate=empProfiles[emp]?.rate||10;
+    const ini=emp.split(' ').map(w=>w[0]).join('');
+    const avColors={'David Thompson':'background:#d4edda;color:#27500A','Juan Reynoso':'background:#fde8c0;color:#633806','Noemy Olvera':'background:#e8e6ff;color:#3C3489'};
+    let totalHrs=0;
+    empEntries.filter(e=>e.clockOut).forEach(e=>totalHrs+=calcPaidHrs(e));
+    const pay=totalHrs*rate;
+
+    let rows='';
+    if(!empEntries.length){
+      rows='<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:16px;">No entries this week</td></tr>';
+    } else {
+      empEntries.forEach(e=>{
+        const cin=new Date(e.clockIn).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+        const cout=e.clockOut?new Date(e.clockOut).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'Active';
+        const paidHrs=e.clockOut?calcPaidHrs(e):0;
+        rows+=`<tr>
+          <td>${fmtDate(e.date)}</td>
+          <td>${cin}</td>
+          <td>${cout}</td>
+          <td>${e.lunchMinutes} min</td>
+          <td>${e.breakMinutes} min</td>
+          <td><strong>${e.clockOut?fmtHrs(paidHrs):'—'}</strong></td>
+          <td><button class="edit-btn" onclick="openEditModal('${e.id}')">Edit</button></td>
+        </tr>`;
+      });
+    }
+
+    html+=`<div class="emp-section">
+      <div class="emp-section-hdr">
+        <div class="emp-section-left">
+          <div class="emp-section-av" style="${avColors[emp]}">${ini}</div>
+          <div class="emp-section-name">${emp}</div>
+        </div>
+        <div class="emp-section-stats">
+          <div class="emp-stat"><div class="emp-stat-val">${fmtHrs(totalHrs)}</div><div class="emp-stat-lbl">Paid hrs</div></div>
+          <div class="emp-stat"><div class="emp-stat-val">$${pay.toFixed(2)}</div><div class="emp-stat-lbl">Pay</div></div>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="time-table">
+          <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Lunch</th><th>Breaks</th><th>Paid</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div class="pay-footer">
+        <div>
+          <div class="pay-footer-detail">$${rate}/hr · ${emp.split(' ')[0]}</div>
+          <button class="paystub-btn" onclick="openPaystub('${emp}',${adminWeekOffset})" style="margin-top:6px;">📄 Generate Paystub</button>
+        </div>
+        <div class="pay-footer-amount">$${pay.toFixed(2)}</div>
+      </div>
+    </div>`;
+  });
+  // Add entry button
+  html+=`<button class="btn btn-primary" onclick="openAddEntry()" style="margin-top:8px;">+ Add Manual Entry</button>`;
+  document.getElementById('admin-content').innerHTML=html;
+}
+
+function renderAdminFlags(){
+  const flagged=entries.filter(e=>e.flagged);
+  if(!flagged.length){
+    document.getElementById('admin-content').innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);">No flagged sessions 👍</div>';
+    return;
+  }
+  let html='<div style="margin-bottom:14px;font-size:12px;color:var(--text3);">These sessions need your review. Edit or dismiss each one.</div>';
+  flagged.forEach(e=>{
+    const cin=new Date(e.clockIn).toLocaleString();
+    const cout=e.clockOut?new Date(e.clockOut).toLocaleString():'Still open';
+    html+=`<div class="emp-section" style="margin-bottom:10px;">
+      <div style="padding:12px 16px;background:var(--redbg);">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div><strong>${e.emp}</strong> · ${e.date} · ${e.location}</div>
+          <span class="flag-badge">⚑ Flagged</span>
+        </div>
+        <div style="font-size:11px;color:var(--red);margin-top:4px;">${e.flagReason||'Needs review'}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">In: ${cin} · Out: ${cout}</div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button class="edit-btn" onclick="openEditModal('${e.id}')">Edit Entry</button>
+          <button class="edit-btn" onclick="dismissFlag('${e.id}')" style="color:var(--green2);border-color:var(--green);">✓ Dismiss Flag</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('admin-content').innerHTML=html;
+}
+
+function dismissFlag(id){
+  const e=entries.find(x=>x.id===id);
+  if(e){e.flagged=false;e.flagReason='';}
+  saveEntries();
+  renderAdminFlags();
+}
+
+function renderAdminSettings(){
+  const emps=['David Thompson','Juan Reynoso','Noemy Olvera'];
+  let empRows=emps.map(emp=>{
+    const p=empProfiles[emp]||{};
+    return`<div class="settings-row">
+      <div><div class="settings-label">${emp}</div><div class="settings-sub">PIN ${p.pin?'set':'not set'} · ${p.address||'No address'}</div></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;color:var(--text3);">$</span>
+        <input class="settings-input" type="number" value="${p.rate||10}" min="1" step="0.5"
+          onchange="updateRate('${emp}',this.value)" style="width:70px;"/>
+        <span style="font-size:11px;color:var(--text3);">/hr</span>
+        <button class="edit-btn" onclick="resetPin('${emp}')">Reset PIN</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('admin-content').innerHTML=`
+    <div class="settings-section">
+      <div class="settings-title">Employee Pay Rates</div>
+      ${empRows}
+    </div>
+    <div class="settings-section">
+      <div class="settings-title">Firebase Connection</div>
+      <div class="settings-row">
+        <div><div class="settings-label">Database URL</div></div>
+        <input class="settings-input" type="text" id="s-fburl" value="${getFbUrl()}" style="width:240px;" placeholder="https://your-db.firebaseio.com"/>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-label">Database Key</div></div>
+        <input class="settings-input" type="password" id="s-fbkey" value="${getFbKey()}" style="width:240px;" placeholder="Auth key"/>
+      </div>
+      <button class="btn btn-primary" onclick="saveFbSettings()" style="margin-top:10px;">Save & Sync</button>
+    </div>`;
+}
+
+function updateRate(emp,val){
+  empProfiles[emp]={...empProfiles[emp],rate:parseFloat(val)||10};
+  lsSave(LS_EMP,empProfiles);
+  saveEmpToCloud();
+  toast('Rate updated for '+emp.split(' ')[0]);
+}
+
+function resetPin(emp){
+  if(!confirm(`Reset PIN for ${emp}? They will need to set up again.`))return;
+  empProfiles[emp]={...empProfiles[emp],pin:null};
+  lsSave(LS_EMP,empProfiles);
+  saveEmpToCloud();
+  toast('PIN reset for '+emp.split(' ')[0]);
+}
+
+function saveFbSettings(){
+  const url=(document.getElementById('s-fburl')?.value||'').trim();
+  const key=(document.getElementById('s-fbkey')?.value||'').trim();
+  localStorage.setItem(LS_FB,url);
+  localStorage.setItem(LS_FK,key);
+  toast('Firebase settings saved');
+  loadFromCloud();
+}
+
+// ── EDIT MODAL ──
+function openEditModal(id){
+  editingEntryId=id;
+  const e=entries.find(x=>x.id===id);
+  if(!e)return;
+  document.getElementById('edit-date').value=e.date;
+  const empSel=document.getElementById('edit-emp');
+  empSel.innerHTML=['David Thompson','Juan Reynoso','Noemy Olvera'].map(n=>`<option${n===e.emp?' selected':''}>${n}</option>`).join('');
+  document.getElementById('edit-in').value=e.clockIn?new Date(e.clockIn).toTimeString().slice(0,5):'';
+  document.getElementById('edit-out').value=e.clockOut?new Date(e.clockOut).toTimeString().slice(0,5):'';
+  document.getElementById('edit-lunch').value=e.lunchMinutes||0;
+  document.getElementById('edit-breaks').value=Math.round((e.breakMinutes||0)/15);
+  document.getElementById('edit-loc').value=e.location||'Dayton';
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function openAddEntry(){
+  editingEntryId=null;
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('edit-date').value=today;
+  const empSel=document.getElementById('edit-emp');
+  empSel.innerHTML=['David Thompson','Juan Reynoso','Noemy Olvera'].map(n=>`<option>${n}</option>`).join('');
+  document.getElementById('edit-in').value='09:00';
+  document.getElementById('edit-out').value='17:00';
+  document.getElementById('edit-lunch').value=30;
+  document.getElementById('edit-breaks').value=0;
+  document.getElementById('edit-loc').value='Dayton';
+  document.getElementById('edit-delete-btn').style.display='none';
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function saveEditEntry(){
+  const date=document.getElementById('edit-date').value;
+  const emp=document.getElementById('edit-emp').value;
+  const inTime=document.getElementById('edit-in').value;
+  const outTime=document.getElementById('edit-out').value;
+  const lunch=parseInt(document.getElementById('edit-lunch').value)||0;
+  const breaks=parseInt(document.getElementById('edit-breaks').value)||0;
+  const loc=document.getElementById('edit-loc').value;
+
+  const clockIn=new Date(date+'T'+inTime).getTime();
+  const clockOut=outTime?new Date(date+'T'+outTime).getTime():null;
+
+  if(editingEntryId){
+    const e=entries.find(x=>x.id===editingEntryId);
+    if(e){
+      e.date=date;e.emp=emp;e.clockIn=clockIn;e.clockOut=clockOut;
+      e.lunchMinutes=lunch;e.breakMinutes=breaks*15;e.location=loc;
+      e.edited=true;e.flagged=false;e.flagReason='';
+    }
+  } else {
+    entries.push({
+      id:'tc_manual_'+Date.now(),emp,location:loc,date,
+      clockIn,clockOut,lunchMinutes:lunch,breakMinutes:breaks*15,
+      onLunch:false,onBreak:false,edited:true,flagged:false,flagReason:''
+    });
+    document.getElementById('edit-delete-btn').style.display='';
+  }
+  saveEntries();
+  closeModal('edit-modal');
+  adminTab('timecards',null);
+  toast('Entry saved');
+}
+
+function deleteEntry(){
+  if(!editingEntryId)return;
+  if(!confirm('Delete this time entry permanently?'))return;
+  entries=entries.filter(x=>x.id!==editingEntryId);
+  saveEntries();
+  closeModal('edit-modal');
+  adminTab('timecards',null);
+  toast('Entry deleted');
+}
+
+// ── PAYSTUB ──
+function openPaystub(emp,weekOffset){
+  paystubTarget={emp,weekOffset};
+  const week=getWeekRange(weekOffset);
+  const profile=empProfiles[emp]||{};
+  const rate=profile.rate||10;
+  const empEntries=entries.filter(e=>e.emp===emp&&e.date>=week.start&&e.date<=week.end&&!e.flagged&&e.clockOut).sort((a,b)=>a.clockIn-b.clockIn);
+
+  let totalHrs=0;
+  const days={};
+  empEntries.forEach(e=>{
+    const hrs=calcPaidHrs(e);
+    totalHrs+=hrs;
+    const d=e.date;
+    if(!days[d])days[d]=[];
+    days[d].push({...e,paidHrs:hrs});
+  });
+  const gross=totalHrs*rate;
+
+  const payDate=getPayDate(week.end);
+  let dailyRows=Object.keys(days).sort().map(date=>{
+    const dayEntries=days[date];
+    const dayHrs=dayEntries.reduce((s,e)=>s+e.paidHrs,0);
+    const cin=new Date(dayEntries[0].clockIn).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    const cout=new Date(dayEntries[dayEntries.length-1].clockOut).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    const lunch=dayEntries.reduce((s,e)=>s+e.lunchMinutes,0);
+    const brks=dayEntries.reduce((s,e)=>s+e.breakMinutes,0);
+    return`<tr style="border-bottom:1px solid #e5e0d8;">
+      <td style="padding:7px 10px;font-size:12px;">${fmtDate(date)}</td>
+      <td style="padding:7px 10px;font-size:12px;">${cin}</td>
+      <td style="padding:7px 10px;font-size:12px;">${cout}</td>
+      <td style="padding:7px 10px;font-size:12px;">${lunch+brks} min</td>
+      <td style="padding:7px 10px;font-size:12px;font-weight:700;">${fmtHrs(dayHrs)}</td>
+    </tr>`;
+  }).join('');
+
+  const html=`
+    <div style="border:2px solid var(--navy);border-radius:12px;overflow:hidden;">
+      <!-- Header -->
+      <div style="background:var(--navy);padding:20px 24px;display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px;">Lopez Tech Repairs</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;">112 Cook St. · Dayton, TX 77535</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.9);">EARNINGS STATEMENT</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;">Pay Date: ${fmtDate(payDate)}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.6);">Period: ${fmtDate(week.start)} – ${fmtDate(week.end)}</div>
+        </div>
+      </div>
+      <!-- Employee info -->
+      <div style="padding:16px 24px;display:flex;justify-content:space-between;border-bottom:1px solid var(--border);background:#fafaf8;">
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;">Employee</div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);">${emp}</div>
+          <div style="font-size:12px;color:var(--text3);">${profile.address||'Address on file'}</div>
+          <div style="font-size:12px;color:var(--text3);">SSN: XXX-XX-${profile.ssn4||'XXXX'}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;">Pay Rate</div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);">$${rate.toFixed(2)}/hr</div>
+          <div style="font-size:12px;color:var(--text3);">1099 Independent Contractor</div>
+        </div>
+      </div>
+      <!-- Daily breakdown -->
+      <div style="padding:16px 24px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px;">Daily Breakdown</div>
+        <table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+          <thead><tr style="background:#f0ede8;">
+            <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Date</th>
+            <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">In</th>
+            <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Out</th>
+            <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Unpaid</th>
+            <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Paid Hrs</th>
+          </tr></thead>
+          <tbody>${dailyRows||'<tr><td colspan="5" style="padding:16px;text-align:center;color:var(--text3);">No entries</td></tr>'}</tbody>
+        </table>
+      </div>
+      <!-- Earnings summary -->
+      <div style="padding:16px 24px;border-top:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px;">Earnings &amp; Deductions</div>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr><td style="padding:5px 0;font-size:13px;color:var(--text2);">Regular Pay (${fmtHrs(totalHrs)} × $${rate}/hr)</td><td style="text-align:right;font-size:13px;font-weight:600;">$${gross.toFixed(2)}</td></tr>
+          <tr style="color:var(--text3);"><td style="padding:5px 0;font-size:12px;">Federal Income Tax</td><td style="text-align:right;font-size:12px;">$0.00</td></tr>
+          <tr style="color:var(--text3);"><td style="padding:5px 0;font-size:12px;">Social Security (FICA)</td><td style="text-align:right;font-size:12px;">$0.00</td></tr>
+          <tr style="color:var(--text3);"><td style="padding:5px 0;font-size:12px;">Medicare</td><td style="text-align:right;font-size:12px;">$0.00</td></tr>
+          <tr style="color:var(--text3);"><td style="padding:5px 0;font-size:12px;">Medicaid</td><td style="text-align:right;font-size:12px;">$0.00</td></tr>
+          <tr style="color:var(--text3);"><td style="padding:5px 0;font-size:12px;">State Tax</td><td style="text-align:right;font-size:12px;">$0.00</td></tr>
+          <tr style="border-top:2px solid var(--navy);"><td style="padding:10px 0 5px;font-size:15px;font-weight:800;color:var(--navy);">NET PAY</td><td style="text-align:right;font-size:18px;font-weight:900;color:var(--navy);">$${gross.toFixed(2)}</td></tr>
+        </table>
+      </div>
+      <div style="padding:12px 24px;background:#f0ede8;text-align:center;font-size:10px;color:var(--text3);">
+        This contractor is classified as an independent contractor (1099). No taxes are withheld. Contractor is responsible for self-employment taxes.
+      </div>
+    </div>`;
+  document.getElementById('paystub-preview').innerHTML=html;
+  document.getElementById('paystub-print').innerHTML=html;
+  document.getElementById('paystub-modal').classList.add('open');
+}
+
+function printPaystub(){
+  window.print();
+}
+
+// ── LOCATION ──
+function selectLoc(loc){
+  selectedLoc=loc;
+  document.getElementById('loc-dayton').classList.toggle('selected',loc==='Dayton');
+  document.getElementById('loc-crosby').classList.toggle('selected',loc==='Crosby');
+}
+
+// ── UTILITIES ──
+function calcPaidHrs(e){
+  if(!e.clockOut)return 0;
+  const totalMs=e.clockOut-e.clockIn;
+  const unpaidMin=(e.lunchMinutes||0)+(e.breakMinutes||0);
+  return Math.max(0,(totalMs/3600000)-(unpaidMin/60));
+}
+
+function getWeekRange(offset){
+  const now=new Date();
+  const day=now.getDay(); // 0=Sun,1=Mon
+  const diff=day===0?-6:1-day; // days to Monday
+  const monday=new Date(now);
+  monday.setDate(now.getDate()+diff+(offset*7));
+  monday.setHours(0,0,0,0);
+  const saturday=new Date(monday);
+  saturday.setDate(monday.getDate()+5);
+  return{
+    start:monday.toISOString().split('T')[0],
+    end:saturday.toISOString().split('T')[0]
+  };
+}
+
+function getPayDate(weekEnd){
+  // Friday or Saturday
+  const d=new Date(weekEnd+'T12:00:00');
+  return weekEnd; // week end IS Saturday if they worked Saturday
+}
+
+function fmtDate(d){
+  if(!d)return'—';
+  const dt=new Date(d+'T12:00:00');
+  return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+function fmtHrs(h){
+  const hrs=Math.floor(h);
+  const min=Math.round((h-hrs)*60);
+  return min>0?`${hrs}h ${min}m`:`${hrs}h`;
+}
+
+function closeModal(id){document.getElementById(id)?.classList.remove('open');}
+
+function toast(msg){
+  const el=document.getElementById('tc-toast');
+  if(!el)return;
+  el.textContent=msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+// ── CLOUD SYNC ──
+function saveEntries(){
+  lsSave(LS_TC,entries);
+  if(hasCloud()){
+    fetch(getFbUrl()+'/lopeztechrepairs/timeclock.json?auth='+getFbKey(),{
+      method:'PUT',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(entries)
+    }).catch(()=>{});
+  }
+}
+
+function saveEmpToCloud(){
+  lsSave(LS_EMP,empProfiles);
+  if(hasCloud()){
+    fetch(getFbUrl()+'/lopeztechrepairs/empProfiles.json?auth='+getFbKey(),{
+      method:'PUT',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(empProfiles)
+    }).catch(()=>{});
+  }
+}
+
+async function loadFromCloud(){
+  if(!hasCloud())return;
+  try{
+    const r1=await fetch(getFbUrl()+'/lopeztechrepairs/timeclock.json?auth='+getFbKey());
+    const d1=await r1.json();
+    if(Array.isArray(d1)&&d1.length){entries=d1;lsSave(LS_TC,entries);}
+    const r2=await fetch(getFbUrl()+'/lopeztechrepairs/empProfiles.json?auth='+getFbKey());
+    const d2=await r2.json();
+    if(d2&&typeof d2==='object'){empProfiles={...empProfiles,...d2};lsSave(LS_EMP,empProfiles);}
+  }catch(e){}
+}
+
+// Auto-sync every 60 seconds
+setInterval(()=>{if(hasCloud())loadFromCloud();},60000);
+</script>
+</body>
+</html>
