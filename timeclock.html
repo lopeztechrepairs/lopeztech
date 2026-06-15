@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="theme-color" content="#0F2236"/>
 <title>Lopez Tech Repairs — Time Clock</title>
@@ -22,10 +22,10 @@
   --shadow2:0 8px 32px rgba(0,0,0,.15);
   --radius:12px;--radius2:8px;
 }
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:-webkit-fill-available;}
 
 /* ── VIEWS ── */
-.view{display:none;min-height:100vh;flex-direction:column;}
+.view{display:none;min-height:100vh;min-height:-webkit-fill-available;flex-direction:column;}
 .view.active{display:flex;}
 
 /* ── HEADER ── */
@@ -188,8 +188,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .form-input:focus{border-color:var(--navy);}
 
 /* ── MOBILE SAFE AREAS (iPhone notch/home bar) ── */
-body{padding-bottom:env(safe-area-inset-bottom);}
-.app-header,.clock-topbar{padding-top:max(16px,env(safe-area-inset-top));}
+.view{padding-bottom:env(safe-area-inset-bottom);}
 
 /* ── MOBILE OVERRIDES ── */
 @media(max-width:600px){
@@ -597,6 +596,8 @@ const ADMIN_PIN='7679';
 // ── INIT ──
 setInterval(updateClocks,1000);
 updateClocks();
+// Ensure login view is visible
+document.getElementById('view-login').style.display='flex';
 loadFromCloud();
 
 function updateClocks(){
