@@ -671,16 +671,18 @@ button,.emp-card,.loc-chip,.admin-tab,.edit-btn,.paystub-btn,.hdr-btn{
 // LOPEZ TECH — TIME CLOCK
 // Firebase config — same as main app
 // ═══════════════════════════════════════
-const FB_URL='https://lopeztechrepairs-default-rtdb.firebaseio.com';
-const FB_KEY=''; // filled from localStorage if available
 const LS_FB='lt_fb_url';
 const LS_FK='lt_fb_key';
 const LS_TC='lt_tc_v1'; // timeclock entries
 const LS_EMP='lt_emp_v1'; // employee profiles
 
-function getFbUrl(){return(localStorage.getItem(LS_FB)||'').replace(/\/$/,'');}
-function getFbKey(){return localStorage.getItem(LS_FK)||'';}
-function hasCloud(){return getFbUrl()&&getFbKey();}
+// Hardcoded defaults — works on any device without setup
+const DEFAULT_FB_URL='https://lopez-tech-repairs-82c87-default-rtdb.firebaseio.com';
+const DEFAULT_FB_KEY='AIzaSyD9tZm0yJoIHMrMDSqSSqgxDl3TvtWJ_4g';
+
+function getFbUrl(){return(localStorage.getItem(LS_FB)||DEFAULT_FB_URL).replace(/\/$/,'');}
+function getFbKey(){return localStorage.getItem(LS_FK)||DEFAULT_FB_KEY;}
+function hasCloud(){return!!(getFbUrl()&&getFbKey());}
 function lsLoad(k,d){try{return JSON.parse(localStorage.getItem(k)||'null')??d;}catch(e){return d;}}
 function lsSave(k,v){localStorage.setItem(k,JSON.stringify(v));}
 
