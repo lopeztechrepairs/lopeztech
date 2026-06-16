@@ -731,16 +731,6 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
     <div id="view-repairs" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
       <div class="topbar">
         <div class="tb-title">Repair Board</div>
-        <div style="display:flex;align-items:center;gap:6px;background:var(--bg2);border:1.5px solid var(--border);border-radius:20px;padding:4px 12px;">
-          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:var(--text3);flex-shrink:0;"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          <select id="active-user" onchange="setActiveUser(this.value)" style="background:none;border:none;font-size:12px;font-weight:600;color:var(--text);font-family:'Geist',sans-serif;outline:none;cursor:pointer;padding:0;">
-            <option value="">Working as…</option>
-            <option value="Saul">Saul</option>
-            <option value="David">David</option>
-            <option value="Juan">Juan</option>
-            <option value="Noemy">Noemy</option>
-          </select>
-        </div>
         <button class="locbtn active" onclick="setLoc('both',this)">Both</button>
         <button class="locbtn" onclick="setLoc('Crosby',this)">Crosby</button>
         <button class="locbtn" onclick="setLoc('Dayton',this)">Dayton</button>
@@ -2116,7 +2106,7 @@ function enterApp(){
   loadRepairs();
   // Restore active user
   const savedUser=lsLoad('lt_active_user','');
-  if(savedUser){activeUser=savedUser;const sel=document.getElementById('active-user');if(sel){sel.value=savedUser;sel.style.color=empColor(savedUser).text;}}
+  if(savedUser){activeUser=savedUser;}
   window.addEventListener('online',()=>{toast('Back online — syncing…','ok');setTimeout(()=>pullFromCloud(),1000);});
   window.addEventListener('offline',()=>{toast('Offline — data unavailable','warn');});
   if(lsLoad('lt_sb_collapsed',false)){
@@ -2534,21 +2524,12 @@ function setActiveUser(name){
 }
 
 function getActiveUser(){
-  return activeUser || '';
+  return activeUser||cu?.name||'Staff';
 }
 
 function requireActiveUser(){
-  if(!activeUser){
-    toast('Select who you are working as before making changes','warn');
-    const sel=document.getElementById('active-user');
-    if(sel){
-      sel.parentElement.style.border='2px solid var(--amber)';
-      sel.parentElement.style.borderRadius='20px';
-      sel.focus();
-      setTimeout(()=>{if(sel.parentElement)sel.parentElement.style.border='';},2500);
-    }
-    return false;
-  }
+  // Working as dropdown removed — always passes, falls back to logged-in user
+  if(!activeUser&&cu){activeUser=cu.name||'Staff';}
   return true;
 }
 
@@ -5151,8 +5132,17 @@ async function pullFromCloud(silent=false){
     if(!data){syncInProgress=false;document.getElementById('loader').classList.remove('on');return;}
     if(data.repairs){
       const rep=Array.isArray(data.repairs)?data.repairs:Object.values(data.repairs);
-      repairs=rep.filter(Boolean);
-      // No localStorage save — Firebase is source of truth
+      const incoming=rep.filter(Boolean);
+      // MERGE — never blindly replace. Keep local repairs that Firebase doesn't have yet.
+      const incomingIds=new Set(incoming.map(r=>r.ID));
+      const localOnly=repairs.filter(r=>r.ID&&!incomingIds.has(r.ID)&&r._local);
+      // Build merged array: incoming from Firebase + any local-only not yet pushed
+      const merged=[...incoming,...localOnly];
+      // Sort by CreatedAt descending so newest first
+      merged.sort((a,b)=>new Date(b.CreatedAt||0)-new Date(a.CreatedAt||0));
+      repairs=merged;
+      // Save merged to localStorage as backup
+      lsSave(LS_R,repairs);
     }
     if(data.techs){
       const tecs=Array.isArray(data.techs)?data.techs:Object.values(data.techs);
@@ -5212,6 +5202,9 @@ async function pushAllToCloud(){
       notifications:lsLoad(LS_NOTIF,[]),
       meta:{lastUpdated:new Date().toISOString(),updatedBy:cu?.name||'Unknown'}
     });
+    // Clear _local flag now that Firebase has confirmed
+    repairs.forEach(r=>{if(r._local)delete r._local;});
+    lsSave(LS_R,repairs);
     lastSync=Date.now();
     toast('All data saved to Firebase ✓','ok');
   }catch(e){
@@ -5229,14 +5222,14 @@ function schedulePush(){
   syncTimer=setTimeout(()=>pushAllToCloud(),1000);
 }
 
-// Auto pull every 5 seconds — checks meta timestamp first to avoid unnecessary pulls
+// Auto pull every 15 seconds — checks meta timestamp first to avoid unnecessary pulls
 setInterval(async()=>{
   if(cu&&hasCloud()){
     try{
       await pullFromCloud(true);
     }catch(e){}
   }
-},3000);
+},15000);
 
 // ══════════════════════════════════════════════════════
 // ── COMPLETE REPAIR POPUP ──
