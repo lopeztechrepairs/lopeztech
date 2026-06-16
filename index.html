@@ -1839,7 +1839,25 @@ function lsLoad(k,d){try{return JSON.parse(localStorage.getItem(k)||'null')??d;}
 function lsSave(k,v){localStorage.setItem(k,JSON.stringify(v));}
 function getApi(){return localStorage.getItem(LS_API)||'';}
 
-// Notification constants and helpers — defined early so pushNotif works everywhere
+// Notification stubs — real functions defined later in notification script block
+function updateBellDot(){}
+function pruneNotifs(){return lsLoad(LS_NOTIF,[]);}
+function pushNotif(type,text,repairId,repairName,author,location){
+  try{
+    const notifs=pruneNotifs();
+    const n={id:'n_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),type,text,repairId,repairName,author:author||'Staff',location:location||'',createdAt:Date.now(),read:false};
+    notifs.unshift(n);
+    saveNotifs(notifs);
+    try{
+      if(typeof hasCloud==='function'&&hasCloud()){
+        fetch(getFbUrl()+'/lopeztechrepairs/notifications.json?auth='+getFbKey(),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(notifs)}).catch(()=>{});
+      }
+    }catch(e){}
+    if(typeof updateBellDot==='function')updateBellDot();
+    const np=document.getElementById('notif-panel');
+    if(np&&np.classList.contains('open')&&typeof renderNotifPanel==='function')renderNotifPanel();
+  }catch(e){console.warn('pushNotif error:',e);}
+}
 const LS_NOTIF='lt_notif_v1';
 const NOTIF_TTL=12*60*60*1000;
 function getNotifs(){return lsLoad(LS_NOTIF,[]);}
@@ -7619,9 +7637,8 @@ function svcRemoveService(idx){
 
 
 // Update bell dot every 30 seconds for TTL countdown
-setInterval(()=>{pruneNotifs();updateBellDot();},30000);
-// Init on load
-document.addEventListener('DOMContentLoaded',()=>{setTimeout(updateBellDot,1000);});
+setInterval(()=>{if(typeof pruneNotifs==='function')pruneNotifs();if(typeof updateBellDot==='function')updateBellDot();},30000);
+document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{if(typeof updateBellDot==='function')updateBellDot();},1000);});
 
 
 </script>
