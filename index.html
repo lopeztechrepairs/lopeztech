@@ -1015,7 +1015,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
       <div id="rsec-device" style="display:none;border-bottom:1px solid var(--border);padding:12px 18px;display:flex;flex-direction:column;gap:10px;">
         <div class="ff dev-wrap">
           <label>Repair Title *</label>
-          <input id="f-device" type="text" placeholder="e.g. iPhone 11 Screen Repair, PS5 HDMI Port" oninput="upPrev();devSuggest();updateDevicePreview()" autocomplete="off"/>
+          <input id="f-device" type="text" placeholder="e.g. iPhone 11 Screen Repair, PS5 HDMI Port" oninput="upPrev();devSuggest();updateDevicePreview();nrAutoCapFirst(this)" autocomplete="off"/>
           <div class="dev-drop" id="dev-drop"></div>
         </div>
         <!-- Multi-select category chips -->
@@ -1120,7 +1120,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
                 <option value="Noemy">Noemy</option>
               </select>
             </div>
-            <textarea id="note-in" placeholder="Write a note… (Ctrl+Enter to post)" style="width:100%;min-height:68px;resize:vertical;background:var(--bg);border:none;padding:9px 11px;font-size:13px;font-family:'Geist',sans-serif;color:var(--text);outline:none;line-height:1.5;" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();addNote();}"></textarea>
+            <textarea id="note-in" placeholder="Write a note… (Ctrl+Enter to post)" style="width:100%;min-height:68px;resize:vertical;background:var(--bg);border:none;padding:9px 11px;font-size:13px;font-family:'Geist',sans-serif;color:var(--text);outline:none;line-height:1.5;" oninput="nrAutoCapFirst(this)" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();addNote();}"></textarea>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-top:1px solid var(--border);">
               <span id="note-char-count" style="font-size:10px;color:var(--text3);"></span>
               <button class="btn blue" onclick="addNote()" style="padding:6px 14px;">Post Note</button>
@@ -2027,10 +2027,21 @@ function custShowNewForm(){
   }
 }
 
+function applySmartCap(str){
+  if(!str)return str;
+  return str.replace(/\b\w+/g,word=>{
+    // iPhone, iPad, iPod, iMac — keep i lowercase, next letter uppercase
+    if(/^i(phone|pad|pod|mac|os)$/i.test(word)){
+      return 'i'+word.slice(1,2).toUpperCase()+word.slice(2).toLowerCase();
+    }
+    return word.charAt(0).toUpperCase()+word.slice(1);
+  });
+}
+
 function autoCapName(el){
   var pos=el.selectionStart;
-  el.value=el.value.replace(/\b\w/g,function(c){return c.toUpperCase();});
-  el.setSelectionRange(pos,pos);
+  el.value=applySmartCap(el.value);
+  try{el.setSelectionRange(pos,pos);}catch(e){}
 }
 function fmtSearchPhone(el){
   var raw=el.value.replace(/\D/g,'');
@@ -2818,7 +2829,12 @@ function openRepair(id){
     }
     // flag removed
     document.getElementById('f-device').value=r.Device||'';
-    const _catVal=r.Categories&&r.Categories.length?r.Categories.join(','):(r.Category||'');setSelectedCats(_catVal);
+    // Restore categories — support both old single and new multi, with fallback
+    const _catVal=(r.Categories&&r.Categories.length)?r.Categories.join(','):(r.Category||'');
+    setSelectedCats(_catVal);
+    // Restore tech — read directly from repair object
+    const techEl=document.getElementById('f-tech2');
+    if(techEl)techEl.value=r.AssignedTo||'';
     document.getElementById('f-qual').value=r.Quality||'OEM';
     document.getElementById('f-imei').value=r.IMEI||'';
     document.getElementById('f-pass').value=r.Passcode||'';
@@ -3694,13 +3710,12 @@ async function addNote(){
     return;
   }
   const r=repairs.find(x=>x.ID===editId);if(!r)return;
-  // Store notes as structured array
   if(!r.NotesArr)r.NotesArr=[];
   r.NotesArr.push({text:note,by:author,ts:nowTs()});
-  // Also keep legacy Notes string
   r.Notes=(r.Notes?r.Notes+'\n':'')+`[${nowTs()} — ${author}] ${note}`;
+  // Save to localStorage IMMEDIATELY so Firebase pull never overwrites it
+  lsSave(LS_R,repairs);
   logAct(r,`${author} left a note`,author);
-  // Push notification for note
   pushNotif('note',`${author} left a note on ${r.RepairName||r.Device||'repair'}: "${note.slice(0,60)}${note.length>60?'…':''}"`,r.ID,r.RepairName||r.Device,author,r.Location||'');
   document.getElementById('note-in').value='';
   const cc=document.getElementById('note-char-count');if(cc)cc.textContent='';
@@ -5151,15 +5166,26 @@ async function pullFromCloud(silent=false){
     if(data.repairs){
       const rep=Array.isArray(data.repairs)?data.repairs:Object.values(data.repairs);
       const incoming=rep.filter(Boolean);
-      // MERGE — never blindly replace. Keep local repairs that Firebase doesn't have yet.
       const incomingIds=new Set(incoming.map(r=>r.ID));
       const localOnly=repairs.filter(r=>r.ID&&!incomingIds.has(r.ID)&&r._local);
-      // Build merged array: incoming from Firebase + any local-only not yet pushed
-      const merged=[...incoming,...localOnly];
-      // Sort by CreatedAt descending so newest first
+      // For repairs that exist in both, merge notes so local notes are never lost
+      const localMap=new Map(repairs.map(r=>[r.ID,r]));
+      const merged=incoming.map(fbR=>{
+        const local=localMap.get(fbR.ID);
+        if(!local)return fbR;
+        // Merge NotesArr — keep all unique notes by timestamp
+        const fbNotes=fbR.NotesArr||[];
+        const localNotes=local.NotesArr||[];
+        const seen=new Set(fbNotes.map(n=>n.ts));
+        const extraLocal=localNotes.filter(n=>!seen.has(n.ts));
+        if(extraLocal.length){
+          fbR.NotesArr=[...fbNotes,...extraLocal].sort((a,b)=>a.ts>b.ts?1:-1);
+        }
+        return fbR;
+      });
+      merged.push(...localOnly);
       merged.sort((a,b)=>new Date(b.CreatedAt||0)-new Date(a.CreatedAt||0));
       repairs=merged;
-      // Save merged to localStorage as backup
       lsSave(LS_R,repairs);
     }
     if(data.techs){
@@ -5652,7 +5678,12 @@ function confirmComplete(){
   }
   r.Status='Completed';
   r.CompletedDate=new Date().toISOString();
-  r.AssignedTo=cpTech||r.AssignedTo; // update tech if changed in popup
+  r.AssignedTo=cpTech||r.AssignedTo;
+  // Explicitly preserve Category/Categories so they survive completion
+  if(!r.Category&&r.Categories&&r.Categories.length)r.Category=r.Categories[0];
+  if(!r.Categories&&r.Category)r.Categories=[r.Category];
+  // Save immediately to localStorage so openRepair reads correct data
+  lsSave(LS_R,repairs);
   const payLbls={card:'Card',cash:'Cash',zelle:'Zelle',venmo:'Venmo',check:'Check',cashapp:'CashApp'};
   r.PayMethod=isSplitConf?'Split':( payLbls[method]||method);
   r.PayLegs=isSplitConf?cpLegsConf:[];
@@ -7333,8 +7364,8 @@ function openNewRepairModal(){
   const devs=document.getElementById('nr-device-section');if(devs)devs.style.display='none';
   const asgn=document.getElementById('nr-assign-section');if(asgn)asgn.style.display='none';
   const sug=document.getElementById('nr-suggest');if(sug)sug.classList.remove('open');
-  const ib=document.getElementById('nr-imei-body');if(ib)ib.style.display='none';
-  const ic=document.getElementById('nr-imei-chev');if(ic)ic.style.transform='';
+  const ib=document.getElementById('nr-imei-body');if(ib)ib.style.display='block';
+  const ic=document.getElementById('nr-imei-chev');if(ic)ic.style.transform='rotate(180deg)';
   // Set today's date
   const d=document.getElementById('nr-dropoff');if(d)d.value=todayStr();
   // Populate tech dropdown
@@ -7442,15 +7473,16 @@ function nrToggleSub(svcId,opt){
 }
 
 function nrAutoCapFirst(el){
-  const v=el.value;
-  if(v.length===1)el.value=v.toUpperCase();
-  else if(v.length>1&&el.selectionStart===1)el.value=v[0].toUpperCase()+v.slice(1);
+  const pos=el.selectionStart;
+  if(!el.value)return;
+  // Cap first letter only
+  el.value=el.value.charAt(0).toUpperCase()+el.value.slice(1);
+  try{el.setSelectionRange(pos,pos);}catch(e){}
 }
 
 function nrAutoCapName(el){
-  // Cap first letter of each word
   const pos=el.selectionStart;
-  el.value=el.value.replace(/\b\w/g,c=>c.toUpperCase());
+  el.value=applySmartCap(el.value);
   try{el.setSelectionRange(pos,pos);}catch(e){}
 }
 
@@ -7520,7 +7552,10 @@ function nrBuildRepairName(){
     if(sub&&sub.length)return`${svc.label} (${sub.join(' & ')})`;
     return svc.label;
   }).filter(Boolean);
-  return device?(device+(parts.length?' – '+parts.join(' + '):'')):parts.join(' + ');
+  // Always combine device + services into title
+  if(device&&parts.length)return`${device} ${parts.join(' + ')}`;
+  if(device)return device;
+  return parts.join(' + ');
 }
 
 function nrSave(){
@@ -7538,14 +7573,16 @@ function nrSave(){
   if(!device){toast('Enter the device name','err');document.getElementById('nr-device')?.focus();return;}
   if(!loc){toast('Select a store location','err');document.getElementById('nr-loc')?.focus();return;}
   // Validate sub-selections
-  const cat=nrDevType==='tablet'?'phone':nrDevType;
-  const list=getSvcList(cat);
   for(const id of nrSelectedSvc){
     const svc=list.find(s=>s.id===id);
     if(svc?.sub&&!(nrSubSelections[id]?.length)){
       toast(`Select an option for ${svc.label}`,'err');return;
     }
   }
+  const cat=nrDevType==='tablet'?'phone':nrDevType;
+  const list=getSvcList(cat);
+  const primaryCat=list.find(s=>s.id===nrSelectedSvc[0])?.label||'';
+  const allCats=nrSelectedSvc.map(id=>list.find(s=>s.id===id)?.label||id).filter(Boolean);
   const repairName=nrBuildRepairName();
   const issueNotes=(document.getElementById('nr-issue')?.value||'').trim();
   const qual=(document.getElementById('nr-qual')?.value||'');
@@ -7558,8 +7595,8 @@ function nrSave(){
     CustomerNotes:'',
     Flagged:false,FlagReason:'',
     Device:device,
-    Category:list.find(s=>s.id===nrSelectedSvc[0])?.label||'',
-    Categories:nrSelectedSvc.map(id=>list.find(s=>s.id===id)?.label||id),
+    Category:primaryCat,
+    Categories:allCats,
     RepairName:repairName,
     Quality:qual,
     IMEI:(document.getElementById('nr-imei')?.value||'').trim(),
@@ -7777,10 +7814,10 @@ document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{if(typeof upda
         <!-- IMEI / Passcode — collapsed by default -->
         <div>
           <div class="nr-collapse-toggle" onclick="nrToggleImei(this)">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;transition:transform .2s;" id="nr-imei-chev"><polyline points="6 9 12 15 18 9"/></svg>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;transition:transform .2s;transform:rotate(180deg);" id="nr-imei-chev"><polyline points="6 9 12 15 18 9"/></svg>
             IMEI / Serial # &amp; Passcode (optional)
           </div>
-          <div class="nr-collapse-body" id="nr-imei-body" style="display:none;">
+          <div class="nr-collapse-body" id="nr-imei-body" style="display:block;">
             <div class="nr-row">
               <div class="ff">
                 <label class="nr-label">IMEI / Serial #</label>
