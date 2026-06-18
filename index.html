@@ -3292,10 +3292,55 @@ function getSelectedCats(){
 
 function setSelectedCats(catStr){
   // catStr can be comma-separated or a single value
-  const cats=(catStr||'').split(',').map(s=>s.trim()).filter(Boolean);
-  document.querySelectorAll('#cat-chips .cat-chip').forEach(el=>{
-    el.classList.toggle('selected', cats.includes(el.dataset.cat));
+  const raw=(catStr||'').split(',').map(s=>s.trim()).filter(Boolean);
+  // The New Repair modal stores service labels ("Screen Repair", "Battery Repair",
+  // "Rear Glass Repair"...) while these chips match on different values
+  // ("Display/Screen", "Battery", "Back Glass"...). Map between the two so an
+  // existing repair opens with its category already selected.
+  const ALIAS={
+    'screen repair':'Display/Screen','display/screen':'Display/Screen','screen':'Display/Screen',
+    'digitizer':'Digitizer (iPad only)','digitizer (ipad only)':'Digitizer (iPad only)',
+    'battery repair':'Battery','battery':'Battery',
+    'charging port repair':'Charging Port','charging port':'Charging Port','charging':'Charging Port',
+    'front camera':'Front Camera','rear camera':'Rear Camera','camera repair':'Front Camera','camera':'Front Camera',
+    'ear speaker':'Ear Speaker','loud speaker':'Loud Speaker','speaker repair':'Loud Speaker','speaker':'Loud Speaker',
+    'back glass':'Back Glass','rear glass repair':'Back Glass','rear glass':'Back Glass',
+    'hdmi port':'HDMI Port (Game Console only)','hdmi repair':'HDMI Port (Game Console only)','hdmi port (game console only)':'HDMI Port (Game Console only)',
+    'software/os':'Software/OS','software repair / unlocking':'Software/OS','software repair':'Software/OS','software':'Software/OS','system os repair / upgrade':'Software/OS','virus / malware removal':'Software/OS',
+    'motherboard':'Motherboard','motherboard repair':'Motherboard',
+    'ssd/hdd repair':'SSD/HDD Repair','ssd repair / upgrade':'SSD/HDD Repair','hdd repair / upgrade':'SSD/HDD Repair','storage memory repair':'SSD/HDD Repair',
+    'ram repair':'RAM Repair','memory ram repair / upgrade':'RAM Repair',
+    'misc. labor':'Misc. Labor','misc labor':'Misc. Labor','misc':'Misc. Labor'
+  };
+  const container=document.getElementById('cat-chips');
+  const chips=[...document.querySelectorAll('#cat-chips .cat-chip')];
+  const validCats=new Set(chips.filter(el=>el.dataset.custom!=='1').map(el=>el.dataset.cat));
+  // Resolve each stored value to a chip value where possible
+  const resolved=raw.map(v=>{
+    if(validCats.has(v))return v;
+    const a=ALIAS[v.toLowerCase()];
+    return (a&&validCats.has(a))?a:v; // unknown stays as-is and gets its own chip
   });
+  const want=new Set(resolved);
+  // Clear any previously injected custom chips so they don't pile up
+  if(container)container.querySelectorAll('.cat-chip[data-custom="1"]').forEach(el=>el.remove());
+  // Select matching standard chips
+  document.querySelectorAll('#cat-chips .cat-chip').forEach(el=>{
+    el.classList.toggle('selected', want.has(el.dataset.cat));
+  });
+  // For any value with no matching chip, inject a selected chip so the
+  // category is preserved and Save isn't blocked
+  if(container){
+    resolved.forEach(v=>{
+      if(!validCats.has(v)){
+        const b=document.createElement('button');
+        b.type='button';b.className='cat-chip selected';
+        b.dataset.cat=v;b.dataset.custom='1';b.textContent=v;
+        b.setAttribute('onclick','toggleCatChip(this)');
+        container.appendChild(b);
+      }
+    });
+  }
   syncCatField();
 }
 
