@@ -1015,7 +1015,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
       <div id="rsec-device" style="display:none;border-bottom:1px solid var(--border);padding:12px 18px;display:flex;flex-direction:column;gap:10px;">
         <div class="ff dev-wrap">
           <label>Repair Title *</label>
-          <input id="f-device" type="text" placeholder="e.g. iPhone 11 Screen Repair, PS5 HDMI Port" oninput="upPrev();devSuggest();updateDevicePreview();nrAutoCapFirst(this)" autocomplete="off"/>
+          <input id="f-device" type="text" placeholder="e.g. iPhone 11 Screen Repair, PS5 HDMI Port" oninput="upPrev();devSuggest();updateDevicePreview();nrAutoCapName(this)" autocomplete="off"/>
           <div class="dev-drop" id="dev-drop"></div>
         </div>
         <!-- Multi-select category chips -->
@@ -5053,6 +5053,7 @@ function saveInlineQuote(id,val){
   if(val===''||val===null||val===undefined){renderRepairs();return;}
   const newQ=parseFloat(val);
   if(isNaN(newQ)){renderRepairs();return;}
+  const _oldQ=parseFloat(r.Quote||0);
   r.Quote=String(newQ);
   if(Math.abs(_oldQ-newQ)>0.01)logAct(r,`Quote updated: $${_oldQ.toFixed(2)} → $${newQ.toFixed(2)}`,getActiveUser());
   
@@ -7475,9 +7476,11 @@ function nrToggleSub(svcId,opt){
 function nrAutoCapFirst(el){
   const pos=el.selectionStart;
   if(!el.value)return;
-  // Cap first letter only
-  el.value=el.value.charAt(0).toUpperCase()+el.value.slice(1);
-  try{el.setSelectionRange(pos,pos);}catch(e){}
+  // Cap first letter of the field
+  let v=el.value.charAt(0).toUpperCase()+el.value.slice(1);
+  // Keep Apple product names correctly cased anywhere (iPhone, iPad, iPod, iMac, iOS) — length-preserving so cursor stays put
+  v=v.replace(/\bi(phone|pad|pod|mac|os)\b/gi,(m,p)=>'i'+p.charAt(0).toUpperCase()+p.slice(1).toLowerCase());
+  if(v!==el.value){el.value=v;try{el.setSelectionRange(pos,pos);}catch(e){}}
 }
 
 function nrAutoCapName(el){
@@ -7572,6 +7575,8 @@ function nrSave(){
   if(!nrSelectedSvc.length){toast('Select at least one repair service','err');return;}
   if(!device){toast('Enter the device name','err');document.getElementById('nr-device')?.focus();return;}
   if(!loc){toast('Select a store location','err');document.getElementById('nr-loc')?.focus();return;}
+  const cat=nrDevType==='tablet'?'phone':nrDevType;
+  const list=getSvcList(cat);
   // Validate sub-selections
   for(const id of nrSelectedSvc){
     const svc=list.find(s=>s.id===id);
@@ -7579,8 +7584,6 @@ function nrSave(){
       toast(`Select an option for ${svc.label}`,'err');return;
     }
   }
-  const cat=nrDevType==='tablet'?'phone':nrDevType;
-  const list=getSvcList(cat);
   const primaryCat=list.find(s=>s.id===nrSelectedSvc[0])?.label||'';
   const allCats=nrSelectedSvc.map(id=>list.find(s=>s.id===id)?.label||id).filter(Boolean);
   const repairName=nrBuildRepairName();
@@ -7795,7 +7798,7 @@ document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{if(typeof upda
         </div>
         <div class="nr-field">
           <label class="nr-label">Device Name *</label>
-          <input class="nr-input" id="nr-device" type="text" placeholder="e.g. iPhone 15 Pro Max, Dell XPS 15…" oninput="nrAutoCapFirst(this)" autocomplete="off"/>
+          <input class="nr-input" id="nr-device" type="text" placeholder="e.g. iPhone 15 Pro Max, Dell XPS 15…" oninput="nrAutoCapName(this)" autocomplete="off"/>
         </div>
         <!-- Screen Quality — only for screen repair -->
         <div class="nr-field" id="nr-qual-field" style="display:none;">
