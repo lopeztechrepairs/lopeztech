@@ -4790,7 +4790,7 @@ async function removeFromLog(){
   const pruned=deleted.filter(x=>x.DeletedAt>cutoff);
   const toWipe=new Set(pruned.filter((_,i)=>selectedDeleted.has(i)).map(x=>x.ID));
   const toKeep=pruned.filter((_,i)=>!selectedDeleted.has(i));
-  tombstone([...toWipe]);
+  await recordPurges([...toWipe]);
 
   if(hasCloud()&&toWipe.size>0){
     try{
@@ -4827,7 +4827,7 @@ async function wipeAllDeleted(){
   if(!confirm(`Permanently wipe ALL ${pruned.length} deleted repair${pruned.length>1?'s':''} from Firebase and the log? This cannot be undone.`))return;
 
   const toWipe=new Set(pruned.map(x=>x.ID));
-  tombstone([...toWipe]);
+  await recordPurges([...toWipe]);
 
   if(hasCloud()){
     try{
@@ -5242,6 +5242,21 @@ async function removeRepairsFromCloud(ids){
   await fbPatch('lopeztechrepairs/repairs',payload);
 }
 
+// Record permanently-purged IDs to a SHARED Firebase list so EVERY device
+// stops showing and re-syncing them. Without this, another location's device
+// (with an old copy of the deleted log) pushes wiped items back and they
+// reappear after a sync. Purged IDs are also tombstoned locally right away.
+async function recordPurges(ids){
+  const arr=(Array.isArray(ids)?ids:[ids]).filter(Boolean);
+  if(!arr.length)return;
+  tombstone(arr);
+  if(!hasCloud())return;
+  const now=new Date().toISOString();
+  const payload={};
+  arr.forEach(id=>{payload[id]=now;});
+  await fbPatch('lopeztechrepairs/purged',payload);
+}
+
 async function pullFromCloud(silent=false){
   if(!hasCloud())return;
   if(syncInProgress)return;
@@ -5252,6 +5267,9 @@ async function pullFromCloud(silent=false){
     const data=await fbRead('lopeztechrepairs');
     if(!data){syncInProgress=false;document.getElementById('loader').classList.remove('on');return;}
     if(data.meta&&data.meta.repairsKeyed)repairsKeyed=true;
+    // Honor the shared purge list: permanently-wiped IDs are tombstoned on
+    // every device so they never reappear on the board or in the deleted log.
+    if(data.purged){Object.keys(data.purged).forEach(id=>deletedTombstones.add(id));}
     if(data.repairs){
       const rep=Array.isArray(data.repairs)?data.repairs:Object.values(data.repairs);
       const incoming=rep.filter(Boolean).filter(r=>!deletedTombstones.has(r.ID));
@@ -5288,7 +5306,7 @@ async function pullFromCloud(silent=false){
     }
     if(data.deleted){
       const del=Array.isArray(data.deleted)?data.deleted:Object.values(data.deleted);
-      lsSave(LS_DEL,del.filter(Boolean));
+      lsSave(LS_DEL,del.filter(Boolean).filter(d=>!deletedTombstones.has(d.ID)));
     }
     // Sync notifications
     if(data.notifications&&typeof pushNotif==='function'){
@@ -5341,7 +5359,7 @@ async function pushAllToCloud(){
     await fbPatch('lopeztechrepairs',{
       techs:getTechs(),
       templates:getTpls(),
-      deleted:lsLoad(LS_DEL,[]),
+      deleted:lsLoad(LS_DEL,[]).filter(d=>d&&!deletedTombstones.has(d.ID)),
       notifications:lsLoad(LS_NOTIF,[]),
       meta:{lastUpdated:new Date().toISOString(),updatedBy:cu?.name||'Unknown',repairsKeyed:true}
     });
