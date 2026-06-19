@@ -738,11 +738,6 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;color:var(--teal);"><path d="M20 6L9 17l-5-5"/></svg>Completed
         </button>
         <div class="sep"></div>
-        <div class="bell-btn" onclick="toggleNotifPanel()" title="Notifications">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
-          <div class="bell-dot" id="bell-dot"></div>
-        </div>
-        <div class="sep"></div>
         <div style="position:relative;">
           <button class="btnpri" id="new-repair-btn" onclick="toggleNewMenu()" title="New (N)">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>New
@@ -1836,7 +1831,7 @@ let pendingImport=[],warId=null,toastTmr,addons=[],loginAttempts=0,lockoutEnd=0;
 let selectedRows=new Set();
 
 function lsLoad(k,d){try{return JSON.parse(localStorage.getItem(k)||'null')??d;}catch(e){return d;}}
-function lsSave(k,v){localStorage.setItem(k,JSON.stringify(v));}
+function lsSave(k,v){if(k===LS_R)return;/* repairs are kept strictly in Firebase, never cached locally */localStorage.setItem(k,JSON.stringify(v));}
 function getApi(){return localStorage.getItem(LS_API)||'';}
 
 // Notification stubs — real functions defined later in notification script block
@@ -2273,8 +2268,9 @@ function logout(){
 
 // ── LOAD / SEED ──
 function loadRepairs(){
-  // Firebase-first: always pull from cloud on load
-  // Show empty state while loading
+  // Firebase-first: repairs are never cached locally. Clear any stale cache
+  // left by older versions, show empty state, then pull the source of truth.
+  try{localStorage.removeItem(LS_R);}catch(e){}
   repairs=[];
   renderRepairs();updateStats();renderStatusBar();renderRecentBar();
   if(hasCloud()){
@@ -3604,6 +3600,8 @@ async function confirmDelete(){
 
   // Bulk delete from dashboard selection
   if(selectedRows.size>0){
+    const removedIds=[...selectedRows];
+    tombstone(removedIds);
     selectedRows.forEach(id=>{
       const r=repairs.find(x=>x.ID===id);if(!r)return;
       deleted.unshift({...r,DeletedBy:cu.name,DeletedAt:new Date().toISOString(),DeleteReason:reason});
@@ -3617,20 +3615,24 @@ async function confirmDelete(){
     closeM('delete-modal');
     toast(`${count} repair${count>1?'s':''} deleted · logged for 30 days`,'ok');
     const nbd2=document.getElementById('nb-deleted');if(nbd2){const del2=lsLoad(LS_DEL,[]);nbd2.textContent=del2.filter(x=>x.DeletedAt>new Date(Date.now()-30*86400000).toISOString()).length;}
+    await removeRepairsFromCloud(removedIds);
     pushAllToCloud();
     return;
   }
 
   // Single delete from panel
   if(!editId)return;
+  const delId=editId;
+  tombstone(delId);
   const r=repairs.find(x=>x.ID===editId);if(!r)return;
   deleted.unshift({...r,DeletedBy:cu.name,DeletedAt:new Date().toISOString(),DeleteReason:reason});
   const pruned=deleted.filter(x=>x.DeletedAt>cutoff);
   lsSave(LS_DEL,pruned);
-  repairs=repairs.filter(x=>x.ID!==editId);
+  repairs=repairs.filter(x=>x.ID!==delId);
   renderRepairs();updateStats();
   closeM('delete-modal');closePanel();
   toast('Repair deleted','ok');
+  await removeRepairsFromCloud([delId]);
   pushAllToCloud();
 }
 
@@ -4788,23 +4790,14 @@ async function removeFromLog(){
   const pruned=deleted.filter(x=>x.DeletedAt>cutoff);
   const toWipe=new Set(pruned.filter((_,i)=>selectedDeleted.has(i)).map(x=>x.ID));
   const toKeep=pruned.filter((_,i)=>!selectedDeleted.has(i));
+  tombstone([...toWipe]);
 
   if(hasCloud()&&toWipe.size>0){
     try{
-      // Wipe from Firebase repairs node
-      const res=await fetch(getFbUrl()+'/lopeztechrepairs/repairs.json?auth='+getFbKey());
-      const data=await res.json();
-      const all=data?(Array.isArray(data)?data:Object.values(data)).filter(Boolean):[];
-      const remaining=all.filter(r=>!toWipe.has(r.ID));
-      await fetch(getFbUrl()+'/lopeztechrepairs/repairs.json?auth='+getFbKey(),{
-        method:'PUT',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(remaining)
-      });
-      // Also overwrite Firebase deleted node so auto-pull doesn't bring them back
-      await fetch(getFbUrl()+'/lopeztechrepairs/deleted.json?auth='+getFbKey(),{
-        method:'PUT',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(toKeep)
-      });
+      // Remove only the wiped records by ID — never rewrites the whole node
+      await removeRepairsFromCloud([...toWipe]);
+      // Sync the deleted log so auto-pull doesn't bring them back
+      await fbWrite('lopeztechrepairs/deleted',toKeep);
     } catch(e){
       toast('Firebase delete failed: '+e.message,'err');
       return;
@@ -4834,22 +4827,13 @@ async function wipeAllDeleted(){
   if(!confirm(`Permanently wipe ALL ${pruned.length} deleted repair${pruned.length>1?'s':''} from Firebase and the log? This cannot be undone.`))return;
 
   const toWipe=new Set(pruned.map(x=>x.ID));
+  tombstone([...toWipe]);
 
   if(hasCloud()){
     try{
-      const res=await fetch(getFbUrl()+'/lopeztechrepairs/repairs.json?auth='+getFbKey());
-      const data=await res.json();
-      const all=data?(Array.isArray(data)?data:Object.values(data)).filter(Boolean):[];
-      const remaining=all.filter(r=>!toWipe.has(r.ID));
-      await fetch(getFbUrl()+'/lopeztechrepairs/repairs.json?auth='+getFbKey(),{
-        method:'PUT',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(remaining)
-      });
-      // Wipe Firebase deleted node entirely
-      await fetch(getFbUrl()+'/lopeztechrepairs/deleted.json?auth='+getFbKey(),{
-        method:'PUT',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify([])
-      });
+      await removeRepairsFromCloud([...toWipe]);
+      // Clear the Firebase deleted log entirely
+      await fbWrite('lopeztechrepairs/deleted',[]);
     } catch(e){
       toast('Firebase wipe failed: '+e.message,'err');
       return;
@@ -4888,6 +4872,7 @@ function restoreFromSearch(id, deletedAt){
     ActivityLog:[...(d.ActivityLog||[]),{t:`Restored from Recently Deleted by ${cu.name}`,ts:nowTs()}],
     IsWarranty:d.IsWarranty||false,
   };
+  untombstone(d.ID);
   repairs.unshift(restored);
   
   const newDeleted=deleted.filter(x=>!(x.ID===id&&x.DeletedAt===deletedAt));
@@ -4937,6 +4922,7 @@ function restoreRepair(idx){
     IsWarranty:d.IsWarranty||false,
   };
   // Add back to repairs
+  untombstone(d.ID);
   repairs.unshift(restored);
   
   // Remove from deleted log
@@ -5200,6 +5186,62 @@ async function fbPatch(path,data){
   return r.json();
 }
 
+// Tombstones: repair IDs deleted locally during this session. A background
+// sync can otherwise re-add a just-deleted repair from a stale snapshot, and
+// the next save writes it back to Firebase — which is why deleted items kept
+// coming back after reload. While an ID is tombstoned, pulls never re-add it
+// and pushes never write it. Restoring a repair clears its tombstone.
+const deletedTombstones=new Set();
+function tombstone(ids){(Array.isArray(ids)?ids:[ids]).forEach(id=>{if(id)deletedTombstones.add(id);});}
+function untombstone(id){if(id)deletedTombstones.delete(id);}
+
+// ── Firebase repairs: keyed by ID, non-destructive writes ──
+// Every repair lives at /lopeztechrepairs/repairs/<ID>. We only ever write
+// individual records (upsert) or delete specific keys. Nothing rewrites the
+// whole repairs node, so one device can never wipe another device's repairs.
+let repairsKeyed=false;
+
+async function fbEnsureRepairsKeyed(){
+  if(repairsKeyed)return;
+  // One-time migration: if the repairs node is still array-shaped (indexed
+  // 0,1,2…), re-key it by repair ID so per-record writes don't create
+  // duplicates. Writes back exactly what is already there, just re-keyed.
+  const data=await fbRead('lopeztechrepairs');
+  if(data&&data.meta&&data.meta.repairsKeyed){repairsKeyed=true;return;}
+  const node=data?data.repairs:null;
+  const cloud=node?(Array.isArray(node)?node:Object.values(node)).filter(Boolean):[];
+  const cloudIds=new Set(cloud.map(r=>r.ID).filter(Boolean));
+  const localOnly=repairs.filter(r=>r&&r.ID&&!cloudIds.has(r.ID)&&!deletedTombstones.has(r.ID));
+  const keyed={};
+  [...cloud,...localOnly].forEach(r=>{if(r&&r.ID&&!deletedTombstones.has(r.ID)){const c={...r};delete c._local;keyed[r.ID]=c;}});
+  await fbWrite('lopeztechrepairs/repairs',keyed);
+  await fbPatch('lopeztechrepairs/meta',{repairsKeyed:true,lastUpdated:new Date().toISOString(),updatedBy:cu?.name||'System'});
+  repairsKeyed=true;
+}
+
+// Upsert one or more repairs by ID. Never touches other records.
+async function saveRepairsToCloud(list){
+  if(!hasCloud())return;
+  const arr=(Array.isArray(list)?list:[list]).filter(r=>r&&r.ID&&!deletedTombstones.has(r.ID));
+  if(!arr.length)return;
+  await fbEnsureRepairsKeyed();
+  const payload={};
+  arr.forEach(r=>{const c={...r};delete c._local;payload[r.ID]=c;});
+  await fbPatch('lopeztechrepairs/repairs',payload);
+  arr.forEach(r=>{const m=repairs.find(x=>x.ID===r.ID);if(m)delete m._local;});
+}
+
+// Remove specific repairs from Firebase by ID (null deletes the key).
+async function removeRepairsFromCloud(ids){
+  if(!hasCloud())return;
+  const arr=(Array.isArray(ids)?ids:[ids]).filter(Boolean);
+  if(!arr.length)return;
+  await fbEnsureRepairsKeyed();
+  const payload={};
+  arr.forEach(id=>{payload[id]=null;});
+  await fbPatch('lopeztechrepairs/repairs',payload);
+}
+
 async function pullFromCloud(silent=false){
   if(!hasCloud())return;
   if(syncInProgress)return;
@@ -5209,9 +5251,10 @@ async function pullFromCloud(silent=false){
     document.getElementById('lmsg').textContent='Syncing with Firebase…';}
     const data=await fbRead('lopeztechrepairs');
     if(!data){syncInProgress=false;document.getElementById('loader').classList.remove('on');return;}
+    if(data.meta&&data.meta.repairsKeyed)repairsKeyed=true;
     if(data.repairs){
       const rep=Array.isArray(data.repairs)?data.repairs:Object.values(data.repairs);
-      const incoming=rep.filter(Boolean);
+      const incoming=rep.filter(Boolean).filter(r=>!deletedTombstones.has(r.ID));
       const incomingIds=new Set(incoming.map(r=>r.ID));
       const localOnly=repairs.filter(r=>r.ID&&!incomingIds.has(r.ID)&&r._local);
       // For repairs that exist in both, merge notes so local notes are never lost
@@ -5284,21 +5327,30 @@ async function pushAllToCloud(){
   try{
     document.getElementById('loader').classList.add('on');
     document.getElementById('lmsg').textContent='Saving to Firebase…';
-    await fbWrite('lopeztechrepairs',{
-      repairs,
+    await fbEnsureRepairsKeyed();
+    // Upsert every repair this device knows about, keyed by ID. This merges
+    // into Firebase and never deletes records this device hasn't loaded, so
+    // repairs created on other devices are never wiped. Deletions are handled
+    // explicitly via removeRepairsFromCloud(). Tombstoned (just-deleted) IDs
+    // are never written back.
+    const payload={};
+    repairs.forEach(r=>{if(r&&r.ID&&!deletedTombstones.has(r.ID)){const c={...r};delete c._local;payload[r.ID]=c;}});
+    if(Object.keys(payload).length)await fbPatch('lopeztechrepairs/repairs',payload);
+    // Supporting data lives under its own keys; patching the root replaces only
+    // these keys and leaves the repairs node untouched.
+    await fbPatch('lopeztechrepairs',{
       techs:getTechs(),
       templates:getTpls(),
       deleted:lsLoad(LS_DEL,[]),
       notifications:lsLoad(LS_NOTIF,[]),
-      meta:{lastUpdated:new Date().toISOString(),updatedBy:cu?.name||'Unknown'}
+      meta:{lastUpdated:new Date().toISOString(),updatedBy:cu?.name||'Unknown',repairsKeyed:true}
     });
     // Clear _local flag now that Firebase has confirmed
     repairs.forEach(r=>{if(r._local)delete r._local;});
-    lsSave(LS_R,repairs);
     lastSync=Date.now();
     toast('All data saved to Firebase ✓','ok');
   }catch(e){
-    toast('Firebase save failed — saved locally','err');
+    toast('Firebase save failed — check your connection and retry','err');
     console.error('Push failed:',e);
   }finally{
     document.getElementById('loader').classList.remove('on');
@@ -6443,34 +6495,26 @@ async function slSaveTrackerRow(idx){
   if(saveBtn){ saveBtn.textContent='Saving…'; saveBtn.disabled=true; }
 
   try{
-    // Pull full repairs array from Firebase
-    var res = await fetch(SL_FB_URL+'/lopeztechrepairs/repairs.json?auth='+SL_FB_KEY);
-    var data = await res.json();
-    var all = data ? (Array.isArray(data)?data:Object.values(data)).filter(Boolean) : [];
-
-    // Find and update this record by ID
-    var updated = all.map(function(rep){
-      if(rep.ID !== r.ID) return rep;
-      return Object.assign({}, rep, {
-        RepairName: newName,
-        Device: newName,
-        TotalCollected: newAmt,
-        Quote: String(newAmt),
-        PayMethod: newPay,
-        Location: newLoc,
-        Tip: newTip,
-        AssignedTo: newEmp
-      });
+    await fbEnsureRepairsKeyed();
+    // Read just this record so no existing fields are lost, then update by ID only.
+    var current = await fbRead('lopeztechrepairs/repairs/'+r.ID);
+    var base = current || r || {};
+    var updatedRec = Object.assign({}, base, {
+      ID: r.ID,
+      RepairName: newName,
+      Device: newName,
+      TotalCollected: newAmt,
+      Quote: String(newAmt),
+      PayMethod: newPay,
+      Location: newLoc,
+      Tip: newTip,
+      AssignedTo: newEmp
     });
-
-    // Push back
-    var writeRes = await fetch(SL_FB_URL+'/lopeztechrepairs/repairs.json?auth='+SL_FB_KEY, {
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(updated)
-    });
-
-    if(!writeRes.ok) throw new Error('Save failed: '+writeRes.status);
+    var payload = {}; payload[r.ID] = updatedRec;
+    await fbPatch('lopeztechrepairs/repairs', payload);
+    // Keep the in-memory board in sync if this repair is loaded there
+    var memRec = repairs.find(function(x){return x.ID===r.ID;});
+    if(memRec) Object.assign(memRec, updatedRec);
 
     // Update local copy
     slTrackerItems[idx] = Object.assign({}, r, {
@@ -6832,15 +6876,14 @@ async function slConfirmSync(){
       return;
     }
 
-    // Pull current repairs from Firebase
-    var res = await fetch(SL_FB_URL+'/lopeztechrepairs/repairs.json?auth='+SL_FB_KEY);
-    var existing = await res.json();
-    var repairsArr = existing ? (Array.isArray(existing)?existing:Object.values(existing)).filter(Boolean) : [];
+    await fbEnsureRepairsKeyed();
 
     // Build new records — manual additions only
     var now = new Date();
+    var stamp = now.getFullYear()+(now.getMonth()+1+'').padStart(2,'0')+(now.getDate()+'').padStart(2,'0');
+    var timePart = (now.getHours()+'').padStart(2,'0')+(now.getMinutes()+'').padStart(2,'0')+(now.getSeconds()+'').padStart(2,'0');
     var newRecords = slItems.map(function(item,idx){
-      var id = 'SL-'+now.getFullYear()+(now.getMonth()+1+'').padStart(2,'0')+(now.getDate()+'').padStart(2,'0')+'-'+(idx+1+'').padStart(2,'0');
+      var id = 'SL-'+stamp+'-'+timePart+'-'+(idx+1+'').padStart(2,'0');
       var isTipOnly = item.amount<=0 && item.tip>0;
       return {
         ID: id,
@@ -6867,15 +6910,12 @@ async function slConfirmSync(){
       };
     });
 
-    var merged = repairsArr.concat(newRecords);
-
-    var writeRes = await fetch(SL_FB_URL+'/lopeztechrepairs/repairs.json?auth='+SL_FB_KEY, {
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(merged)
-    });
-
-    if(!writeRes.ok) throw new Error('Firebase write failed: '+writeRes.status);
+    // Write each new record under its own ID — never rewrites the whole node
+    var payload = {};
+    newRecords.forEach(function(rec){ payload[rec.ID] = rec; });
+    await fbPatch('lopeztechrepairs/repairs', payload);
+    // Reflect immediately on the in-memory board
+    newRecords.forEach(function(rec){ if(!repairs.find(function(x){return x.ID===rec.ID;})) repairs.unshift(rec); });
 
     toast('✓ '+newRecords.length+' manual item'+(newRecords.length!==1?'s':'')+' synced to dashboard','ok');
     slItems=[];
