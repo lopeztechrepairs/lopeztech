@@ -488,6 +488,63 @@
     .form-grid,.modal-form-grid { grid-template-columns:1fr; }
     .tabs { overflow-x:auto; }
   }
+  /* ─── RECORD SALE MODAL ─────────────────────────────────────── */
+  .sale-device-card {
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 100%);
+    border-radius:14px; padding:16px 18px; margin-bottom:20px; color:#fff;
+  }
+  .sale-device-card .sd-model { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:20px; letter-spacing:.3px; }
+  .sale-device-card .sd-sub { font-size:13px; color:rgba(255,255,255,.65); margin-top:2px; }
+  .sale-device-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:14px; }
+  .sale-device-grid .sd-item .sd-lbl { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,.5); margin-bottom:3px; }
+  .sale-device-grid .sd-item .sd-val { font-size:13px; font-weight:600; color:#fff; }
+  .sale-listed { display:inline-block; margin-top:12px; font-size:12px; color:rgba(255,255,255,.7); }
+  .sale-listed b { color:var(--gold-lt); }
+
+  .pay-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; }
+  .pay-chip {
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    padding:13px 10px; border-radius:11px; border:1.5px solid var(--card-bd);
+    background:var(--input-bg); color:var(--text-dim); cursor:pointer;
+    font-family:inherit; font-size:14px; font-weight:600; transition:all .15s; user-select:none;
+  }
+  .pay-chip:hover { border-color:var(--accent); color:var(--text); }
+  .pay-chip.sel { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 3px 10px rgba(26,111,196,.3); }
+  .pay-chip .pc-ico { font-size:16px; }
+
+  .grand-total-wrap { position:relative; }
+  .grand-total-wrap .gt-dollar { position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:24px; font-weight:700; color:var(--success); pointer-events:none; }
+  #sale_total {
+    width:100%; padding:14px 14px 14px 38px; border-radius:12px;
+    border:2px solid var(--card-bd); background:var(--input-bg);
+    color:var(--text); font-size:26px; font-weight:700; font-family:'Rajdhani',sans-serif;
+  }
+  #sale_total:focus { outline:none; border-color:var(--success); box-shadow:0 0 0 3px rgba(22,163,74,.15); }
+  .btn-confirm-sale {
+    padding:11px 22px; border-radius:9px; border:none;
+    background:linear-gradient(135deg,var(--success) 0%,#0f7a37 100%);
+    color:#fff; cursor:pointer; font-family:inherit; font-size:14px; font-weight:600; transition:filter .15s;
+  }
+  .btn-confirm-sale:hover { filter:brightness(1.07); }
+
+  /* sale info shown on a sold card */
+  .sold-info-row { display:flex; align-items:center; justify-content:space-between; margin-top:10px; padding-top:10px; border-top:1px dashed var(--card-bd); }
+  .sold-info-row .si-amt { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:17px; color:var(--success); }
+  .pay-badge { font-size:11px; font-weight:600; padding:3px 9px; border-radius:14px; background:rgba(124,58,237,.1); color:var(--purple); border:1px solid rgba(124,58,237,.3); }
+  /* ─── VIEW TOGGLE + INVENTORY TABLE ─────────────────────────── */
+  .view-toggle { display:inline-flex; border:1.5px solid var(--card-bd); border-radius:9px; overflow:hidden; background:var(--card-bg); }
+  .view-toggle button { border:none; background:transparent; padding:7px 13px; font-size:13px; color:var(--text-dim); cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; transition:all .15s; }
+  .view-toggle button.active { background:var(--accent); color:#fff; }
+  .inv-table-wrap { overflow-x:auto; border:1px solid var(--card-bd); border-radius:10px; background:var(--card-bg); margin-bottom:4px; }
+  .inv-table { width:100%; border-collapse:collapse; }
+  .inv-table th { font-size:10.5px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-dim); text-align:left; padding:10px 12px; border-bottom:1.5px solid var(--card-bd); font-weight:600; white-space:nowrap; background:var(--input-bg); }
+  .inv-table td { font-size:13px; color:var(--text); padding:9px 12px; border-bottom:1px solid var(--card-bd); vertical-align:middle; white-space:nowrap; }
+  .inv-table tr:last-child td { border-bottom:none; }
+  .inv-table tbody tr:hover td { background:var(--row-hover); }
+  .it-model { font-weight:600; }
+  .it-sub { font-size:11px; color:var(--text-dim); margin-top:1px; }
+  .it-actions { display:flex; gap:6px; align-items:center; }
+  .inv-table select.status-sel { min-width:118px; margin:0; }
 </style>
 </head>
 <body>
@@ -615,6 +672,10 @@
         <button class="tab-btn" onclick="setTab('inrepair',this)">In Repair <span class="badge" id="cnt_inrepair">0</span></button>
       </div>
       <div class="tb-spacer"></div>
+      <div class="view-toggle">
+        <button id="vt-cards" class="active" onclick="setView('cards')">▦ Cards</button>
+        <button id="vt-table" onclick="setView('table')">☰ Table</button>
+      </div>
       <input class="search-input" type="text" id="searchBox" placeholder="🔍  Search phones…" oninput="renderCards()">
       <select class="filter-sel" id="filterLocation" onchange="renderCards()">
         <option value="">All Locations</option><option>Crosby</option><option>Dayton</option>
@@ -635,8 +696,8 @@
           <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;letter-spacing:.5px;color:#d48000;">SOLD PHONES</div>
           <div style="font-size:12px;color:var(--text-dim);margin-top:1px;">
             <span id="sold-count-lbl">0 devices sold</span>
-            &nbsp;·&nbsp; Revenue: <span id="sold-revenue-lbl" style="color:var(--success);font-weight:600;">$0.00</span>
-            &nbsp;·&nbsp; Profit: <span id="sold-profit-lbl" style="color:var(--accent);font-weight:600;">$0.00</span>
+            &nbsp;·&nbsp; Total sold: <span id="sold-revenue-lbl" style="color:var(--success);font-weight:600;">$0.00</span>
+            &nbsp;·&nbsp; Earnings: <span id="sold-profit-lbl" style="color:var(--accent);font-weight:600;">$0.00</span>
           </div>
         </div>
         <span id="sold-section-arrow" style="font-size:12px;color:var(--text-dim);transition:transform .2s;">▼</span>
@@ -695,6 +756,63 @@
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeEdit()">Cancel</button>
       <button class="btn-primary" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── RECORD SALE MODAL ─────────────────────────────────────── -->
+<div class="modal-backdrop" id="saleModal">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-header">
+      <h2>Record Sale</h2>
+      <button class="btn-close" onclick="cancelSale()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="sale_id">
+      <!-- device summary -->
+      <div class="sale-device-card">
+        <div class="sd-model" id="sale_model">—</div>
+        <div class="sd-sub" id="sale_sub">—</div>
+        <div class="sale-device-grid">
+          <div class="sd-item"><div class="sd-lbl">Unlock</div><div class="sd-val" id="sale_carrier">—</div></div>
+          <div class="sd-item"><div class="sd-lbl">Grade</div><div class="sd-val" id="sale_grade">—</div></div>
+          <div class="sd-item"><div class="sd-lbl">Battery</div><div class="sd-val" id="sale_batt">—</div></div>
+        </div>
+        <div class="sd-item" style="margin-top:12px;"><div class="sd-lbl">IMEI</div><div class="sd-val" id="sale_imei" style="font-size:12px;">—</div></div>
+        <span class="sale-listed">Listed at <b id="sale_listed">$0.00</b> · Cost <b id="sale_cost" style="color:rgba(255,255,255,.85)">$0.00</b></span>
+      </div>
+
+      <!-- payment method -->
+      <div class="form-field" style="margin-bottom:20px;">
+        <label>Payment Method</label>
+        <div class="pay-grid" id="payGrid">
+          <div class="pay-chip" data-pay="Cash"   onclick="selectPay(this)"><span class="pc-ico">💵</span>Cash</div>
+          <div class="pay-chip" data-pay="Card"   onclick="selectPay(this)"><span class="pc-ico">💳</span>Card</div>
+          <div class="pay-chip" data-pay="Zelle"  onclick="selectPay(this)"><span class="pc-ico">⚡</span>Zelle</div>
+          <div class="pay-chip" data-pay="CashApp" onclick="selectPay(this)"><span class="pc-ico">📲</span>CashApp</div>
+          <div class="pay-chip" data-pay="Acima"  onclick="selectPay(this)"><span class="pc-ico">📄</span>Acima</div>
+          <div class="pay-chip" data-pay="Check"  onclick="selectPay(this)"><span class="pc-ico">🧾</span>Check</div>
+        </div>
+      </div>
+
+      <!-- grand total -->
+      <div class="form-field" style="margin-bottom:16px;">
+        <label>Grand Total (what they paid)</label>
+        <div class="grand-total-wrap">
+          <span class="gt-dollar">$</span>
+          <input type="number" id="sale_total" step="0.01" min="0" placeholder="0.00">
+        </div>
+      </div>
+
+      <!-- date + note -->
+      <div class="modal-form-grid" style="grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="form-field"><label>Sale Date</label><input type="date" id="sale_date"></div>
+        <div class="form-field"><label>Note (optional)</label><input type="text" id="sale_note" placeholder="e.g. trade-in, warranty"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="cancelSale()">Cancel</button>
+      <button class="btn-confirm-sale" onclick="confirmSale()">✓ Confirm Sale</button>
     </div>
   </div>
 </div>
@@ -968,12 +1086,13 @@ function renderCards() {
   if (locFil) entries = entries.filter(function(e){ return e[1].location===locFil; });
   if (carFil) entries = entries.filter(function(e){ return e[1].carrier===carFil; });
 
+  renderSoldSection();
+
   if (!entries.length) {
     grid.innerHTML='<div class="empty-state"><div class="icon">📱</div><h3>No phones found</h3><p>Adjust your filters or receive a new phone.</p></div>';
     return;
   }
 
-  renderSoldSection();
   entries.sort(function(a,b){ return (parseFloat(a[1].price)||0)-(parseFloat(b[1].price)||0); });
 
   // Group by brand
@@ -1022,7 +1141,7 @@ function renderCards() {
               + '<span class="sub-chevron'+(sOpen?' open':'')+'" id="sub-chev-'+skey+'">▼</span>'
               + '</div>';
         html += '<div class="sub-body'+(sOpen?' open':'')+'" id="sub-body-'+skey+'">'
-              + '<div class="sub-grid">'+subs.map(function(e){return buildCard(e[0],e[1]);}).join('')+'</div>'
+              + buildGroupBody(subs)
               + '</div></div>';
       });
 
@@ -1047,19 +1166,88 @@ function renderCards() {
               + '<span class="sub-chevron'+(sOpen?' open':'')+'" id="sub-chev-'+skey+'">▼</span>'
               + '</div>';
         html += '<div class="sub-body'+(sOpen?' open':'')+'" id="sub-body-'+skey+'">'
-              + '<div class="sub-grid">'+subs.map(function(e){return buildCard(e[0],e[1]);}).join('')+'</div>'
+              + buildGroupBody(subs)
               + '</div></div>';
       });
 
     } else {
       // Flat grid for Motorola, Google, OnePlus, Other
-      html += '<div class="sub-grid">'+phones.map(function(e){return buildCard(e[0],e[1]);}).join('')+'</div>';
+      html += buildGroupBody(phones);
     }
 
     html += '</div></div>'; // close brand-body + brand-section
   });
 
   grid.innerHTML = html;
+}
+
+// ─── VIEW MODE (cards / table) ────────────────────────────────────────────
+var viewMode = 'cards';
+function setView(v) {
+  viewMode = v;
+  var c=document.getElementById('vt-cards'), t=document.getElementById('vt-table');
+  if (c) c.classList.toggle('active', v==='cards');
+  if (t) t.classList.toggle('active', v==='table');
+  renderCards();
+}
+
+// Renders a group of phones as either a card grid or a table, per viewMode.
+// Brand/sub-section grouping is identical in both views.
+function buildGroupBody(entries) {
+  if (viewMode === 'table') {
+    return '<div class="inv-table-wrap"><table class="inv-table">'
+      + '<thead><tr>'
+      + '<th>Device</th><th>Unlock</th><th>Battery</th><th>Grade</th><th>Cost</th><th>Price</th><th>Status</th><th>Location</th>'
+      + (currentRole==='admin' ? '<th>Actions</th>' : '')
+      + '</tr></thead><tbody>'
+      + entries.map(function(e){ return buildRow(e[0], e[1]); }).join('')
+      + '</tbody></table></div>';
+  }
+  return '<div class="sub-grid">' + entries.map(function(e){ return buildCard(e[0], e[1]); }).join('') + '</div>';
+}
+
+function buildRow(id, p) {
+  var lblMap={received:'Received',available:'Available',inrepair:'In Repair',sold:'Sold'};
+  var sLabel=lblMap[p.status]||p.status;
+  var pc='pill-'+(p.status||'received');
+  var isSold = p.status==='sold';
+  var statusCell;
+  if (currentRole==='admin') {
+    statusCell = '<select class="status-sel" onchange="changeStatus(\''+id+'\',this.value)">'
+      + '<option value="received"'+(p.status==='received'?' selected':'')+'>Received</option>'
+      + '<option value="available"'+(p.status==='available'?' selected':'')+'>Available</option>'
+      + '<option value="inrepair"'+(p.status==='inrepair'?' selected':'')+'>In Repair</option>'
+      + '<option value="sold"'+(isSold?' selected':'')+'>Sold</option>'
+      + '</select>';
+  } else {
+    statusCell = '<span class="status-pill '+pc+'">'+sLabel+'</span>';
+  }
+  var priceCell;
+  if (isSold) {
+    var amt=(p.soldPrice!=null?parseFloat(p.soldPrice):parseFloat(p.price))||0;
+    priceCell = '<span style="color:var(--success);font-weight:600;">$'+amt.toFixed(2)+'</span>'+(p.payMethod?'<div class="it-sub">'+p.payMethod+'</div>':'');
+  } else {
+    priceCell = '$'+(parseFloat(p.price)||0).toFixed(2);
+  }
+  var actionsCell='';
+  if (currentRole==='admin') {
+    actionsCell = '<td><div class="it-actions">'
+      + '<button class="btn-sm btn-edit" onclick="openEdit(\''+id+'\')">Edit</button>'
+      + '<button class="btn-sm btn-delete" onclick="confirmDelete(\''+id+'\')">🗑</button>'
+      + '<button class="btn-sm btn-print" onclick="openLabel(\''+id+'\')">🖨</button>'
+      + '</div></td>';
+  }
+  return '<tr>'
+    + '<td><div class="it-model">'+(p.model||'Unknown')+'</div><div class="it-sub">'+([p.storage,p.color].filter(Boolean).join(' · ')||'—')+(p.imei?' · '+p.imei:'')+'</div></td>'
+    + '<td>'+(p.carrier||'—')+'</td>'
+    + '<td>'+(p.batt||'?')+'%'+(p.cycle?'<div class="it-sub">CC '+p.cycle+'</div>':'')+'</td>'
+    + '<td>'+(p.grade||'—')+'</td>'
+    + '<td>$'+(parseFloat(p.cost)||0).toFixed(2)+'</td>'
+    + '<td>'+priceCell+'</td>'
+    + '<td>'+statusCell+'</td>'
+    + '<td>'+(p.location||'—')+'</td>'
+    + actionsCell
+    + '</tr>';
 }
 
 function buildCard(id,p) {
@@ -1090,6 +1278,14 @@ function buildCard(id,p) {
     actions+='<button class="btn-sm btn-delete" onclick="confirmDelete(\''+id+'\')">🗑</button>';
   }
   actions+='<button class="btn-sm btn-print" onclick="openLabel(\''+id+'\')">🖨 Label</button>';
+  var soldInfoHtml='';
+  if (p.status==='sold') {
+    var amt = (p.soldPrice!=null ? parseFloat(p.soldPrice) : parseFloat(p.price))||0;
+    soldInfoHtml='<div class="sold-info-row">'
+      +'<span class="si-amt">Sold: $'+amt.toFixed(2)+'</span>'
+      +(p.payMethod ? '<span class="pay-badge">'+p.payMethod+'</span>' : '')
+      +'</div>';
+  }
   return '<div class="phone-card">'
     +'<div class="card-stripe '+sc+'"></div>'
     +'<div class="card-body">'
@@ -1110,6 +1306,7 @@ function buildCard(id,p) {
         +'<span class="price-cost">Cost: $'+(parseFloat(p.cost)||0).toFixed(2)+'</span>'
         +'<span class="price-sell">$'+(parseFloat(p.price)||0).toFixed(2)+'</span>'
       +'</div>'
+      +soldInfoHtml
       +'<div class="card-actions">'+actions+'</div>'
     +'</div>'
   +'</div>';
@@ -1123,7 +1320,7 @@ function renderSoldSection() {
   if (!section || !grid) return;
 
   // Update labels
-  var totalRevenue = soldEntries.reduce(function(s,e){ return s+(parseFloat(e[1].price)||0); }, 0);
+  var totalRevenue = soldEntries.reduce(function(s,e){ return s+((e[1].soldPrice!=null?parseFloat(e[1].soldPrice):parseFloat(e[1].price))||0); }, 0);
   var totalCost    = soldEntries.reduce(function(s,e){ return s+(parseFloat(e[1].cost)||0); }, 0);
   var profit       = totalRevenue - totalCost;
   document.getElementById('sold-count-lbl').textContent   = soldEntries.length+' device'+(soldEntries.length!==1?'s':'')+' sold';
@@ -1141,9 +1338,8 @@ function renderSoldSection() {
     return db - da;
   });
 
-  // Build cards for sold grid — same buildCard but currentTab context
-  var savedTab = currentTab;
-  grid.innerHTML = soldEntries.map(function(e){ return buildCard(e[0],e[1]); }).join('');
+  // Build sold devices in the current view (cards or table)
+  grid.innerHTML = buildGroupBody(soldEntries);
 }
 
 function toggleSoldSection() {
@@ -1157,13 +1353,69 @@ function toggleSoldSection() {
 // ─── STATUS CHANGE ────────────────────────────────────────────────────────
 function changeStatus(id,newStatus) {
   if (!newStatus) return;
+  // Selling a device opens the Record Sale window instead of committing right away
+  if (newStatus==='sold') { openSaleModal(id); return; }
   var payload={status:newStatus};
-  if (newStatus==='sold') payload.soldDate = new Date().toISOString();
   savePhone(id,payload).then(function(){
     phonesData[id]=Object.assign({},phonesData[id],payload);
     updateStats(); updateTabCounts(); renderCards();
     showToast('Status updated → '+newStatus,'ok');
   }).catch(function(){ showToast('Failed to update status','err'); });
+}
+
+// ─── RECORD SALE ──────────────────────────────────────────────────────────
+var pendingPay = '';
+function openSaleModal(id) {
+  var p = phonesData[id]; if (!p) return;
+  pendingPay = '';
+  document.getElementById('sale_id').value = id;
+  document.getElementById('sale_model').textContent = p.model || 'Unknown';
+  document.getElementById('sale_sub').textContent   = [p.storage, p.color].filter(Boolean).join(' · ') || '—';
+  document.getElementById('sale_carrier').textContent = p.carrier || '—';
+  document.getElementById('sale_grade').textContent   = p.grade ? ('Grade '+p.grade) : '—';
+  document.getElementById('sale_batt').textContent    = (p.batt ? p.batt+'%' : '—') + (p.cycle ? ' · CC '+p.cycle : '');
+  document.getElementById('sale_imei').textContent    = p.imei || '—';
+  document.getElementById('sale_listed').textContent  = '$'+(parseFloat(p.price)||0).toFixed(2);
+  document.getElementById('sale_cost').textContent    = '$'+(parseFloat(p.cost)||0).toFixed(2);
+  // prefill grand total with the listed price as a starting point
+  document.getElementById('sale_total').value = (parseFloat(p.price)||0) ? (parseFloat(p.price)).toFixed(2) : '';
+  document.getElementById('sale_note').value = '';
+  document.getElementById('sale_date').value = new Date().toISOString().slice(0,10);
+  document.querySelectorAll('#payGrid .pay-chip').forEach(function(c){ c.classList.remove('sel'); });
+  document.getElementById('saleModal').classList.add('open');
+  setTimeout(function(){ document.getElementById('sale_total').focus(); document.getElementById('sale_total').select(); }, 60);
+}
+
+function selectPay(el) {
+  document.querySelectorAll('#payGrid .pay-chip').forEach(function(c){ c.classList.remove('sel'); });
+  el.classList.add('sel');
+  pendingPay = el.getAttribute('data-pay');
+}
+
+function confirmSale() {
+  var id = document.getElementById('sale_id').value; if (!id) return;
+  var total = parseFloat(document.getElementById('sale_total').value);
+  if (isNaN(total) || total < 0) { showToast('Enter the grand total','err'); document.getElementById('sale_total').focus(); return; }
+  if (!pendingPay) { showToast('Select a payment method','err'); return; }
+  var payload = {
+    status: 'sold',
+    soldDate: new Date(document.getElementById('sale_date').value || new Date()).toISOString(),
+    soldPrice: total,
+    payMethod: pendingPay,
+    saleNote: (document.getElementById('sale_note').value||'').trim()
+  };
+  savePhone(id, payload).then(function(){
+    phonesData[id] = Object.assign({}, phonesData[id], payload);
+    document.getElementById('saleModal').classList.remove('open');
+    updateStats(); updateTabCounts(); renderCards();
+    showToast('Sale recorded — $'+total.toFixed(2)+' · '+pendingPay, 'ok');
+  }).catch(function(){ showToast('Failed to record sale','err'); });
+}
+
+function cancelSale() {
+  document.getElementById('saleModal').classList.remove('open');
+  // re-render so the status dropdown snaps back to the device's real status
+  renderCards();
 }
 
 // ─── RECEIVE FORM ─────────────────────────────────────────────────────────
@@ -1366,6 +1618,7 @@ function showToast(msg,type) {
 // ─── BACKDROP CLOSE ───────────────────────────────────────────────────────
 document.addEventListener('click',function(e){
   if (e.target.id==='editModal')   closeEdit();
+  if (e.target.id==='saleModal')   cancelSale();
   if (e.target.id==='deleteModal') closeDelete();
   if (e.target.id==='labelModal')  document.getElementById('labelModal').classList.remove('open');
 });
