@@ -5274,7 +5274,7 @@ async function pullFromCloud(silent=false){
       const rep=Array.isArray(data.repairs)?data.repairs:Object.values(data.repairs);
       const incoming=rep.filter(Boolean).filter(r=>!deletedTombstones.has(r.ID));
       const incomingIds=new Set(incoming.map(r=>r.ID));
-      const localOnly=repairs.filter(r=>r.ID&&!incomingIds.has(r.ID)&&r._local);
+      const localOnly=repairs.filter(r=>r.ID&&!incomingIds.has(r.ID)&&r._local&&!deletedTombstones.has(r.ID));
       // For repairs that exist in both, merge notes so local notes are never lost
       const localMap=new Map(repairs.map(r=>[r.ID,r]));
       const merged=incoming.map(fbR=>{
@@ -5363,8 +5363,12 @@ async function pushAllToCloud(){
       notifications:lsLoad(LS_NOTIF,[]),
       meta:{lastUpdated:new Date().toISOString(),updatedBy:cu?.name||'Unknown',repairsKeyed:true}
     });
-    // Clear _local flag now that Firebase has confirmed
-    repairs.forEach(r=>{if(r._local)delete r._local;});
+    // _local is intentionally NOT cleared here. It clears naturally when a pull
+    // confirms the repair is in Firebase (the merge replaces the local object
+    // with the Firebase copy, which carries no _local flag). Clearing it on push
+    // caused a race: a background read already in flight from before this write
+    // returns stale (without the new repair), and with _local already gone the
+    // merge treated the repair as orphaned and dropped it — vanishing tickets.
     lastSync=Date.now();
     toast('All data saved to Firebase ✓','ok');
   }catch(e){
