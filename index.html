@@ -2131,7 +2131,7 @@ function enterApp(){
   // Restore active user
   const savedUser=lsLoad('lt_active_user','');
   if(savedUser){activeUser=savedUser;}
-  window.addEventListener('online',()=>{toast('Back online — syncing…','ok');setTimeout(()=>pullFromCloud(),1000);});
+  window.addEventListener('online',()=>{toast('Back online — syncing…','ok');setTimeout(()=>{if(typeof startCloudStream==='function')startCloudStream();pullFromCloud();},1000);});
   window.addEventListener('offline',()=>{toast('Offline — data unavailable','warn');});
   if(lsLoad('lt_sb_collapsed',false)){
     const sb=document.querySelector('.sidebar');
@@ -2257,6 +2257,7 @@ function settingsAddTech(){
 }
 
 function logout(){
+  if(typeof stopCloudStream==='function')stopCloudStream();
   cu=null;repairs=[];addons=[];editId=null;
   localStorage.removeItem('lt_session');
   document.getElementById('app').style.display='none';
@@ -2274,7 +2275,11 @@ function loadRepairs(){
   repairs=[];
   renderRepairs();updateStats();renderStatusBar();renderRecentBar();
   if(hasCloud()){
-    pullFromCloud();
+    if(typeof EventSource!=='undefined'){
+      startCloudStream();   // live connection: initial event loads everything, then real-time
+    } else {
+      pullFromCloud();      // fallback for browsers without EventSource
+    }
   } else {
     // No Firebase configured — show message
     toast('Firebase not configured — data unavailable','warn');
@@ -5257,16 +5262,12 @@ async function recordPurges(ids){
   await fbPatch('lopeztechrepairs/purged',payload);
 }
 
-async function pullFromCloud(silent=false){
-  if(!hasCloud())return;
-  if(syncInProgress)return;
-  syncInProgress=true;
-  try{
-    if(!silent){document.getElementById('loader').classList.add('on');
-    document.getElementById('lmsg').textContent='Syncing with Firebase…';}
-    const data=await fbRead('lopeztechrepairs');
-    if(!data){syncInProgress=false;document.getElementById('loader').classList.remove('on');return;}
-    if(data.meta&&data.meta.repairsKeyed)repairsKeyed=true;
+// Applies a full /lopeztechrepairs snapshot to local state. Used by both the
+// one-time REST pull and the live stream below. The merge keeps any not-yet-
+// confirmed local repairs (flagged _local) so a sync never drops a new ticket.
+function applyCloudData(data){
+  if(!data)return;
+  if(data.meta&&data.meta.repairsKeyed)repairsKeyed=true;
     // Honor the shared purge list: permanently-wiped IDs are tombstoned on
     // every device so they never reappear on the board or in the deleted log.
     if(data.purged){Object.keys(data.purged).forEach(id=>deletedTombstones.add(id));}
@@ -5327,6 +5328,19 @@ async function pullFromCloud(silent=false){
     }
     autoPastDue();renderRepairs();updateStats();renderStatusBar();renderRecentBar();
     lastSync=Date.now();
+}
+
+// One-time REST pull — initial load, manual refresh button, offline reconnect.
+// Ongoing real-time sync is handled by the live stream below.
+async function pullFromCloud(silent=false){
+  if(!hasCloud())return;
+  if(syncInProgress)return;
+  syncInProgress=true;
+  try{
+    if(!silent){document.getElementById('loader').classList.add('on');
+    document.getElementById('lmsg').textContent='Syncing with Firebase…';}
+    const data=await fbRead('lopeztechrepairs');
+    applyCloudData(data);
     if(!silent)toast('Synced ✓','ok');
   }catch(e){
     if(!silent)toast('Working offline','warn');
@@ -5335,6 +5349,64 @@ async function pullFromCloud(silent=false){
     syncInProgress=false;
     if(!silent)document.getElementById('loader').classList.remove('on');
   }
+}
+
+// ── LIVE STREAM (Firebase REST Server-Sent Events) ──────────────────────────
+// Replaces 15s polling with a real-time push connection. Firebase sends a 'put'
+// with the whole node on connect, then incremental 'put'/'patch' events as
+// anything changes on any device. Uses the SAME url+auth as the REST calls, so
+// it works wherever the current REST sync works — no Firebase rules change.
+let cloudMirror=null, cloudStream=null, streamConnected=false;
+function streamSetPath(obj,path,data){
+  const parts=path.split('/').filter(Boolean);
+  if(!parts.length)return;
+  let cur=obj;
+  for(let i=0;i<parts.length-1;i++){
+    if(cur[parts[i]]==null||typeof cur[parts[i]]!=='object')cur[parts[i]]={};
+    cur=cur[parts[i]];
+  }
+  const last=parts[parts.length-1];
+  if(data===null||data===undefined)delete cur[last];
+  else cur[last]=data;
+}
+function streamEnsurePath(obj,path){
+  const parts=path.split('/').filter(Boolean);
+  let cur=obj;
+  parts.forEach(p=>{if(cur[p]==null||typeof cur[p]!=='object')cur[p]={};cur=cur[p];});
+  return cur;
+}
+function startCloudStream(){
+  if(!hasCloud()||typeof EventSource==='undefined')return;
+  stopCloudStream();
+  let es;
+  try{ es=new EventSource(getFbUrl()+'/lopeztechrepairs.json?auth='+encodeURIComponent(getFbKey())); }
+  catch(e){ console.warn('stream init failed',e); return; }
+  cloudStream=es;
+  es.addEventListener('put',ev=>{
+    try{
+      const m=JSON.parse(ev.data);            // {path, data}
+      if(!cloudMirror)cloudMirror={};
+      if(m.path==='/')cloudMirror=m.data||{};
+      else streamSetPath(cloudMirror,m.path,m.data);
+      streamConnected=true;
+      applyCloudData(cloudMirror);
+    }catch(e){console.warn('stream put',e);}
+  });
+  es.addEventListener('patch',ev=>{
+    try{
+      const m=JSON.parse(ev.data);            // {path, data:{...}}
+      if(!cloudMirror)cloudMirror={};
+      const node=(m.path==='/')?cloudMirror:streamEnsurePath(cloudMirror,m.path);
+      Object.assign(node,m.data||{});
+      applyCloudData(cloudMirror);
+    }catch(e){console.warn('stream patch',e);}
+  });
+  es.onopen=()=>{streamConnected=true;};
+  es.onerror=()=>{streamConnected=false;};   // EventSource auto-reconnects
+}
+function stopCloudStream(){
+  if(cloudStream){try{cloudStream.close();}catch(e){}cloudStream=null;}
+  streamConnected=false;
 }
 
 async function pushAllToCloud(){
@@ -5386,14 +5458,17 @@ function schedulePush(){
   syncTimer=setTimeout(()=>pushAllToCloud(),1000);
 }
 
-// Auto pull every 15 seconds — checks meta timestamp first to avoid unnecessary pulls
+// Safety net (every 45s): the live stream handles real-time sync, but if it has
+// dropped and not yet auto-reconnected, revive it and do one reconciling pull.
+// Idempotent — the merge keeps unconfirmed local tickets, so this never drops one.
 setInterval(async()=>{
   if(cu&&hasCloud()){
-    try{
-      await pullFromCloud(true);
-    }catch(e){}
+    if(typeof EventSource!=='undefined'&&!streamConnected){
+      startCloudStream();
+    }
+    try{ await pullFromCloud(true); }catch(e){}
   }
-},15000);
+},45000);
 
 // ══════════════════════════════════════════════════════
 // ── COMPLETE REPAIR POPUP ──
