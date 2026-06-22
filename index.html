@@ -2319,8 +2319,26 @@ function getReadyDays(r){if(!r.ReadyDate)return 0;return Math.floor((new Date()-
 // ── TICKET ID ──
 function genId(loc){
   const pre=loc==='Crosby'?'CRO':'DAY';
-  const nums=repairs.filter(r=>r.ID&&r.ID.startsWith(pre)).map(r=>parseInt(r.ID.split('-')[1]||0)).filter(n=>!isNaN(n));
-  return`${pre}-${String(nums.length?Math.max(...nums)+1:1).padStart(3,'0')}`;
+  const re=new RegExp('^'+pre+'-(\\d+)$');
+  const nums=[];
+  const scanRecords=src=>{ if(!src)return; (Array.isArray(src)?src:Object.values(src)).forEach(r=>{ const id=(r&&r.ID)?r.ID:(typeof r==='string'?r:null); if(id){const m=String(id).match(re); if(m)nums.push(parseInt(m[1]));} }); };
+  const scanKeys=obj=>{ if(!obj)return; Object.keys(obj).forEach(id=>{const m=String(id).match(re); if(m)nums.push(parseInt(m[1]));}); };
+  // Consider every ID ever used so a number is NEVER reused — current repairs,
+  // the deleted log, AND the permanently-purged list. Reusing a purged ID was
+  // causing brand-new tickets to be filtered out as if they'd been deleted.
+  scanRecords(repairs);
+  scanRecords(lsLoad(LS_DEL,[]));
+  if(cloudMirror){ scanRecords(cloudMirror.repairs); scanKeys(cloudMirror.purged); }
+  deletedTombstones.forEach(id=>{const m=String(id).match(re); if(m)nums.push(parseInt(m[1]));});
+  const next=nums.length?Math.max(...nums)+1:1;
+  const id=`${pre}-${String(next).padStart(3,'0')}`;
+  // Defensive: this is a live ticket. Clear any stale purge/tombstone on this ID
+  // so it can't be filtered out (covers a purge list that arrived a beat late).
+  const wasPurged=deletedTombstones.has(id)||(cloudMirror&&cloudMirror.purged&&cloudMirror.purged[id]!=null);
+  if(deletedTombstones.has(id))deletedTombstones.delete(id);
+  if(cloudMirror&&cloudMirror.purged)delete cloudMirror.purged[id];
+  if(wasPurged&&hasCloud()){ try{fbPatch('lopeztechrepairs/purged',{[id]:null}).catch(()=>{});}catch(e){} }
+  return id;
 }
 
 // ── STATUS BAR ──
@@ -5273,9 +5291,12 @@ function applyCloudData(data){
     if(data.purged){Object.keys(data.purged).forEach(id=>deletedTombstones.add(id));}
     if(data.repairs){
       const rep=Array.isArray(data.repairs)?data.repairs:Object.values(data.repairs);
-      const incoming=rep.filter(Boolean).filter(r=>!deletedTombstones.has(r.ID));
+      // Tickets created this session (_local) are protected from the purge filter:
+      // the user deliberately made them, so a stale purge entry must not drop them.
+      const localLiveIds=new Set(repairs.filter(r=>r._local).map(r=>r.ID));
+      const incoming=rep.filter(Boolean).filter(r=>!deletedTombstones.has(r.ID)||localLiveIds.has(r.ID));
       const incomingIds=new Set(incoming.map(r=>r.ID));
-      const localOnly=repairs.filter(r=>r.ID&&!incomingIds.has(r.ID)&&r._local&&!deletedTombstones.has(r.ID));
+      const localOnly=repairs.filter(r=>r.ID&&!incomingIds.has(r.ID)&&r._local);
       // For repairs that exist in both, merge notes so local notes are never lost
       const localMap=new Map(repairs.map(r=>[r.ID,r]));
       const merged=incoming.map(fbR=>{
