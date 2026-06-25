@@ -5280,6 +5280,54 @@ async function recordPurges(ids){
   await fbPatch('lopeztechrepairs/purged',payload);
 }
 
+// Collapse the repairs node into a unique-by-ID list. Firebase can end up with
+// the same ticket under two keys (e.g. a legacy numeric array index AND its ID
+// key) if an old build did whole-array writes alongside the keyed ones — that
+// shows as duplicates on the board. When a ticket appears twice, keep the copy
+// stored under its own ID (the canonical, actively-updated one) and drop the rest.
+function repairsFromNode(node){
+  if(!node)return[];
+  const entries=Array.isArray(node)?node.map((v,i)=>[String(i),v]):Object.entries(node);
+  const byId=new Map();
+  entries.forEach(([key,r])=>{
+    if(!r||!r.ID)return;
+    const ex=byId.get(r.ID);
+    if(!ex){ byId.set(r.ID,{key,r}); return; }
+    if(key===r.ID && ex.key!==r.ID) byId.set(r.ID,{key,r}); // prefer canonical ID key
+  });
+  return Array.from(byId.values()).map(e=>e.r);
+}
+
+// Permanently removes duplicate/legacy keys from /repairs so each ticket is
+// stored only under its own ID. Safe by design: it only nulls non-canonical
+// keys, and only after making sure the ticket still exists under its ID key.
+// Runs at most once per session.
+let cloudCleanupDone=false;
+async function cleanupDuplicateKeys(node){
+  if(cloudCleanupDone||!hasCloud()||!node)return;
+  cloudCleanupDone=true;
+  try{
+    // Normalize to [key,record] pairs (arrays use their index as the key).
+    const entries=Array.isArray(node)?node.map((v,i)=>[String(i),v]):Object.entries(node);
+    const idKeyExists=new Set();
+    entries.forEach(([key,r])=>{ if(r&&r.ID&&key===r.ID)idKeyExists.add(r.ID); });
+    const patch={};
+    entries.forEach(([key,r])=>{
+      if(!r||!r.ID)return;
+      if(key===r.ID)return;              // already canonical — keep it
+      if(!idKeyExists.has(r.ID)){        // no canonical copy yet → promote this one
+        const c={...r}; delete c._local; patch[r.ID]=c; idKeyExists.add(r.ID);
+      }
+      patch[key]=null;                   // drop the junk key
+    });
+    if(Object.keys(patch).length){
+      await fbPatch('lopeztechrepairs/repairs',patch);
+      const removed=Object.keys(patch).filter(k=>patch[k]===null).length;
+      console.log('Repair cleanup: removed '+removed+' duplicate key(s)');
+    }
+  }catch(e){ console.warn('duplicate cleanup failed',e); cloudCleanupDone=false; }
+}
+
 // Applies a full /lopeztechrepairs snapshot to local state. Used by both the
 // one-time REST pull and the live stream below. The merge keeps any not-yet-
 // confirmed local repairs (flagged _local) so a sync never drops a new ticket.
@@ -5290,7 +5338,11 @@ function applyCloudData(data){
     // every device so they never reappear on the board or in the deleted log.
     if(data.purged){Object.keys(data.purged).forEach(id=>deletedTombstones.add(id));}
     if(data.repairs){
-      const rep=Array.isArray(data.repairs)?data.repairs:Object.values(data.repairs);
+      const rep=repairsFromNode(data.repairs);
+      // If the raw node carried more entries than unique IDs, it has duplicate
+      // keys — schedule a one-time cleanup that removes the junk keys for good.
+      const rawCount=Array.isArray(data.repairs)?data.repairs.filter(Boolean).length:Object.keys(data.repairs).length;
+      if(rawCount>rep.length) cleanupDuplicateKeys(data.repairs);
       // Tickets created this session (_local) are protected from the purge filter:
       // the user deliberately made them, so a stale purge entry must not drop them.
       const localLiveIds=new Set(repairs.filter(r=>r._local).map(r=>r.ID));
