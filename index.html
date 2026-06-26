@@ -682,10 +682,6 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
         <span class="ni-label">Record Search</span>
       </div>
-      <div class="ni admin-only" id="ni-daily" onclick="showView('daily')" title="Daily Summary">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-        <span class="ni-label">Daily Summary</span>
-      </div>
       <div class="ni admin-only" id="ni-settings" onclick="openSettings()" title="Settings">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         <span class="ni-label">Settings</span>
@@ -715,14 +711,6 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
         <svg id="sb-toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 19l-7-7 7-7M18 19l-7-7 7-7"/></svg>
         <span id="sb-toggle-label">Close sidebar</span>
       </div>
-      <div class="sb-toggle admin-only" onclick="pullFromCloud()" title="Pull latest from Firebase" style="color:var(--blue);">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        <span>☁️ Sync now</span>
-      </div>
-      <div class="sb-toggle admin-only" onclick="pushAllToCloud()" title="Push all data to Firebase" style="color:var(--green);">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-        <span>⬆️ Push all data</span>
-      </div>
     </div>
   </div>
 
@@ -748,17 +736,8 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--blue);flex-shrink:0;"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
               <div><div>New Repair / Task</div><div style="font-size:10px;color:var(--text3);font-weight:400;">Create a repair ticket</div></div>
             </div>
-
-            <div onclick="openPhonePurchase()" style="padding:11px 16px;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;">
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--purple);flex-shrink:0;"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
-              <div><div>Device Purchase</div><div style="font-size:10px;color:var(--text3);font-weight:400;">Sell a device to a customer</div></div>
-            </div>
           </div>
         </div>
-        <button class="btnpri" onclick="openSalesLogger()" title="Sales Logger" style="background:linear-gradient(135deg,#237032 0%,#2f9e44 100%);box-shadow:0 2px 8px rgba(47,158,68,.25);">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-          Sales Logger
-        </button>
 
       </div>
       <div id="active-count-bar" style="height:36px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:16px;flex-shrink:0;">
@@ -796,9 +775,6 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
     <div id="view-pastdue" class="dpage"></div>
     <div id="view-search" class="dpage"></div>
     <div id="view-customer-profile" class="dpage"></div>
-    <div id="view-daily" class="dpage admin-only"></div>
-    <div id="view-perf" class="dpage admin-only"></div>
-    <div id="view-techs" class="dpage admin-only"></div>
     <div id="view-completed" class="dpage"></div>
     <div id="view-deleted" class="dpage"></div>
   </div>
@@ -1394,368 +1370,61 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 </div>
 
 <!-- QUICK SALE MODAL -->
-<div class="cov" id="qs-modal">
-  <div class="cmodal" style="max-width:500px;">
-    <div class="chd"><div class="ctitle">⚡ Quick Sale</div><button class="cclose" onclick="closeM('qs-modal')">✕</button></div>
-    <div class="cbody">
-      <!-- Quick-pick buttons -->
-      <div class="slbl" style="margin-top:0;">Quick Add</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
-        <button class="btn sm" onclick="qsItem('Screen Protector',10)">Screen Protector $10</button>
-        <button class="btn sm" onclick="qsItem('Privacy Screen Protector',15)">Privacy SP $15</button>
-        <button class="btn sm" onclick="qsItem('Case',10)">Case $10</button>
-        <button class="btn sm" onclick="qsItem('OtterBox Case',15)">OtterBox $15</button>
-        <button class="btn sm" onclick="qsItem('Charging Cable',10)">Cable $10</button>
-        <button class="btn sm" onclick="qsItem('Charger Block',10)">Block $10</button>
-        <button class="btn sm" onclick="qsItem('Charging Port Cleanup',15)">Port Cleanup $15</button>
-        <button class="btn sm" onclick="qsItem('iPhone Reset',20)">iPhone Reset $20</button>
-        <button class="btn sm blue" onclick="qsItem('',0)">+ Custom</button>
-      </div>
-
-      <!-- Add-item row -->
-      <div style="display:flex;gap:6px;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap;">
-        <div style="flex:2;min-width:130px;">
-          <label style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;">Item Name *</label>
-          <input id="qs-item" type="text" placeholder="Item description" style="width:100%;margin-top:4px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:13px;"/>
-        </div>
-        <div style="width:58px;">
-          <label style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;">Qty</label>
-          <input id="qs-qty" type="number" min="1" value="1" style="width:100%;margin-top:4px;padding:7px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:13px;text-align:center;"/>
-        </div>
-        <div style="width:90px;">
-          <label style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;">Unit Price</label>
-          <input id="qs-price" type="number" step="0.01" min="0" placeholder="0.00" style="width:100%;margin-top:4px;padding:7px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:13px;"/>
-        </div>
-        <button class="btn green" onclick="addQSItem()" style="padding:7px 14px;white-space:nowrap;">+ Add</button>
-      </div>
-
-      <!-- Cart list -->
-      <div id="qs-cart-list" style="margin-bottom:10px;"></div>
-
-      <!-- Payment method row -->
-      <div class="fgrid" style="margin-bottom:0;">
-        <div class="ff"><label>Payment Method</label>
-          <select id="qs-pay" onchange="calcQS()" class="fsel" style="width:100%;">
-            <option value="cash">Cash (no tax)</option>
-            <option value="card">Card (+ 8.25% tax)</option>
-          </select>
-        </div>
-      </div>
-      <div id="qs-surcharge-row" style="display:none;margin-bottom:10px;">
-        <label style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;">Credit Card Surcharge ($)</label>
-        <input id="qs-surcharge" type="number" step="0.01" min="0" placeholder="0.00" oninput="calcQS()" style="width:100%;margin-top:4px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:13px;"/>
-      </div>
-      <div class="slbl">Tip</div>
-      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
-        <button class="btn sm" onclick="setQSTip('none')">No Tip</button>
-        <button class="btn sm" onclick="setQSTip(10)">10%</button>
-        <button class="btn sm" onclick="setQSTip(15)">15%</button>
-        <button class="btn sm" onclick="setQSTip(20)">20%</button>
-        <input id="qs-tip-manual" type="number" step="0.01" min="0" placeholder="Custom $" class="fsel" style="width:90px;" oninput="calcQS()"/>
-      </div>
-      <div class="fgrid">
-        <div class="ff"><label>Store Location</label>
-          <select id="qs-loc" class="fsel" style="width:100%;">
-            <option value="">Select location…</option>
-            <option value="Dayton">Dayton</option>
-            <option value="Crosby">Crosby</option>
-          </select>
-        </div>
-        <div class="ff"><label>Customer Name (optional)</label><input id="qs-cust" type="text" placeholder="Optional"/></div>
-      </div>
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:4px;">
-        <div style="display:flex;justify-content:space-between;font-size:13px;"><span>Subtotal</span><span id="qs-show-price">$0.00</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;"><span>Tax</span><span id="qs-show-tax">$0.00</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;" id="qs-surcharge-line" style="display:none;"><span>Surcharge</span><span id="qs-show-surcharge">$0.00</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;"><span>Tip</span><span id="qs-show-tip">$0.00</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--border);margin-top:8px;padding-top:8px;"><span>Total</span><span id="qs-show-total">$0.00</span></div>
-      </div>
-    </div>
-    <div class="cfoot">
-      <button class="btn" onclick="closeM('qs-modal')">Cancel</button>
-      <button class="btn" onclick="printQSReceipt()" title="Print Receipt" style="padding:8px 12px;">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;vertical-align:middle;"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
-      </button>
-      <button class="btn green" onclick="completeQS()">Complete Sale</button>
-    </div>
-  </div>
-</div>
-
-<!-- PHONE PURCHASE MODAL -->
-<!-- DEVICE PURCHASE MODAL -->
-<div class="cov" id="dp-modal">
-  <div class="cmodal" style="max-width:600px;">
-    <div class="chd"><div class="ctitle">📱 Device Purchase</div><button class="cclose" onclick="closeM('dp-modal')">✕</button></div>
-    <div class="cbody">
-      <div style="font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Device Info</div>
-      <div class="fgrid">
-        <div class="ff s2"><label>Device (Make &amp; Model)</label><input id="dp-device" type="text" placeholder="e.g. Apple iPhone 11"/></div>
-        <div class="ff"><label>Storage</label><input id="dp-storage" type="text" placeholder="e.g. 256GB"/></div>
-        <div class="ff"><label>Color</label><input id="dp-color" type="text" placeholder="e.g. Space Black"/></div>
-        <div class="ff s2"><label>IMEI / Serial Number</label><input id="dp-imei" type="text" placeholder="Enter IMEI or serial number" style="font-family:monospace;"/></div>
-      </div>
-
-      <div style="font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin:14px 0 10px;">Customer Info</div>
-      <div class="fgrid">
-        <div class="ff"><label>Customer Name *</label><input id="dp-cust" type="text" placeholder="Full name" oninput="dpCapName(this)"/></div>
-        <div class="ff"><label>Phone Number</label><input id="dp-phone" type="tel" placeholder="(###) ###-####" oninput="dpFmtPhone(this)" maxlength="14"/></div>
-        <div class="ff s2"><label>Address</label><input id="dp-addr" type="text" placeholder="Street address, City, State ZIP"/></div>
-        <div class="ff"><label>ID Type</label>
-          <select id="dp-idtype" class="fsel" style="width:100%;">
-            <option value="">Select…</option>
-            <option>Driver's License (DL)</option>
-            <option>State ID</option>
-            <option>Passport</option>
-            <option>Matricula Consular</option>
-            <option>Military ID</option>
-          </select>
-        </div>
-        <div class="ff"><label>ID Number <span style="font-size:9px;color:var(--text3);font-weight:400;">(internal only)</span></label><input id="dp-idnum" type="text" placeholder="Enter ID number"/></div>
-      </div>
-
-      <div style="font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin:14px 0 10px;">Payment</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;" id="dp-pay-btns">
-        <button class="dp-pb" data-pay="Cash"           onclick="setDPPay(this)" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;background:#16a34a;color:#fff;border:none;cursor:pointer;opacity:1;">Cash</button>
-        <button class="dp-pb" data-pay="Credit / Debit" onclick="setDPPay(this)" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;background:#1e293b;color:#fff;border:none;cursor:pointer;opacity:.4;">Credit / Debit</button>
-        <button class="dp-pb" data-pay="Split Payment"  onclick="setDPPay(this)" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;background:#c2410c;color:#fff;border:none;cursor:pointer;opacity:.4;">Split Payment</button>
-        <button class="dp-pb" data-pay="Check"          onclick="setDPPay(this)" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;background:#78350f;color:#fff;border:none;cursor:pointer;opacity:.4;">Check</button>
-        <button class="dp-pb" data-pay="Acima"          onclick="setDPPay(this)" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;background:#4a3728;color:#fff;border:none;cursor:pointer;opacity:.4;">Acima</button>
-        <button class="dp-pb" data-pay="Zelle"          onclick="setDPPay(this)" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;background:#4f46e5;color:#fff;border:none;cursor:pointer;opacity:.4;">Zelle</button>
-        <button class="dp-pb" data-pay="CashApp"        onclick="setDPPay(this)" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;background:#15803d;color:#fff;border:none;cursor:pointer;opacity:.4;">CashApp</button>
-        <button class="dp-pb" data-pay="PayPal"         onclick="setDPPay(this)" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;background:#003087;color:#fff;border:none;cursor:pointer;opacity:.4;">PayPal</button>
-        <button class="dp-pb" data-pay="Venmo"          onclick="setDPPay(this)" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;background:#3d82c4;color:#fff;border:none;cursor:pointer;opacity:.4;">Venmo</button>
-      </div>
-      <input type="hidden" id="dp-pay" value="Cash">
-      <div class="fgrid">
-        <div class="ff"><label>Sale Price ($)</label><input id="dp-amount" type="number" step="0.01" placeholder="0.00" oninput="calcDP()"/></div>
-        <div class="ff" id="dp-sur-wrap" style="display:none;"><label>Card Surcharge ($)</label><input id="dp-surcharge" type="number" step="0.01" placeholder="0.00" oninput="calcDP()"/></div>
-      </div>
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:4px;">
-        <div style="display:flex;justify-content:space-between;font-size:13px;"><span>Device price</span><span id="dp-show-price">$0.00</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;" id="dp-tax-row" style="display:none;"><span>Tax (8.25%)</span><span id="dp-show-tax">$0.00</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;" id="dp-sur-row" style="display:none;"><span>Surcharge</span><span id="dp-show-sur">$0.00</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--border);margin-top:8px;padding-top:8px;"><span>Total</span><span id="dp-show-total">$0.00</span></div>
-      </div>
-      <div style="margin-top:12px;font-size:11px;color:var(--text3);background:var(--bg2);border-radius:7px;padding:8px 12px;">
-        📋 All devices include a <strong>12-month warranty</strong> for manufacturing defects.
-      </div>
-    </div>
-    <div class="cfoot">
-      <button class="btn" onclick="closeM('dp-modal')">Cancel</button>
-      <button class="btn" onclick="printDPReceipt('customer')" style="color:var(--green);border-color:var(--green);">🧾 Customer Copy</button>
-      <button class="btn" onclick="printDPReceipt('store')" style="color:var(--amber);border-color:var(--amber);">🔒 Store Copy</button>
-      <button class="btn green" onclick="completeDPSale()">Complete &amp; Log</button>
-    </div>
-  </div>
-</div>
-
-<!-- COMPLETION POPUP MODAL -->
 <div class="cov" id="complete-popup">
-  <div class="cmodal" style="max-width:520px;">
-
-    <!-- HEADER -->
+  <div class="cmodal" style="max-width:430px;">
     <div class="chd">
       <div>
         <div class="ctitle">✓ Complete Repair</div>
         <div style="font-size:10px;color:var(--text3);margin-top:1px;" id="cp-modal-sub">—</div>
       </div>
-      <div style="display:flex;align-items:center;gap:7px;">
-        <!-- Tech chip -->
-        <div style="position:relative;">
-          <div id="cp-tech-chip" onclick="toggleCPTechDrop()" style="display:flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;cursor:pointer;">
-            <div id="cp-tech-av" style="width:20px;height:20px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0;">?</div>
-            <span id="cp-tech-name" style="font-size:11px;font-weight:500;color:var(--text);">Select</span>
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;color:var(--text3);"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-          <div id="cp-tech-drop" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--bg);border:1px solid var(--border2);border-radius:10px;box-shadow:var(--shadow2);z-index:600;overflow:hidden;min-width:120px;">
-            <div onclick="pickCPTech('Saul')" style="padding:8px 14px;font-size:12px;cursor:pointer;color:var(--text);" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">Saul</div>
-            <div onclick="pickCPTech('David')" style="padding:8px 14px;font-size:12px;cursor:pointer;color:var(--text);" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">David</div>
-            <div onclick="pickCPTech('Juan')" style="padding:8px 14px;font-size:12px;cursor:pointer;color:var(--text);" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">Juan</div>
-            <div onclick="pickCPTech('Noemy')" style="padding:8px 14px;font-size:12px;cursor:pointer;color:var(--text);" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">Noemy</div>
-          </div>
-        </div>
-        <button class="cclose" onclick="closeM('complete-popup')">✕</button>
-      </div>
+      <button class="cclose" onclick="closeM('complete-popup')">✕</button>
     </div>
-
     <div class="cbody">
-
-      <!-- Repair info bar -->
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div>
-          <div id="cp-info-name" style="font-size:13px;font-weight:600;color:var(--text);">—</div>
-          <div id="cp-info-sub" style="font-size:10px;color:var(--text3);margin-top:1px;">—</div>
-        </div>
-        <div id="cp-info-quote" style="font-size:14px;font-weight:700;color:var(--green2);">$0.00</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;margin-bottom:14px;">
+        <div id="cp-info-name" style="font-size:13px;font-weight:600;color:var(--text);">—</div>
+        <div id="cp-info-sub" style="font-size:10px;color:var(--text3);margin-top:1px;">—</div>
       </div>
-
-      <!-- PAYMENT expandable -->
-      <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;">
-        <div onclick="toggleCPSection('payment')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 13px;cursor:pointer;background:var(--bg2);user-select:none;">
-          <div style="display:flex;align-items:center;gap:7px;">
-            <div style="width:24px;height:24px;border-radius:6px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;">💳</div>
-            <div>
-              <div style="font-size:12px;font-weight:600;color:var(--text);">Payment</div>
-              <div id="cp-pay-preview" style="font-size:10px;color:var(--text3);">Cash · $0.00</div>
-            </div>
-          </div>
-          <svg id="cp-chev-payment" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--text3);transition:transform .2s;transform:rotate(180deg);"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        <div id="cp-body-payment" style="padding:13px;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--border);">
-
-          <div>
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Method &amp; Amount</div>
-            <div id="cp-pay-rows" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;">
-              <div class="cp-pay-row" style="display:flex;gap:6px;">
-                <div style="flex:1;">
-                  <select class="cp-pay-method fsel" onchange="calcCP()" style="font-size:12px;width:100%;" id="cp-pay">
-                    <option value="cash">Cash</option>
-                    <option value="card">Card (+ tax)</option>
-                    <option value="zelle">Zelle</option>
-                    <option value="venmo">Venmo</option>
-                    <option value="check">Check</option>
-                    <option value="cashapp">CashApp</option>
-                  </select>
-                </div>
-                <div style="width:110px;flex-shrink:0;">
-                  <input id="cp-amount" type="number" class="cp-pay-amt fsel" step="0.01" min="0" placeholder="0.00" oninput="calcCP()" style="font-size:12px;width:100%;"/>
-                </div>
-              </div>
-            </div>
-            <button onclick="addCPPayRow()" style="background:none;border:0.5px solid var(--border);border-radius:7px;padding:5px 12px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;width:100%;font-family:'Geist',sans-serif;">+ Add split payment</button>
-          </div>
-
-          <div style="height:1px;background:var(--border);"></div>
-
-          <div>
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Discount ($)</div>
-            <input id="cp-discount" type="number" step="0.01" min="0" placeholder="0.00" oninput="calcCP()" class="fsel" style="width:130px;font-size:12px;"/>
-          </div>
-
-          <div style="height:1px;background:var(--border);"></div>
-
-          <div>
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Deposit</div>
-            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--text);margin-bottom:7px;">
-              <input type="checkbox" id="cp-deposit-check" onchange="toggleCPDeposit()" style="width:14px;height:14px;cursor:pointer;accent-color:var(--green);"/>
-              Deposit was paid
-            </label>
-            <div id="cp-deposit-fields" style="display:none;flex-direction:column;gap:7px;">
-              <div style="display:flex;gap:6px;">
-                <div style="flex:1;">
-                  <select id="cp-deposit-pay" onchange="calcCP()" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;">
-                    <option value="cash">Cash (no tax)</option>
-                    <option value="card">Card (+ 8.25% tax)</option>
-                    <option value="zelle">Zelle (no tax)</option>
-                  </select>
-                </div>
-                <div style="width:110px;flex-shrink:0;">
-                  <input id="cp-deposit-amt" type="number" step="0.01" min="0" placeholder="0.00" oninput="calcCP()" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;"/>
-                </div>
-              </div>
-              <input id="cp-deposit-date" type="date" style="width:160px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;"/>
-              <div id="cp-deposit-tax-line" style="display:none;font-size:12px;color:var(--text3);">💳 Deposit tax (8.25%): <strong id="cp-deposit-tax-amt">$0.00</strong></div>
-            </div>
-          </div>
-
-          <div id="cp-surcharge-row" style="display:none;">
-            <div style="height:1px;background:var(--border);margin-bottom:10px;"></div>
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Card Surcharge</div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <input type="checkbox" id="cp-surcharge-chk" onchange="calcCP()" style="width:14px;height:14px;accent-color:var(--navy);">
-              <input type="number" id="cp-surcharge-pct" value="3" step="0.1" min="0" oninput="calcCP()" style="width:72px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Geist',sans-serif;color:var(--text);"/>
-              <span style="font-size:11px;color:var(--text3);">%</span>
-              <span id="cp-surcharge-preview" style="font-size:11px;color:var(--text3);"></span>
-            </div>
-          </div>
-
-          <div style="height:1px;background:var(--border);"></div>
-
-          <div>
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Tip ($)</div>
-            <input id="cp-tip-manual" type="number" step="0.01" min="0" placeholder="0.00" class="fsel" style="width:130px;" oninput="cpTipAmt=parseFloat(this.value)||0;calcCP();"/>
-          </div>
-
+      <div style="margin-bottom:12px;">
+        <label style="display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Payment Method</label>
+        <select id="cp-pay" class="fsel" onchange="cpPayChange()" style="width:100%;font-size:13px;">
+          <option value="cash">Cash</option>
+          <option value="card">Card</option>
+          <option value="zelle">Zelle</option>
+          <option value="cashapp">CashApp</option>
+          <option value="check">Check</option>
+          <option value="acima">Acima</option>
+          <option value="split">Split Payment</option>
+        </select>
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Total Amount</label>
+        <div style="position:relative;">
+          <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);">$</span>
+          <input id="cp-amount" type="number" step="0.01" min="0" placeholder="0.00" oninput="cpCalc()" style="width:100%;padding:9px 11px 9px 22px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:'Geist',sans-serif;outline:none;box-sizing:border-box;"/>
         </div>
       </div>
-
-      <!-- ADD-ONS expandable -->
-      <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;">
-        <div onclick="toggleCPSection('addons')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 13px;cursor:pointer;background:var(--bg2);user-select:none;">
-          <div style="display:flex;align-items:center;gap:7px;">
-            <div style="width:24px;height:24px;border-radius:6px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;">➕</div>
-            <div>
-              <div style="font-size:12px;font-weight:600;color:var(--text);">Add-Ons</div>
-              <div id="cp-addons-preview" style="font-size:10px;color:var(--text3);">none selected</div>
-            </div>
-          </div>
-          <svg id="cp-chev-addons" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--text3);transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        <div id="cp-body-addons" style="display:none;padding:13px;border-top:1px solid var(--border);">
-          <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
-            <select id="cp-addon-select" onchange="cpShowAddonPrice(this)" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-size:12px;font-family:'Geist',sans-serif;">
-              <option value="">— Select add-on —</option>
-              <option>Screen Protector</option>
-              <option>Privacy Screen Protector</option>
-              <option>Case</option>
-              <option>OtterBox</option>
-              <option>Cable</option>
-              <option>Block</option>
-              <option>Port Cleanup</option>
-              <option>iPhone Reset</option>
-              <option value="Custom">+ Custom</option>
-            </select>
-            <input id="cp-addon-price" type="number" step="0.01" placeholder="Price $" style="display:none;width:90px;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-size:12px;"/>
-            <button onclick="cpAddSelectedAddon()" style="background:var(--navy);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Geist',sans-serif;">Add</button>
-          </div>
-          <div id="cp-custom-name-wrap" style="display:none;margin-bottom:8px;">
-            <input id="cp-custom-name" type="text" placeholder="Custom item name" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-size:12px;"/>
-          </div>
-          <div id="cp-addons-list" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
-        </div>
+      <div id="cp-split-wrap" style="display:none;margin-bottom:12px;">
+        <label style="display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Split Breakdown</label>
+        <div id="cp-split-rows" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;"></div>
+        <button onclick="cpAddSplitRow()" style="background:var(--bg2);border:1px dashed var(--border2);border-radius:7px;padding:7px 12px;font-size:11px;font-weight:600;color:var(--navy);cursor:pointer;font-family:'Geist',sans-serif;width:100%;">+ Add payment method</button>
+        <div id="cp-split-remaining" style="font-size:11px;color:var(--text3);margin-top:6px;text-align:right;"></div>
       </div>
-
-      <!-- COMPLETION NOTES -->
-      <div style="margin-bottom:10px;">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Completion Notes <span style="font-weight:400;text-transform:none;letter-spacing:0;">— stored on repair</span></div>
-        <textarea id="cp-completion-note" placeholder="e.g. Customer picked up, advised on battery health…" style="width:100%;min-height:56px;resize:vertical;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:12px;font-family:'Geist',sans-serif;color:var(--text);outline:none;line-height:1.5;"></textarea>
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;">Payment Date</label>
+        <input id="cp-date" type="date" style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;font-family:'Geist',sans-serif;outline:none;box-sizing:border-box;"/>
       </div>
-
-      <!-- SUMMARY -->
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:11px 13px;" id="cp-summary">
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0;"><span>Repair Amount</span><span id="cp-show-price">$0.00</span></div>
-        <div id="cp-addons-summary"></div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:#dc2626;padding:2px 0;" id="cp-discount-line"><span>Discount</span><span id="cp-show-discount">-$0.00</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--green);padding:2px 0;" id="cp-deposit-line"><span>Deposit Paid</span><span id="cp-show-deposit">-$0.00</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0;"><span>Tax (8.25%)</span><span id="cp-show-tax">$0.00</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0;" id="cp-surcharge-line"><span>Surcharge</span><span id="cp-show-surcharge">$0.00</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0;"><span>Tip</span><span id="cp-show-tip">$0.00</span></div>
-        <div id="cp-split-summary"></div>
-        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--border);margin-top:7px;padding-top:8px;"><span>Total Due</span><span id="cp-show-total">$0.00</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0;"><span>Subtotal</span><span id="cp-sum-sub">$0.00</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0;" id="cp-sum-tax-line"><span>Tax (8.25%)</span><span id="cp-sum-tax">$0.00</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--border);margin-top:7px;padding-top:8px;"><span>Total</span><span id="cp-sum-total">$0.00</span></div>
       </div>
-
     </div>
-
     <div class="cfoot">
       <button class="btn" onclick="closeM('complete-popup')">Cancel</button>
       <button class="btn" onclick="printCPReceipt()" title="Print Receipt" style="padding:8px 12px;">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;vertical-align:middle;"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
       </button>
-      <button class="btn green" onclick="preConfirmComplete()">Complete &amp; Log Sale</button>
-    </div>
-
-  </div>
-</div>
-
-
-<!-- COMPLETE SALE CONFIRMATION DIALOG -->
-<div class="cov" id="confirm-sale-popup">
-  <div class="cmodal" style="max-width:420px;">
-    <div class="chd"><div class="ctitle">✅ Does everything look right?</div><button class="cclose" onclick="closeM('confirm-sale-popup')">✕</button></div>
-    <div class="cbody" id="confirm-sale-body" style="font-size:13px;line-height:1.8;color:var(--text2);"></div>
-    <div class="cfoot">
-      <button class="btn" onclick="closeM('confirm-sale-popup')">Go Back</button>
-      <button class="btn green" onclick="confirmComplete()">Yes, Complete Sale</button>
+      <button class="btn green" onclick="confirmComplete()">Complete</button>
     </div>
   </div>
 </div>
@@ -1764,6 +1433,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
 
 <div class="loader" id="loader"><div class="spin"></div><p id="lmsg">Loading…</p></div>
 <div class="toast" id="toast"></div>
+<div id="smenu" class="smenu" style="display:none;"></div>
 <script>
 // ═══════════════════════════════════════
 // LOPEZ TECH REPAIRS — v5
@@ -1832,7 +1502,6 @@ let selectedRows=new Set();
 
 function lsLoad(k,d){try{return JSON.parse(localStorage.getItem(k)||'null')??d;}catch(e){return d;}}
 function lsSave(k,v){if(k===LS_R)return;/* repairs are kept strictly in Firebase, never cached locally */localStorage.setItem(k,JSON.stringify(v));}
-function getApi(){return localStorage.getItem(LS_API)||'';}
 
 // Notification stubs — real functions defined later in notification script block
 function updateBellDot(){}
@@ -2064,12 +1733,9 @@ function fmtPhoneDisp(p){if(!p)return'—';const r=(p+'').replace(/\D/g,'');if(r
 function phoneRaw(p){return(p+'').replace(/\D/g,'');}
 
 // ── SECURITY HELPERS ──
-function requireAdmin(fn){if(cu?.role!=='admin'){toast('Admin access required','err');return;}fn();}
+function requireAdmin(fn){fn();}
 function checkRole(minRole){
-  if(!cu)return false;
-  if(minRole==='admin')return cu.role==='admin';
-  if(minRole==='user')return cu.role==='admin'||cu.role==='user';
-  return true;
+  return !!cu; // universal access — every signed-in user has full permissions
 }
 
 // ── TECHS ──
@@ -2115,6 +1781,7 @@ function showLockout(m){}
 function hideLockout(){}
 
 function enterApp(){
+  if(cu)cu.role='admin'; // universal app — no role tiers; upgrade any stale session
   lsSave('lt_session',{name:cu.name,role:cu.role,u:cu.u,fullName:cu.fullName||''});
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
@@ -2190,15 +1857,13 @@ function showCustCard(cname){
         <div style="font-size:10px;font-weight:600;color:#8a7d72;text-transform:uppercase;letter-spacing:.5px;">Completed</div>
       </div>
     </div>
-    <div style="margin-top:14px;">
-      <button onclick="slViewHistory('${escH(cname)}')" style="width:100%;padding:9px;background:#111827;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Geist',sans-serif;">🔍 View Full History</button>
-    </div>`;
+    `;
   document.body.appendChild(pop);
   pop.addEventListener('click',e=>e.stopPropagation());
   setTimeout(()=>document.addEventListener('click',function once(){pop.remove();document.removeEventListener('click',once);}),100);
 }
 
-function openSettings(){
+function renderSettingsModal(){
   const techs=getTechs();
   document.getElementById('settings-body').innerHTML=`
     <div style="padding:20px 24px;">
@@ -2229,8 +1894,37 @@ function openSettings(){
       <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;">Repair Services</div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Manage the repair service list shown when creating new repairs.</div>
       <button class="btn blue" onclick="closeM('settings-modal');openSvcSettings();">⚙️ Manage Repair Services</button>`:''}
+      <div style="border-top:1px solid var(--border);margin:20px 0 14px;"></div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;">Cloud Sync</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">This device already syncs live with Firebase. Use these only if something looks out of date.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn blue" onclick="pullFromCloud()">⬇ Pull from Firebase</button>
+        <button class="btn green" onclick="pushAllToCloud()">⬆ Push to Firebase</button>
+      </div>
     </div>`;
   document.getElementById('settings-modal').classList.add('open');
+}
+
+let settingsAuthed=false;
+function openSettings(){
+  if(settingsAuthed){ renderSettingsModal(); return; }
+  var u=document.getElementById('sa-user'); if(u)u.value='';
+  var p=document.getElementById('sa-pass'); if(p)p.value='';
+  var e=document.getElementById('sa-err'); if(e)e.style.display='none';
+  document.getElementById('settings-auth-modal').classList.add('open');
+  setTimeout(function(){var x=document.getElementById('sa-user');if(x)x.focus();},60);
+}
+function submitSettingsAuth(){
+  var u=(document.getElementById('sa-user').value||'').trim();
+  var p=document.getElementById('sa-pass').value||'';
+  if(u==='lopeztech' && p==='TechyTech1'){
+    settingsAuthed=true;
+    closeM('settings-auth-modal');
+    renderSettingsModal();
+  } else {
+    var e=document.getElementById('sa-err'); if(e)e.style.display='block';
+    var pp=document.getElementById('sa-pass'); if(pp){pp.value='';pp.focus();}
+  }
 }
 
 function settingsDeactivate(i,reason){
@@ -2547,19 +2241,6 @@ function rowHTML(r){
 
 function toggleSec(id){toggleKol(id);}
 
-function slViewHistory(cname){
-  const pop=document.getElementById('chip-popup');
-  if(pop)pop.remove();
-  showView('search');
-  setTimeout(function(){
-    const inp=document.getElementById('cs-in');
-    if(inp){inp.value=cname;doSearch();inp.focus();}
-  },120);
-}
-
-// ── ACTIVE USER (shift selector) ──
-var activeUser = lsLoad('lt_active_user', '') || '';
-
 function setActiveUser(name){
   // Also sync note author dropdown if open
   const na=document.getElementById('note-author');
@@ -2614,12 +2295,13 @@ function openSMenu(e,id,secId){
   e.stopPropagation();
   if(cu.role==='guest')return;
   const m=document.getElementById('smenu');
+  if(!m)return;
   m.innerHTML=STATUSES.map(s=>`<div class="smi" onclick="qStatus('${id}','${s.id}','${secId}')"><span style="color:${s.color};display:inline-flex;align-items:center;width:18px;">${s.icon}</span><span style="color:${s.color};font-weight:500;">${s.id}</span></div>`).join('');
   m.style.display='block';
   const r=e.target.getBoundingClientRect();
   m.style.position='fixed';m.style.top=(r.bottom+4)+'px';m.style.left=Math.max(10,r.left-165)+'px';
 }
-document.addEventListener('click',()=>{document.getElementById('smenu').style.display='none';});
+document.addEventListener('click',()=>{const sm=document.getElementById('smenu');if(sm)sm.style.display='none';});
 
 async function qStatus(id,status,secId){
   if(cu.role==='guest')return;
@@ -3190,46 +2872,6 @@ function nrPickCreator(name){
   openNewRepairModal();
 }
 
-function openQuickSale(){
-  document.getElementById('new-menu').style.display='none';
-  // Reset cart
-  qsCart=[];
-  qsTipAmt=0;
-  document.getElementById('qs-item').value='';
-  document.getElementById('qs-qty').value=1;
-  document.getElementById('qs-price').value='';
-  document.getElementById('qs-tip-manual').value='';
-  document.getElementById('qs-cust').value='';
-  renderQSCart();
-  calcQS();
-  document.getElementById('qs-modal').classList.add('open');
-}
-function openPhonePurchase(){
-  document.getElementById('new-menu').style.display='none';
-  ['dp-device','dp-storage','dp-color','dp-imei','dp-cust','dp-phone','dp-addr','dp-idnum','dp-amount','dp-surcharge'].forEach(function(id){
-    var el=document.getElementById(id); if(el) el.value='';
-  });
-  var idt=document.getElementById('dp-idtype'); if(idt) idt.value='';
-  document.getElementById('dp-pay').value='Cash';
-  document.querySelectorAll('.dp-pb').forEach(function(b){b.style.opacity='.4';});
-  var cb=document.querySelector('.dp-pb[data-pay="Cash"]'); if(cb) cb.style.opacity='1';
-  ['dp-sur-wrap','dp-tax-row','dp-sur-row'].forEach(function(id){
-    var el=document.getElementById(id); if(el) el.style.display='none';
-  });
-  ['dp-show-price','dp-show-tax','dp-show-sur','dp-show-total'].forEach(function(id){
-    var el=document.getElementById(id); if(el) el.textContent='$0.00';
-  });
-  document.getElementById('dp-modal').classList.add('open');
-}
-// Close new menu when clicking outside
-document.addEventListener('click',function(e){
-  const menu=document.getElementById('new-menu');
-  const btn=document.getElementById('new-repair-btn');
-  if(menu&&btn&&!menu.contains(e.target)&&!btn.contains(e.target)){
-    menu.style.display='none';
-  }
-});
-
 function setStatusPill(el){
   const status = el.dataset.status;
   document.getElementById('f-status').value = status;
@@ -3242,6 +2884,13 @@ function setStatusPill(el){
               status==='Completed'?'active-completed':'';
   if(cls) el.classList.add(cls);
   upPrev();
+  // Mark-as-complete: open the payment popup immediately for an existing repair
+  // (new repairs have no editId yet — Save creates the repair then opens the popup)
+  if(status==='Completed' && editId){
+    const _pid=editId;
+    closePanel();
+    setTimeout(()=>openCompletePopup(_pid),150);
+  }
 }
 
 function syncStatusPillFromSelect(){
@@ -4435,8 +4084,6 @@ function applyWarrantyCheck(origId,fee){
 
 // ── DYNAMIC PAGES ──
 function showView(id){
-  const adminOnlyViews=['daily','perf','techs'];
-  if(adminOnlyViews.includes(id)&&!checkRole('admin')){toast('Admin access required','err');return;}
   if((id==='phones')&&!checkRole('user')){toast('Access denied','err');return;}
   document.querySelectorAll('.ni').forEach(el=>el.classList.remove('active'));
   const ni=document.getElementById('ni-'+id);if(ni)ni.classList.add('active');
@@ -4448,7 +4095,6 @@ function showView(id){
   if(id==='pastdue')renderPastDue(pg);
   if(id==='search')renderSearch(pg);
   if(id==='customer-profile'){}// rendered by openCustomerProfile
-  if(id==='daily')renderDaily(pg);
   if(id==='perf'){openSettings();return;}
   if(id==='techs'){openSettings();return;}
   if(id==='deleted')renderDeletedPage(pg);
@@ -4692,33 +4338,6 @@ function toggleCustCard(i){
   // legacy — no longer used but keep to avoid errors
 }
 
-
-function renderDaily(pg){
-  pg.innerHTML=`<div class="ptop">Daily Summary</div><div class="psub2">Revenue and repair activity</div>
-    <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;">
-      ${['Today','This Week','Last Week','This Month','Last Month'].map((l,i)=>`<button class="btn" style="font-size:11px;padding:5px 10px;" onclick="setDF('${['today','week','lastweek','month','lastmonth'][i]}',this)">${l}</button>`).join('')}
-      <input type="date" id="df-from" class="fsel" style="font-size:11px;"/>
-      <input type="date" id="df-to" class="fsel" style="font-size:11px;"/>
-      <button class="btn blue" style="font-size:11px;padding:5px 10px;" onclick="setDF('custom',this)">Custom</button>
-    </div>
-    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:13px;margin-bottom:12px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <span style="font-size:12px;font-weight:600;">Monthly Revenue Goal</span>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <span style="font-size:11px;color:var(--text3);">Goal ($):</span>
-          <input type="number" id="goal-in" class="fsel" style="width:90px;font-size:11px;" value="${lsLoad(LS_GL,5000)}" oninput="lsSave('${LS_GL}',parseFloat(this.value)||0);updGoal()"/>
-        </div>
-      </div>
-      <div class="goal-bar-wrap"><div class="goal-bar" id="goal-bar" style="width:0%"></div></div>
-      <div id="goal-txt" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
-    </div>
-    <div id="df-cnt"></div>
-    <div class="dsec" style="margin-top:10px;">
-      <h3>🗑 Recently Deleted Log (last 30 days)</h3>
-      ${renderDeletedLog()}
-    </div>`;
-  setDF('today',pg.querySelector('.btn'));updGoal();
-}
 
 function renderDeletedLog(){
   const deleted=lsLoad(LS_DEL,[]);
@@ -5000,16 +4619,6 @@ function setDF(type,btn){
     </div>
     <div class="dsec"><h3>Completed</h3>
       ${comp.length?comp.map(r=>`<div style="font-size:12px;padding:5px 0;border-bottom:1px solid var(--border);color:var(--text2);">${r.ID} · ${r.RepairName||'—'} · <span style="color:var(--green);">$${parseFloat(r.Quote||0).toFixed(2)}</span></div>`).join(''):'<div style="font-size:12px;color:var(--text3);">None.</div>'}
-    </div>`;
-}
-
-function renderPerf(pg){
-  const techs=getTechs(),comp=repairs.filter(r=>r.Status==='Completed');
-  const maxC=Math.max(...techs.map(t=>comp.filter(r=>r.AssignedTo===t.name).length),1);
-  pg.innerHTML=`<div class="ptop">Tech Performance</div><div class="psub2">Completed repairs and revenue</div>
-    <div class="dsec"><h3>Completed Repairs</h3>
-      ${techs.map(t=>{const tc=comp.filter(r=>r.AssignedTo===t.name),rev=tc.reduce((a,r)=>a+parseFloat(r.Quote||0),0),pct=(tc.length/maxC*100).toFixed(0);
-        return`<div class="trow"><div style="width:70px;font-size:12px;font-weight:500;">${t.name}${!t.active?'<span style="font-size:9px;color:var(--text3);"> (inactive)</span>':''}</div><div class="tbarw"><div class="tbar" style="width:${pct}%"></div></div><div style="width:28px;font-size:12px;font-weight:600;text-align:right;">${tc.length}</div><div style="width:70px;font-size:11px;color:var(--green);text-align:right;">$${rev.toFixed(0)}</div></div>`;}).join('')}
     </div>`;
 }
 
@@ -5549,48 +5158,87 @@ setInterval(async()=>{
 let cpRepairId=null, cpAddons=[], cpTipAmt=0, cpDiscountAmt=0;
 
 function openCompletePopup(id){
-  const r=repairs.find(x=>x.ID===id); if(!r) return;
-  cpRepairId=id; cpAddons=[]; cpTipAmt=0; cpDiscountAmt=0;
-  // Reset payment rows
-  var cpRows=document.getElementById('cp-pay-rows');
-  if(cpRows){[].slice.call(cpRows.querySelectorAll('.cp-pay-row')).slice(1).forEach(function(el){el.remove();});}
+  const r=repairs.find(x=>x.ID===id); if(!r)return;
+  cpRepairId=id;
+  document.getElementById('cp-modal-sub').textContent=r.ID;
+  document.getElementById('cp-info-name').textContent=r.RepairName||r.Device||'Repair';
+  document.getElementById('cp-info-sub').textContent=(r.CustomerName||'—')+(r.Location?' · '+r.Location:'');
   document.getElementById('cp-pay').value='cash';
-  document.getElementById('cp-amount').value=parseFloat(r.Quote||0).toFixed(2);
-  document.getElementById('cp-discount').value='';
-  const cpSurChk=document.getElementById('cp-surcharge-chk');
-  if(cpSurChk)cpSurChk.checked=false;
-  document.getElementById('cp-surcharge-row').style.display='none';
-  document.getElementById('cp-surcharge-line').style.display='none';
-  document.getElementById('cp-addons-list').innerHTML='';
-  document.getElementById('cp-tip-manual').value='';
-  document.getElementById('cp-deposit-check').checked=false;
-  document.getElementById('cp-deposit-fields').style.display='none';
-  document.getElementById('cp-deposit-pay').value='cash';
-  document.getElementById('cp-deposit-amt').value='';
-  document.getElementById('cp-deposit-date').value='';
-  document.getElementById('cp-deposit-line').style.display='none';
-  document.getElementById('cp-deposit-tax-line').style.display='none';
-  document.getElementById('cp-discount-line').style.display='none';
-  document.getElementById('cp-addon-select').value='';
-  document.getElementById('cp-addon-price').style.display='none';
-  document.getElementById('cp-addon-price').value='';
-  const cnw=document.getElementById('cp-custom-name-wrap');if(cnw)cnw.style.display='none';
-  const cpn=document.getElementById('cp-completion-note');if(cpn)cpn.value='';
-  document.getElementById('cp-addons-preview').textContent='none selected';
-  // Payment section open by default, addons closed
-  const pb=document.getElementById('cp-body-payment');if(pb)pb.style.display='flex';
-  const pc=document.getElementById('cp-chev-payment');if(pc)pc.style.transform='rotate(180deg)';
-  const ab=document.getElementById('cp-body-addons');if(ab)ab.style.display='none';
-  const ac=document.getElementById('cp-chev-addons');if(ac)ac.style.transform='';
-  // Info bar
-  document.getElementById('cp-info-name').textContent=(r.RepairName||r.Device||'—')+' · '+(r.CustomerName||'—');
-  document.getElementById('cp-info-sub').textContent=(r.ID||'')+(r.Location?' · '+r.Location:'');
-  document.getElementById('cp-info-quote').textContent='$'+parseFloat(r.Quote||0).toFixed(2);
-  document.getElementById('cp-modal-sub').textContent=r.ID||'';
-  // Tech chip
-  pickCPTech(r.AssignedTo||'');
-  calcCP();
+  const q=(r.Quote!==undefined&&r.Quote!==null&&r.Quote!=='')?parseFloat(r.Quote):NaN;
+  document.getElementById('cp-amount').value=isNaN(q)?'':q.toFixed(2);
+  const t=new Date();
+  document.getElementById('cp-date').value=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+  document.getElementById('cp-split-wrap').style.display='none';
+  document.getElementById('cp-split-rows').innerHTML='';
+  document.getElementById('cp-split-remaining').textContent='';
+  cpCalc();
   document.getElementById('complete-popup').classList.add('open');
+}
+
+const CP_PAY_METHODS=[['cash','Cash'],['card','Card'],['zelle','Zelle'],['cashapp','CashApp'],['check','Check'],['acima','Acima']];
+function cpPayLabel(m){const L={cash:'Cash',card:'Card',zelle:'Zelle',cashapp:'CashApp',check:'Check',acima:'Acima',split:'Split'};return L[m]||m;}
+
+function cpPayChange(){
+  const split=document.getElementById('cp-pay').value==='split';
+  document.getElementById('cp-split-wrap').style.display=split?'block':'none';
+  if(split && document.querySelectorAll('#cp-split-rows .cp-split-row').length===0){ cpAddSplitRow(); cpAddSplitRow(); }
+  cpCalc();
+}
+function cpSplitRowHtml(){
+  const opts=CP_PAY_METHODS.map(m=>'<option value="'+m[0]+'">'+m[1]+'</option>').join('');
+  return '<div class="cp-split-row" style="display:flex;gap:6px;align-items:center;">'
+    +'<select class="cp-split-method fsel" onchange="cpCalc()" style="flex:1;font-size:12px;">'+opts+'</select>'
+    +'<div style="position:relative;width:115px;flex-shrink:0;">'
+    +'<span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text3);">$</span>'
+    +'<input class="cp-split-amt" type="number" step="0.01" min="0" placeholder="0.00" oninput="cpCalc()" style="width:100%;padding:7px 9px 7px 18px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-size:12px;outline:none;box-sizing:border-box;"/>'
+    +'</div>'
+    +'<button type="button" onclick="this.closest(\'.cp-split-row\').remove();cpCalc();" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:0 2px;">×</button>'
+    +'</div>';
+}
+function cpAddSplitRow(){
+  const wrap=document.getElementById('cp-split-rows');
+  const tmp=document.createElement('div'); tmp.innerHTML=cpSplitRowHtml();
+  wrap.appendChild(tmp.firstElementChild);
+}
+function cpGetSplit(){
+  return [].slice.call(document.querySelectorAll('#cp-split-rows .cp-split-row')).map(function(row){
+    return {method:row.querySelector('.cp-split-method').value, amount:parseFloat(row.querySelector('.cp-split-amt').value)||0};
+  });
+}
+function cpComputeTotals(){
+  const method=document.getElementById('cp-pay').value;
+  const amount=Math.round((parseFloat(document.getElementById('cp-amount').value)||0)*100)/100;
+  let hasCard=false, split=null, splitSum=0;
+  if(method==='split'){
+    split=cpGetSplit();
+    hasCard=split.some(function(s){return s.method==='card';});
+    splitSum=Math.round(split.reduce(function(a,s){return a+s.amount;},0)*100)/100;
+  } else { hasCard=(method==='card'); }
+  const tax=hasCard?Math.round(amount*0.0825*100)/100:0;
+  const total=Math.round((amount+tax)*100)/100;
+  return {method:method,amount:amount,tax:tax,total:total,hasCard:hasCard,split:split,splitSum:splitSum};
+}
+function cpCalc(){
+  const t=cpComputeTotals();
+  document.getElementById('cp-sum-sub').textContent='$'+t.amount.toFixed(2);
+  document.getElementById('cp-sum-tax').textContent='$'+t.tax.toFixed(2);
+  document.getElementById('cp-sum-tax-line').style.display=t.tax>0?'flex':'none';
+  document.getElementById('cp-sum-total').textContent='$'+t.total.toFixed(2);
+  if(t.method==='split'){
+    const rem=Math.round((t.amount-t.splitSum)*100)/100;
+    const el=document.getElementById('cp-split-remaining');
+    if(Math.abs(rem)<0.005){el.textContent='✓ matches total';el.style.color='var(--green2)';}
+    else if(rem>0){el.textContent='$'+rem.toFixed(2)+' left to assign';el.style.color='var(--text3)';}
+    else {el.textContent='$'+Math.abs(rem).toFixed(2)+' over';el.style.color='#dc2626';}
+  }
+}
+function cpFmtMDY(ymd){
+  if(!ymd){const t=new Date();return String(t.getMonth()+1).padStart(2,'0')+'/'+String(t.getDate()).padStart(2,'0')+'/'+t.getFullYear();}
+  const p=ymd.split('-'); return p[1]+'/'+p[2]+'/'+p[0];
+}
+function cpFmtLong(ymd){
+  if(!ymd)return new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const p=ymd.split('-'); return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
 }
 
 function toggleCPSection(id){
@@ -5914,131 +5562,54 @@ function preConfirmComplete(){
 function confirmComplete(){
   if(!cpRepairId){ toast('No repair selected','err'); return; }
   const r=repairs.find(x=>x.ID===cpRepairId); if(!r) return;
-  const cpMethods=[].slice.call(document.querySelectorAll('.cp-pay-method'));
-  const cpAmtEls=[].slice.call(document.querySelectorAll('.cp-pay-amt'));
-  const method=cpMethods[0]?.value||'cash';
-  const hasCardConf=cpMethods.some(m=>m.value==='card');
-  const isSplitConf=cpMethods.length>1;
-  const base=parseFloat(document.getElementById('cp-amount')?.value)||0;
-  const discount=parseFloat(document.getElementById('cp-discount').value)||0;
-  const surChkConf=document.getElementById('cp-surcharge-chk');
-  const surPct=parseFloat(document.getElementById('cp-surcharge-pct')?.value)||0;
-  const cardPaidConf=hasCardConf&&surChkConf?.checked?cpAmtEls.reduce((s,el,i)=>s+(cpMethods[i]?.value==='card'?parseFloat(el.value)||0:0),0):0;
-  const surcharge=hasCardConf&&surChkConf?.checked?Math.round(cardPaidConf*(surPct/100)*100)/100:0;
-  const tax=hasCardConf?Math.max(0,base-discount)*0.0825:0;
-  // Build pay legs for storage
-  const cpLegsConf=cpMethods.map((m,i)=>({method:m.value,amt:Math.round((parseFloat(cpAmtEls[i]?.value)||0)*100)/100})).filter(l=>l.amt>0);
-  const addonsTotal=cpAddons.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
-  const isDepositChecked=document.getElementById('cp-deposit-check').checked;
-  const depositAmt=isDepositChecked?(parseFloat(document.getElementById('cp-deposit-amt').value)||0):0;
-  const depositPayMethod=isDepositChecked?document.getElementById('cp-deposit-pay').value:'';
-  const depositTax=depositPayMethod==='card'?depositAmt*0.0825:0;
-  const depositDate=document.getElementById('cp-deposit-date').value||'';
-  const depTotal=depositAmt+depositTax;
-  const total=Math.max(0, base-discount+addonsTotal+tax+surcharge+cpTipAmt-depTotal);
-  const cpTech=document.getElementById('cp-tech')?.value||r.AssignedTo||'';
-  // Completion note — store into repair notes
-  const cpNote=(document.getElementById('cp-completion-note')?.value||'').trim();
-  if(cpNote){
-    if(!r.NotesArr)r.NotesArr=[];
-    r.NotesArr.push({text:cpNote,by:cpTech||getActiveUser()||'Staff',ts:nowTs(),type:'completion'});
-    r.Notes=(r.Notes?r.Notes+'\n':'')+`[${nowTs()} — ${cpTech||'Staff'}] ${cpNote}`;
+  const t=cpComputeTotals();
+  if(t.amount<=0){ toast('Enter the total amount','err'); return; }
+  if(t.method==='split'){
+    const lines=t.split.filter(function(s){return s.amount>0;});
+    if(lines.length<2){ toast('Add at least two payment methods for a split','err'); return; }
+    if(Math.abs(t.amount-t.splitSum)>0.005){ toast('Split amounts must add up to the total','err'); return; }
   }
+  const dateMDY=cpFmtMDY(document.getElementById('cp-date').value);
   r.Status='Completed';
   r.CompletedDate=new Date().toISOString();
-  r.AssignedTo=cpTech||r.AssignedTo;
-  // Explicitly preserve Category/Categories so they survive completion
+  r.PayMethod=t.method==='split'?'Split':cpPayLabel(t.method);
+  r.PayMethodKey=t.method;
+  r.SaleAmount=t.amount;
+  r.AmountReceived=t.amount;
+  r.Tax=t.tax;
+  r.TotalCollected=t.total;
+  r.PaymentDate=dateMDY;
+  if(t.method==='split'){ r.SplitPayments=t.split.filter(function(s){return s.amount>0;}); }
+  else if(r.SplitPayments){ delete r.SplitPayments; }
   if(!r.Category&&r.Categories&&r.Categories.length)r.Category=r.Categories[0];
   if(!r.Categories&&r.Category)r.Categories=[r.Category];
-  // Save immediately to localStorage so openRepair reads correct data
   lsSave(LS_R,repairs);
-  const payLbls={card:'Card',cash:'Cash',zelle:'Zelle',venmo:'Venmo',check:'Check',cashapp:'CashApp'};
-  r.PayMethod=isSplitConf?'Split':( payLbls[method]||method);
-  r.PayLegs=isSplitConf?cpLegsConf:[];
-  r.AmountReceived=base;
-  r.Discount=discount;
-  r.Surcharge=surcharge;
-  r.Tax=tax;
-  r.Tip=cpTipAmt;
-  r.TipTech=cpTipAmt>0?cpTech:''; // who gets the tip
-  r.Addons=cpAddons;
-  r.DepositPaid=depositAmt;
-  r.DepositTax=depositTax;
-  r.DepositPayMethod=depositPayMethod;
-  r.DepositDate=depositDate;
-  r.TotalCollected=total;
-  logAct(r,`Marked completed · ${method==='card'?'Card':'Cash'} · $${total.toFixed(2)}${cpTipAmt>0?' · tip $'+cpTipAmt.toFixed(2)+' → '+cpTech:''}`,getActiveUser());
-  pushNotif('complete',`${cpTech||getActiveUser()||'Staff'} completed ${r.RepairName||r.Device||'repair'} for ${r.CustomerName||'customer'} — $${total.toFixed(2)} collected`,r.ID,r.RepairName||r.Device,cpTech||getActiveUser(),r.Location||'');
-  
+  logAct(r,'Completed · '+(t.method==='split'?'Split':cpPayLabel(t.method))+' · $'+t.total.toFixed(2)+' · '+dateMDY, getActiveUser());
+  pushNotif('complete',(getActiveUser()||'Staff')+' completed '+(r.RepairName||r.Device||'repair')+' for '+(r.CustomerName||'customer')+' — $'+t.total.toFixed(2)+' collected',r.ID,r.RepairName||r.Device,getActiveUser(),r.Location||'');
   renderRepairs(); updateStats(); renderStatusBar(); renderRecentBar();
-  closeM('confirm-sale-popup');
   closeM('complete-popup');
-  toast(`✓ ${r.ID} completed · $${total.toFixed(2)} collected`,'ok');
+  toast('✓ '+r.ID+' completed · $'+t.total.toFixed(2),'ok');
   pushAllToCloud();
-  // Log to Google Sheet
-  logSaleToSheet({
-    date: new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'}),
-    repair: r.RepairName||r.Device||'—',
-    repairId: r.ID,
-    total: total.toFixed(2),
-    payMethod: method==='card'?'Card':'Cash',
-    tip: cpTipAmt.toFixed(2),
-    cashier: cu.name||'—',
-    location: r.Location||'—',
-    addons: cpAddons.map(a=>a.name).join(', ')||'—'
-  });
-}
-
-function logSaleToSheet(data){
-  const url=getApi();
-  if(!url){ console.warn('Google Sheets URL not set — skipping log'); return; }
-  fetch(url, {
-    method:'POST',
-    mode:'no-cors',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(data)
-  }).then(()=>{
-    console.log('✓ Logged to Google Sheet:', data.location, data.repair, '$'+data.total);
-  }).catch(e=>{
-    console.warn('Sheet log failed:', e);
-  });
 }
 
 function printCPReceipt(){
   if(!cpRepairId){ toast('No repair selected','err'); return; }
   const r=repairs.find(x=>x.ID===cpRepairId); if(!r) return;
-  const method=document.getElementById('cp-pay').value;
-  const base=parseFloat(document.getElementById('cp-amount').value)||0;
-  const discount=parseFloat(document.getElementById('cp-discount').value)||0;
-  const surChkPre=document.getElementById('cp-surcharge-chk');
-  const surPctPre=parseFloat(document.getElementById('cp-surcharge-pct')?.value)||0;
-  const cardPaidPre=hasCardPre&&surChkPre?.checked?cpPreAmts.reduce((s,el,i)=>s+(cpPreMethods[i]?.value==='card'?parseFloat(el.value)||0:0),0):0;
-  const surcharge=hasCardPre&&surChkPre?.checked?Math.round(cardPaidPre*(surPctPre/100)*100)/100:0;
-  const addonsTotal=cpAddons.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
-  const subtotal=Math.max(0,base-discount)+addonsTotal;
-  const tax=method==='card'?Math.round(subtotal*0.0825*100)/100:0;
-  const isDepositChecked=document.getElementById('cp-deposit-check').checked;
-  const depositAmt=isDepositChecked?(parseFloat(document.getElementById('cp-deposit-amt').value)||0):0;
-  const depositPayMethod=isDepositChecked?document.getElementById('cp-deposit-pay').value:'';
-  const depositTax=depositPayMethod==='card'?Math.round(depositAmt*0.0825*100)/100:0;
-  const depositDate=document.getElementById('cp-deposit-date').value||'';
-  const depTotal=depositAmt+depositTax;
-  const total=Math.max(0,Math.round((subtotal+tax+surcharge-depTotal)*100)/100);
-  const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const t=cpComputeTotals();
+  const base=t.amount, tax=t.tax, total=t.total;
+  const dateLong=cpFmtLong(document.getElementById('cp-date').value);
   const techFull=getTechFullName(r.AssignedTo);
-  const payLabels={card:'Credit/Debit Card',cash:'Cash',cashapp:'CashApp',zelle:'Zelle'};
+  const payLabels={card:'Credit/Debit Card',cash:'Cash',cashapp:'CashApp',zelle:'Zelle',check:'Check',acima:'Acima',split:'Split Payment'};
   const repairDisplay=r.RepairName||r.Device||'—';
-
-  const addonLinesR=cpAddons.filter(a=>a.name).map(a=>
-    '<tr><td style="padding:5px 0;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0;">+ '+a.name+'</td>'
-    +'<td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">$'+parseFloat(a.price).toFixed(2)+'</td></tr>'
-  ).join('');
-  const discLineR=discount>0?'<tr><td style="padding:5px 0;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0;">Discount</td><td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">-$'+discount.toFixed(2)+'</td></tr>':'';
+  const paymentDisplay=payLabels[t.method]||t.method;
+  let splitLinesR='';
+  if(t.method==='split'&&t.split){
+    splitLinesR=t.split.filter(function(s){return s.amount>0;}).map(function(s){
+      return '<tr><td style="padding:5px 0 5px 14px;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0;">&#8627; '+(payLabels[s.method]||s.method)+'</td>'
+      +'<td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">$'+s.amount.toFixed(2)+'</td></tr>';
+    }).join('');
+  }
   const taxLineR=tax>0?'<tr><td style="padding:5px 0;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0;">Tax (8.25%)</td><td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">$'+tax.toFixed(2)+'</td></tr>':'';
-  const surchargeLineR=surcharge>0?'<tr><td style="padding:5px 0;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0;">Card surcharge</td><td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">$'+surcharge.toFixed(2)+'</td></tr>':'';
-  const tipLineR=cpTipAmt>0?'<tr><td style="padding:5px 0;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0;">Tip</td><td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">$'+cpTipAmt.toFixed(2)+'</td></tr>':'';
-  const depLineR=depTotal>0?'<tr><td style="padding:5px 0;font-size:12px;color:#555;border-bottom:1px solid #f0f0f0;">Deposit paid ('+(payLabels[depositPayMethod]||depositPayMethod)+(depositDate?' &middot; '+depositDate:'')+')</td><td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">-$'+depTotal.toFixed(2)+'</td></tr>':'';
-
   const html=`
   <div style="background:#fff;color:#111;font-family:system-ui,sans-serif;font-size:13px;border-radius:10px;border:1px solid #ccc;overflow:hidden;max-width:600px;">
     <div style="background:#111;padding:18px 22px;display:flex;align-items:center;gap:14px;">
@@ -6053,7 +5624,7 @@ function printCPReceipt(){
       <div style="text-align:right;flex-shrink:0;">
         <div style="font-size:9px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;">Receipt</div>
         <div style="font-size:13px;font-weight:700;color:#fff;margin-top:2px;font-family:monospace;">${r.ID}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:2px;">${today}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:2px;">${dateLong}</div>
       </div>
     </div>
     <div style="text-align:center;padding:11px 0;border-bottom:1px solid #eee;background:#fafafa;">
@@ -6066,7 +5637,7 @@ function printCPReceipt(){
         <tr><td style="font-size:12px;color:#666;padding:4px 10px 4px 0;width:38%;">Customer</td><td style="font-size:12px;font-weight:500;padding:4px 0;">${r.CustomerName||'—'}</td></tr>
         <tr><td style="font-size:12px;color:#666;padding:4px 10px 4px 0;">Repair</td><td style="font-size:12px;font-weight:500;padding:4px 0;">${repairDisplay}${r.Quality?' / '+r.Quality:''}</td></tr>
         <tr><td style="font-size:12px;color:#666;padding:4px 10px 4px 0;">Location</td><td style="font-size:12px;font-weight:500;padding:4px 0;">${r.Location||'—'}</td></tr>
-        <tr><td style="font-size:12px;color:#666;padding:4px 10px 4px 0;">Payment</td><td style="font-size:12px;font-weight:500;padding:4px 0;">${payLabels[method]||method}</td></tr>
+        <tr><td style="font-size:12px;color:#666;padding:4px 10px 4px 0;">Payment</td><td style="font-size:12px;font-weight:500;padding:4px 0;">${paymentDisplay}</td></tr>
         <tr><td style="font-size:12px;color:#666;padding:4px 10px 4px 0;">Technician</td><td style="font-size:12px;font-weight:500;padding:4px 0;">${techFull}</td></tr>
       </table>
     </div>
@@ -6074,7 +5645,7 @@ function printCPReceipt(){
       <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#999;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #eee;">Cost breakdown</div>
       <table style="width:100%;border-collapse:collapse;">
         <tr><td style="padding:5px 0;font-size:12px;color:#333;border-bottom:1px solid #f0f0f0;">${repairDisplay}</td><td style="padding:5px 0;font-size:12px;text-align:right;border-bottom:1px solid #f0f0f0;">$${base.toFixed(2)}</td></tr>
-        ${addonLinesR}${discLineR}${taxLineR}${surchargeLineR}${tipLineR}${depLineR}
+        ${splitLinesR}${taxLineR}
       </table>
     </div>
     <div style="padding:10px 22px 8px;">
@@ -6095,7 +5666,7 @@ function printCPReceipt(){
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;">
         <div style="font-size:11px;color:#444;line-height:1.5;padding:2px 0;display:flex;gap:6px;"><span style="color:#999;">&middot;</span><span><strong>60-day warranty</strong> on repairs (OEM/Premium). 15 days Aftermarket.</span></div>
         <div style="font-size:11px;color:#444;line-height:1.5;padding:2px 0;display:flex;gap:6px;"><span style="color:#999;">&middot;</span><span><strong>7-day return</strong> after passing in-house inspection.</span></div>
-        <div style="font-size:11px;color:#444;line-height:1.5;padding:2px 0;display:flex;gap:6px;"><span style="color:#999;">&middot;</span><span><strong>1-month battery warranty;</strong> Lifetime thereafter — $15 labor fee after 3 months.</span></div>
+        <div style="font-size:11px;color:#444;line-height:1.5;padding:2px 0;display:flex;gap:6px;"><span style="color:#999;">&middot;</span><span><strong>1-month battery warranty;</strong> Lifetime thereafter &mdash; $15 labor fee after 3 months.</span></div>
         <div style="font-size:11px;color:#444;line-height:1.5;padding:2px 0;display:flex;gap:6px;"><span style="color:#999;">&middot;</span><span><strong>No returns</strong> on Acima-financed devices.</span></div>
         <div style="font-size:11px;color:#444;line-height:1.5;padding:2px 0;display:flex;gap:6px;"><span style="color:#999;">&middot;</span><span>Warranty <strong>does not cover</strong> physical/liquid damage or unauthorized repairs.</span></div>
         <div style="font-size:11px;color:#444;line-height:1.5;padding:2px 0;display:flex;gap:6px;"><span style="color:#999;">&middot;</span><span>Device not released until <strong>paid in full.</strong></span></div>
@@ -6114,9 +5685,6 @@ function printCPReceipt(){
   doPrint(html, '@page{size:letter;margin:12mm;}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:system-ui,sans-serif;font-size:13px;color:#111;padding:0;}table{border-collapse:collapse;width:100%;}');
 }
 
-// ══════════════════════════════════════════════════════
-// ── COMPLETED REPAIRS PAGE ──
-// ══════════════════════════════════════════════════════
 function renderCompletedPage(pg){
   const list=repairs.filter(r=>r.Status==='Completed')
     .sort((a,b)=>new Date(b.CompletedDate||b.CreatedAt)-new Date(a.CompletedDate||a.CreatedAt));
@@ -6232,250 +5800,7 @@ function setQSTip(val){
   calcQS();
 }
 
-function completeQS(){
-  if(!qsCart.length){ toast('Add at least one item','err'); return; }
-  const method=document.getElementById('qs-pay').value;
-  const isCard=method==='card';
-  const surcharge=isCard?(parseFloat(document.getElementById('qs-surcharge').value)||0):0;
-  const subtotal=qsCart.reduce((s,i)=>s+i.qty*i.unitPrice,0);
-  const tax=isCard?subtotal*0.0825:0;
-  const tip=parseFloat(document.getElementById('qs-tip-manual').value)||0;
-  const total=subtotal+tax+surcharge+tip;
-  const loc=document.getElementById('qs-loc').value;
-  const cust=document.getElementById('qs-cust').value.trim()||'Walk-in';
-  // Build item description string
-  const itemLabel=qsCart.map(i=>i.qty>1?`${i.qty}x ${i.name}`:i.name).join(', ');
-  const id=genId(loc||'Crosby');
-  const rec={
-    ID:id, CustomerName:cust, Phone1:'', RepairName:itemLabel, Category:'Quick Sale',
-    Location:loc||'—', Status:'Completed', AssignedTo:cu.name,
-    Quote:String(subtotal.toFixed(2)), PayMethod:isCard?'Card':'Cash',
-    Tax:tax, Surcharge:surcharge, Tip:tip, TotalCollected:total,
-    DropoffDate:new Date().toISOString().split('T')[0],
-    CompletedDate:new Date().toISOString(),
-    CreatedAt:new Date().toISOString(),
-    Notes:'Quick Sale', HandoffNotes:'', ActivityLog:[],
-    IsQuickSale:true,
-    QSItems:JSON.parse(JSON.stringify(qsCart))
-  };
-  logAct(rec,`Quick sale · $${total.toFixed(2)}`,getActiveUser());
-  repairs.unshift(rec);
-  renderRepairs(); updateStats();
-  closeM('qs-modal');
-  toast(`✓ Quick Sale logged · $${total.toFixed(2)}`,'ok');
-  pushAllToCloud();
-  logSaleToSheet({
-    date:new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'}),
-    repair:itemLabel, repairId:id, total:total.toFixed(2),
-    payMethod:isCard?'Card':'Cash', tip:tip.toFixed(2),
-    cashier:cu.name||'—', location:loc||'—', addons:'—'
-  });
-}
-
-function printQSReceipt(){
-  if(!qsCart.length){ toast('Add at least one item first','err'); return; }
-  const method=document.getElementById('qs-pay').value;
-  const isCard=method==='card';
-  const surcharge=isCard?(parseFloat(document.getElementById('qs-surcharge').value)||0):0;
-  const subtotal=qsCart.reduce((s,i)=>s+i.qty*i.unitPrice,0);
-  const tax=isCard?subtotal*0.0825:0;
-  const tip=parseFloat(document.getElementById('qs-tip-manual').value)||0;
-  const total=subtotal+tax+surcharge+tip;
-  const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  const itemRows=qsCart.map(i=>`<tr><td style="padding:3px 0;font-size:13px;">${i.qty>1?i.qty+'x ':''} ${i.name}</td><td style="text-align:right;">$${(i.qty*i.unitPrice).toFixed(2)}</td></tr>`).join('');
-  const html=`<div style="font-family:sans-serif;padding:20px;max-width:400px;">
-    <div style="text-align:center;margin-bottom:14px;"><img src="${LOGO_URI}" style="width:60px;height:60px;"/><div style="font-size:16px;font-weight:700;margin-top:6px;">Lopez Tech Repairs</div><div style="font-size:11px;color:#666;">lopeziphonetech@gmail.com</div></div>
-    <div style="text-align:center;font-weight:700;text-decoration:underline;margin-bottom:10px;">Quick Sale Receipt</div>
-    <div style="font-size:12px;margin-bottom:10px;">📅 ${today}</div>
-    <table style="width:100%;border-collapse:collapse;">
-      ${itemRows}
-      ${qsCart.length>1?`<tr style="border-top:1px solid #ccc;"><td style="padding:4px 0;font-size:12px;color:#666;">Subtotal</td><td style="text-align:right;font-size:12px;color:#666;">$${subtotal.toFixed(2)}</td></tr>`:''}
-      ${tax>0?`<tr><td style="padding:3px 0;font-size:13px;">Tax (8.25%)</td><td style="text-align:right;">$${tax.toFixed(2)}</td></tr>`:''}
-      ${surcharge>0?`<tr><td style="padding:3px 0;font-size:13px;">Card Surcharge</td><td style="text-align:right;">$${surcharge.toFixed(2)}</td></tr>`:''}
-      ${tip>0?`<tr><td style="padding:3px 0;font-size:13px;">Tip</td><td style="text-align:right;">$${tip.toFixed(2)}</td></tr>`:''}
-      <tr style="border-top:2px solid #111;font-weight:700;font-size:15px;"><td style="padding:8px 0;">Total</td><td style="text-align:right;">$${total.toFixed(2)}</td></tr>
-    </table>
-    <div style="margin-top:12px;font-size:12px;color:#666;text-align:center;">Paid by ${isCard?'Card':'Cash'} · Thank you!</div>
-  </div>`;
-  doPrint(html,`@page{size:letter;margin:12mm;}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:sans-serif;}table{width:100%;border-collapse:collapse;}`);
-}
-
-// ══════════════════════════════════════════════════════
-// ── DEVICE PURCHASE ──
-// ══════════════════════════════════════════════════════
-var dpPayMethod='Cash';
-
-function setDPPay(btn){
-  dpPayMethod=btn.dataset.pay;
-  document.getElementById('dp-pay').value=dpPayMethod;
-  document.querySelectorAll('.dp-pb').forEach(function(b){b.style.opacity='.4';});
-  btn.style.opacity='1';
-  var isCard=dpPayMethod==='Credit / Debit'||dpPayMethod==='Split Payment';
-  document.getElementById('dp-sur-wrap').style.display=isCard?'block':'none';
-  calcDP();
-}
-
-function calcDP(){
-  var method=document.getElementById('dp-pay').value;
-  var isCard=method==='Credit / Debit'||method==='Split Payment';
-  var price=parseFloat(document.getElementById('dp-amount').value)||0;
-  var sur=isCard?(parseFloat(document.getElementById('dp-surcharge').value)||0):0;
-  var tax=isCard?Math.round(price*0.0825*100)/100:0;
-  var total=Math.round((price+tax+sur)*100)/100;
-  document.getElementById('dp-show-price').textContent='$'+price.toFixed(2);
-  document.getElementById('dp-show-tax').textContent='$'+tax.toFixed(2);
-  document.getElementById('dp-show-sur').textContent='$'+sur.toFixed(2);
-  document.getElementById('dp-show-total').textContent='$'+total.toFixed(2);
-  document.getElementById('dp-tax-row').style.display=isCard?'flex':'none';
-  document.getElementById('dp-sur-row').style.display=(isCard&&sur>0)?'flex':'none';
-}
-
-function dpCapName(el){
-  var pos=el.selectionStart;
-  el.value=el.value.replace(/\b\w/g,function(c){return c.toUpperCase();});
-  el.setSelectionRange(pos,pos);
-}
-
-function dpFmtPhone(el){
-  var d=el.value.replace(/\D/g,'').slice(0,10);
-  var o='';
-  if(d.length>0)o='('+d.slice(0,3);
-  if(d.length>=4)o+=') '+d.slice(3,6);
-  if(d.length>=7)o+='-'+d.slice(6,10);
-  el.value=o;
-}
-
-function completeDPSale(){
-  var cust=(document.getElementById('dp-cust').value||'').trim();
-  if(!cust){toast('Customer name is required','err');return;}
-  var method=document.getElementById('dp-pay').value;
-  var isCard=method==='Credit / Debit'||method==='Split Payment';
-  var price=parseFloat(document.getElementById('dp-amount').value)||0;
-  var sur=isCard?(parseFloat(document.getElementById('dp-surcharge').value)||0):0;
-  var tax=isCard?Math.round(price*0.0825*100)/100:0;
-  var total=Math.round((price+tax+sur)*100)/100;
-  var device=(document.getElementById('dp-device').value||'').trim();
-  var storage=(document.getElementById('dp-storage').value||'').trim();
-  var color=(document.getElementById('dp-color').value||'').trim();
-  var imei=(document.getElementById('dp-imei').value||'').trim();
-  var phone=(document.getElementById('dp-phone').value||'').trim();
-  var addr=(document.getElementById('dp-addr').value||'').trim();
-  var idtype=(document.getElementById('dp-idtype').value||'').trim();
-  var idnum=(document.getElementById('dp-idnum').value||'').trim();
-  var loc=document.getElementById('f-loc')?document.getElementById('f-loc').value:'—';
-  // Build device label for repair name: Device · Storage · Color
-  var deviceLabel=[device,storage,color].filter(Boolean).join(' · ');
-  var id=genId(loc||'Crosby');
-  var rec={
-    ID:id, CustomerName:cust, Phone1:phone, RepairName:deviceLabel||'Device Sale',
-    Category:'Device Sale', Location:loc||'—', Status:'Completed',
-    AssignedTo:cu.name, Quote:String(price), PayMethod:method,
-    Tax:tax, Surcharge:sur, Tip:0, TotalCollected:total,
-    DropoffDate:new Date().toISOString().split('T')[0],
-    CompletedDate:new Date().toISOString(),
-    CreatedAt:new Date().toISOString(),
-    Notes:'Device Purchase', HandoffNotes:'', ActivityLog:[],
-    IsDeviceSale:true,
-    DeviceInfo:{device:device, storage:storage, color:color, imei:imei},
-    CustomerAddr:addr,
-    CustomerID:{type:idtype, number:idnum}
-  };
-  logAct(rec,`Device sale · ${method} · $${total.toFixed(2)}`,getActiveUser());
-  repairs.unshift(rec);
-  renderRepairs(); updateStats();
-  closeM('dp-modal');
-  toast(`✓ Device sale logged · $${total.toFixed(2)}`,'ok');
-  pushAllToCloud();
-  logSaleToSheet({
-    date:new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'}),
-    repair:deviceLabel||'Device Sale', repairId:id,
-    total:total.toFixed(2), payMethod:method,
-    tip:'0', cashier:cu.name||'—', location:loc||'—', addons:'—'
-  });
-}
-
-function printDPReceipt(type){
-  var method=document.getElementById('dp-pay').value;
-  var isCard=method==='Credit / Debit'||method==='Split Payment';
-  var price=parseFloat(document.getElementById('dp-amount').value)||0;
-  var sur=isCard?(parseFloat(document.getElementById('dp-surcharge').value)||0):0;
-  var tax=isCard?Math.round(price*0.0825*100)/100:0;
-  var total=Math.round((price+tax+sur)*100)/100;
-  var device=(document.getElementById('dp-device').value||'—').trim();
-  var storage=(document.getElementById('dp-storage').value||'').trim();
-  var color=(document.getElementById('dp-color').value||'').trim();
-  var imei=(document.getElementById('dp-imei').value||'').trim();
-  var cust=(document.getElementById('dp-cust').value||'—').trim();
-  var phone=(document.getElementById('dp-phone').value||'—').trim();
-  var addr=(document.getElementById('dp-addr').value||'—').trim();
-  var idtype=(document.getElementById('dp-idtype').value||'').trim();
-  var idnum=(document.getElementById('dp-idnum').value||'').trim();
-  var deviceLine=[device,storage,color].filter(Boolean).join(' · ');
-  var today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  var isStore=type==='store';
-
-  var idRow=isStore&&(idtype||idnum)?`
-    <tr style="background:#fff8e1;">
-      <td style="padding:5px 6px;font-size:12px;color:#92400e;font-weight:700;">ID on File</td>
-      <td style="padding:5px 6px;font-size:12px;color:#78350f;font-family:monospace;text-align:right;">${escH(idtype)} · ${escH(idnum)}</td>
-    </tr>`:'';
-
-  var copyLabel=isStore
-    ?'<div style="background:#fef3c7;border:1px solid #fde68a;border-radius:6px;padding:5px 12px;font-size:10px;font-weight:700;color:#92400e;text-align:center;margin-bottom:12px;letter-spacing:.5px;">STORE COPY — INTERNAL ONLY · DO NOT SHARE</div>'
-    :'<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:5px 12px;font-size:10px;font-weight:700;color:#166534;text-align:center;margin-bottom:12px;letter-spacing:.5px;">CUSTOMER COPY</div>';
-
-  var html=`<div style="font-family:Georgia,serif;color:#222;max-width:480px;margin:0 auto;padding:20px;">
-  ${copyLabel}
-  <div style="background:#111827;padding:18px 22px;text-align:center;border-radius:8px 8px 0 0;">
-    <div style="font-size:15px;font-weight:600;color:#fff;">Lopez Tech Repairs</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;">lopeziphonetech@gmail.com</div>
-    <div style="font-size:9px;color:rgba(255,255,255,.45);margin-top:1px;">Crosby: 346-417-6309 &nbsp;·&nbsp; Dayton: 832-872-1887</div>
-  </div>
-  <div style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;padding:18px 22px;">
-    <div style="text-align:center;margin-bottom:14px;">
-      <div style="font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:#999;font-family:sans-serif;margin-bottom:4px;">Device Purchase Receipt</div>
-      <div style="font-size:10px;color:#aaa;font-family:sans-serif;margin-bottom:5px;">${today}</div>
-      <div style="font-size:16px;font-weight:700;color:#111;margin-bottom:3px;">${escH(deviceLine)}</div>
-      ${imei?`<div style="font-size:10px;color:#888;font-family:monospace;">IMEI / SN: ${escH(imei)}</div>`:''}
-    </div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px;">
-      <tr style="border-top:1px solid #f0f0f0;"><td style="padding:5px 6px;color:#999;">Customer</td><td style="padding:5px 6px;font-weight:700;text-align:right;">${escH(cust)}</td></tr>
-      <tr><td style="padding:5px 6px;color:#999;">Phone</td><td style="padding:5px 6px;font-family:monospace;text-align:right;">${escH(phone)}</td></tr>
-      <tr><td style="padding:5px 6px;color:#999;">Address</td><td style="padding:5px 6px;text-align:right;">${escH(addr)}</td></tr>
-      ${idRow}
-    </table>
-    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px;">
-      <tr style="border-top:1px solid #f0f0f0;"><td style="padding:5px 6px;color:#999;">Payment</td><td style="padding:5px 6px;text-align:right;">${escH(method)}</td></tr>
-      <tr><td style="padding:5px 6px;color:#999;">Device price</td><td style="padding:5px 6px;text-align:right;">$${price.toFixed(2)}</td></tr>
-      ${tax>0?`<tr><td style="padding:5px 6px;color:#999;">Tax (8.25%)</td><td style="padding:5px 6px;text-align:right;">$${tax.toFixed(2)}</td></tr>`:''}
-      ${sur>0?`<tr><td style="padding:5px 6px;color:#999;">Card surcharge</td><td style="padding:5px 6px;text-align:right;">$${sur.toFixed(2)}</td></tr>`:''}
-      <tr style="border-top:2px solid #111;"><td style="padding:8px 6px;font-size:15px;font-weight:700;">Total</td><td style="padding:8px 6px;font-size:15px;font-weight:700;text-align:right;">$${total.toFixed(2)}</td></tr>
-    </table>
-    <div style="font-size:10px;line-height:1.8;color:#555;font-family:sans-serif;margin-bottom:14px;">
-      <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#bbb;margin-bottom:8px;">Warranty &amp; Terms</div>
-      <div style="margin-bottom:6px;"><strong>Warranty:</strong> Devices sold by Lopez Tech Repairs include a <strong style="color:#0f1f3d;">12-month warranty</strong> for manufacturing defects. Does not cover accidental damage, misuse, or unauthorized repairs.</div>
-      <div style="margin-bottom:6px;"><strong>1. Return Policy:</strong> Eligible for return within 7 days pending inspection. Acima-financed devices are not eligible for return.</div>
-      <div style="margin-bottom:6px;"><strong>2. Device Status:</strong> Device is not reported stolen and is free of liens or third-party claims.</div>
-      <div style="margin-bottom:6px;"><strong>3. Data Responsibility:</strong> Lopez Tech Repairs is not liable for data left on the device once sold.</div>
-      <div><strong>4. As-Is Clause:</strong> Device sold "as-is" without further warranties unless stated above.</div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;border-top:1px solid #f0f0f0;padding-top:14px;margin-bottom:10px;">
-      <div><div style="font-size:9px;color:#bbb;font-family:sans-serif;margin-bottom:20px;">Customer signature</div><div style="border-bottom:1px solid #ccc;margin-bottom:4px;"></div><div style="font-size:9px;color:#bbb;font-family:sans-serif;">${escH(cust)}</div></div>
-      <div><div style="font-size:9px;color:#bbb;font-family:sans-serif;margin-bottom:20px;">Date of purchase</div><div style="border-bottom:1px solid #ccc;margin-bottom:4px;"></div><div style="font-size:9px;color:#bbb;font-family:sans-serif;">${today}</div></div>
-    </div>
-    <div style="text-align:center;font-size:10px;color:#bbb;font-family:sans-serif;">Thank you for choosing Lopez Tech Repairs!</div>
-  </div>
-</div>`;
-  doPrint(html,`@page{size:letter;margin:14mm;}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Georgia,serif;}table{width:100%;border-collapse:collapse;}`);
-}
-
 function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
-// ── Legacy stubs so nothing breaks ──
-function calcPS(){}
-function setPSTip(){}
-function completePhoneSale(){ completeDPSale(); }
-function printSaleAgreement(){ printDPReceipt('store'); }
 
 // ── PRODUCTION VERSION RESET ──
 // Clears any old demo/test data from localStorage on first run of this build
@@ -6505,609 +5830,25 @@ setInterval(()=>{if(cu){autoPastDue();renderRepairs();}},60000);
 })();
 
 
-// ══════════════════════════════════════════════════════
-// ── SALES LOGGER ──
-// ══════════════════════════════════════════════════════
-var slItems = [];      // manually added items only
-var slTrackerItems = []; // auto-loaded from today's completed repairs (read-only)
-
-var SL_FB_URL = 'https://lopez-tech-repairs-82c87-default-rtdb.firebaseio.com';
-var SL_FB_KEY = 'vy7bsIpXGsJtyTO175pQiDJ8lgYbdLWJG4R9SZLm';
-
-async function openSalesLogger(){
-  document.getElementById('sales-logger-modal').classList.add('open');
-  // Load today's completed repairs from Firebase
-  await slLoadTodayRepairs();
-  slRenderList();
-  slUpdateTotals();
-}
-
-async function slLoadTodayRepairs(){
-  var today = new Date().toISOString().split('T')[0];
-  var loadingEl = document.getElementById('sl-tracker-loading');
-  var listEl    = document.getElementById('sl-tracker-list');
-  if(loadingEl) loadingEl.style.display='block';
-  if(listEl)    listEl.innerHTML='';
-  slTrackerItems = [];
-  try{
-    var res = await fetch(SL_FB_URL+'/lopeztechrepairs/repairs.json?auth='+SL_FB_KEY);
-    var data = await res.json();
-    var all = data ? (Array.isArray(data)?data:Object.values(data)).filter(Boolean) : [];
-    // Filter: completed today, not a logger entry
-    slTrackerItems = all.filter(function(r){
-      if(r.Status !== 'Completed') return false;
-      if(r.IsLoggerEntry) return false;
-      var cd = (r.CompletedDate||'').split('T')[0];
-      return cd === today;
-    });
-  } catch(e){
-    // Fallback: use local repairs array
-    slTrackerItems = repairs.filter(function(r){
-      if(r.Status !== 'Completed') return false;
-      if(r.IsLoggerEntry) return false;
-      var cd = (r.CompletedDate||'').split('T')[0];
-      return cd === today;
-    });
-  }
-  if(loadingEl) loadingEl.style.display='none';
-  slRenderTrackerItems();
-  slUpdateTotals();
-}
-
-function slRenderTrackerItems(){
-  var el = document.getElementById('sl-tracker-list');
-  if(!el) return;
-  var locFilter = (document.getElementById('sl-loc-filter')?.value||'').trim();
-  var filtered = locFilter
-    ? slTrackerItems.filter(function(r){ return (r.Location||'') === locFilter; })
-    : slTrackerItems;
-  var count = document.getElementById('sl-tracker-count');
-  if(count) count.textContent = filtered.length + (locFilter?' ('+locFilter+')':'');
-  if(!filtered.length){
-    el.innerHTML='<div class="sl-empty" style="color:var(--text3);">'
-      +(locFilter?'No completed repairs today at '+locFilter+'.':'No completed repairs yet today.')
-      +'</div>';
-    return;
-  }
-  el.innerHTML = filtered.map(function(r, idx){
-    // find true index in slTrackerItems for edit/save
-    var trueIdx = slTrackerItems.indexOf(r);
-    idx = trueIdx;
-    var pay = r.PayMethod||'Cash';
-    var amt = parseFloat(r.TotalCollected||r.Quote||0);
-    var tip = parseFloat(r.Tip||0);
-    var payColor = pay==='Card'||pay==='Credit/Debit'?'var(--bluebg);color:var(--blue)':
-                   pay.toLowerCase().includes('cash')?'var(--greenbg);color:var(--green)':
-                   pay==='CashApp'?'var(--amberbg);color:var(--amber)':
-                   pay==='Zelle'?'var(--purplebg);color:var(--purple)':'var(--bg3);color:var(--text3)';
-    return '<div class="sl-item" id="sl-tr-row-'+idx+'" style="border-left:3px solid var(--green);border-radius:0 8px 8px 0;flex-direction:column;align-items:stretch;gap:0;padding:10px 12px;">'
-      // View mode
-      +'<div id="sl-tr-view-'+idx+'" style="display:flex;align-items:center;gap:8px;">'
-        +'<div style="flex:1;">'
-          +'<div class="sl-item-name">'+escH(r.RepairName||r.Device||'—')
-            +(r.CustomerName&&r.CustomerName!=='Walk-in'?' <span style="font-size:10px;font-weight:400;color:var(--text3);">· '+escH(r.CustomerName)+'</span>':'')
-            +' <span style="font-size:9px;font-family:monospace;color:var(--text3);">'+escH(r.ID||'')+'</span>'
-          +'</div>'
-          +'<div class="sl-item-sub">'
-            +'<span style="background:'+payColor+';padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;">'+pay+'</span>'
-            +' · '+(r.AssignedTo||'—')
-            +' · '+(r.Location||'—')
-            +(tip>0?' · <span style="color:var(--teal);font-size:10px;">Tip $'+tip.toFixed(2)+'</span>':'')
-          +'</div>'
-        +'</div>'
-        +'<div class="sl-item-amt">$'+amt.toFixed(2)+'</div>'
-        +'<button onclick="slEditTrackerRow('+idx+')" style="background:none;border:1px solid var(--border);border-radius:5px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;color:var(--text2);font-family:\'Geist\',sans-serif;white-space:nowrap;">Edit</button>'
-      +'</div>'
-      // Edit mode (hidden by default)
-      +'<div id="sl-tr-edit-'+idx+'" style="display:none;margin-top:10px;">'
-        +'<div style="display:grid;grid-template-columns:1fr 90px;gap:6px;margin-bottom:6px;">'
-          +'<div class="sl-field"><label>Repair Name</label><input id="sl-tr-name-'+idx+'" type="text" value="'+escH(r.RepairName||r.Device||'—')+'" style="font-size:13px;"/></div>'
-          +'<div class="sl-field"><label>Amount ($)</label><input id="sl-tr-amt-'+idx+'" type="number" value="'+amt.toFixed(2)+'" step="0.01" min="0"/></div>'
-        +'</div>'
-        +'<div style="display:grid;grid-template-columns:1fr 1fr 90px;gap:6px;margin-bottom:8px;">'
-          +'<div class="sl-field"><label>Payment</label>'
-            +'<select id="sl-tr-pay-'+idx+'">'
-              +'<option value="Cash"'+(pay==='Cash'?' selected':'')+'>Cash (No Tax)</option>'
-              +'<option value="Credit/Debit"'+(pay==='Credit/Debit'?' selected':'')+'>Credit/Debit (Tax)</option>'
-              +'<option value="CashApp"'+(pay==='CashApp'?' selected':'')+'>CashApp</option>'
-              +'<option value="Zelle"'+(pay==='Zelle'?' selected':'')+'>Zelle</option>'
-            +'</select>'
-          +'</div>'
-          +'<div class="sl-field"><label>Location</label>'
-            +'<select id="sl-tr-loc-'+idx+'">'
-              +'<option value="Dayton"'+((r.Location||'')!=='Crosby'?' selected':'')+'>Dayton</option>'
-              +'<option value="Crosby"'+(r.Location==='Crosby'?' selected':'')+'>Crosby</option>'
-            +'</select>'
-          +'</div>'
-          +'<div class="sl-field"><label>Tip ($)</label><input id="sl-tr-tip-'+idx+'" type="number" value="'+tip.toFixed(2)+'" step="0.01" min="0"/></div>'
-        +'</div>'
-        +'<div class="sl-field" style="margin-bottom:8px;"><label>Technician</label>'
-          +'<select id="sl-tr-emp-'+idx+'">'
-            +'<option value="Saul"'+(r.AssignedTo==='Saul'?' selected':'')+'>Saul</option>'
-            +'<option value="David"'+(r.AssignedTo==='David'?' selected':'')+'>David</option>'
-            +'<option value="Juan"'+(r.AssignedTo==='Juan'?' selected':'')+'>Juan</option>'
-            +'<option value="Noemy"'+(r.AssignedTo==='Noemy'?' selected':'')+'>Noemy</option>'
-          +'</select>'
-        +'</div>'
-        +'<div style="display:flex;gap:6px;">'
-          +'<button onclick="slSaveTrackerRow('+idx+')" class="sl-add-btn" style="flex:1;padding:8px;">Save Changes</button>'
-          +'<button onclick="slCancelTrackerEdit('+idx+')" style="background:none;border:1px solid var(--border);border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);font-family:\'Geist\',sans-serif;">Cancel</button>'
-        +'</div>'
-      +'</div>'
-    +'</div>';
-  }).join('');
-}
-
-function slEditTrackerRow(idx){
-  document.getElementById('sl-tr-view-'+idx).style.display='none';
-  document.getElementById('sl-tr-edit-'+idx).style.display='block';
-}
-
-function slCancelTrackerEdit(idx){
-  document.getElementById('sl-tr-view-'+idx).style.display='flex';
-  document.getElementById('sl-tr-edit-'+idx).style.display='none';
-}
-
-async function slSaveTrackerRow(idx){
-  var r = slTrackerItems[idx];
-  if(!r) return;
-
-  var newName = (document.getElementById('sl-tr-name-'+idx).value||'').trim();
-  var newAmt  = parseFloat(document.getElementById('sl-tr-amt-'+idx).value)||0;
-  var newPay  = document.getElementById('sl-tr-pay-'+idx).value;
-  var newLoc  = document.getElementById('sl-tr-loc-'+idx).value;
-  var newTip  = parseFloat(document.getElementById('sl-tr-tip-'+idx).value)||0;
-  var newEmp  = document.getElementById('sl-tr-emp-'+idx).value;
-
-  if(!newName){ toast('Repair name is required','err'); return; }
-
-  var saveBtn = document.querySelector('#sl-tr-edit-'+idx+' .sl-add-btn');
-  if(saveBtn){ saveBtn.textContent='Saving…'; saveBtn.disabled=true; }
-
-  try{
-    await fbEnsureRepairsKeyed();
-    // Read just this record so no existing fields are lost, then update by ID only.
-    var current = await fbRead('lopeztechrepairs/repairs/'+r.ID);
-    var base = current || r || {};
-    var updatedRec = Object.assign({}, base, {
-      ID: r.ID,
-      RepairName: newName,
-      Device: newName,
-      TotalCollected: newAmt,
-      Quote: String(newAmt),
-      PayMethod: newPay,
-      Location: newLoc,
-      Tip: newTip,
-      AssignedTo: newEmp
-    });
-    var payload = {}; payload[r.ID] = updatedRec;
-    await fbPatch('lopeztechrepairs/repairs', payload);
-    // Keep the in-memory board in sync if this repair is loaded there
-    var memRec = repairs.find(function(x){return x.ID===r.ID;});
-    if(memRec) Object.assign(memRec, updatedRec);
-
-    // Update local copy
-    slTrackerItems[idx] = Object.assign({}, r, {
-      RepairName: newName, Device: newName,
-      TotalCollected: newAmt, Quote: String(newAmt),
-      PayMethod: newPay, Location: newLoc,
-      Tip: newTip, AssignedTo: newEmp
-    });
-
-    toast('✓ '+newName+' updated','ok');
-    slRenderTrackerItems();
-    slUpdateTotals();
-
-  } catch(err){
-    console.error('Save error:',err);
-    toast('Save failed: '+err.message,'err');
-    if(saveBtn){ saveBtn.textContent='Save Changes'; saveBtn.disabled=false; }
-  }
-}
-
-function slFormatName(input){
-  var val = input.value;
-  var cursor = input.selectionStart;
-  if(!val.length) return;
-  // Title case: capitalize first letter of each word
-  val = val.split(' ').map(function(word){
-    if(!word.length) return word;
-    // iPhone special case — always lowercase i, uppercase P
-    if(word.toLowerCase() === 'iphone') return 'iPhone';
-    if(word.toLowerCase() === 'ipad')   return 'iPad';
-    // Everything else: cap first letter, rest as typed
-    return word.charAt(0).toUpperCase() + word.slice(1);
-  }).join(' ');
-  if(input.value !== val){
-    input.value = val;
-    try{ input.setSelectionRange(cursor, cursor); }catch(e){}
-  }
-}
-
-function slCalcEntry(){
-  var amt = parseFloat(document.getElementById('sl-amount').value)||0;
-  var pay = document.getElementById('sl-pay').value;
-  var tip = parseFloat(document.getElementById('sl-tip').value)||0;
-  var isBundled = document.getElementById('sl-bundle-check') && document.getElementById('sl-bundle-check').checked;
-  var bundledPrice = isBundled ? (parseFloat(document.getElementById('sl-bundle-price').value)||0) : 0;
-  var combinedAmt = amt + bundledPrice;
-  var tax = (pay==='Credit/Debit') ? combinedAmt*0.0825 : 0;
-  var total = combinedAmt + tax + tip;
-  var prev = document.getElementById('sl-entry-preview');
-  if(amt>0||tip>0){
-    var parts = [];
-    if(amt>0&&bundledPrice>0) parts.push('Repair $'+amt.toFixed(2)+' + Acc $'+bundledPrice.toFixed(2));
-    else if(amt>0) parts.push('$'+amt.toFixed(2));
-    if(pay==='Credit/Debit'&&amt>0) parts.push('<span style="color:var(--amber);">Tax $'+tax.toFixed(2)+'</span>');
-    if(tip>0) parts.push('Tip $'+tip.toFixed(2));
-    prev.innerHTML = (parts.length ? parts.join(' · ') + ' → ' : '') + '<strong>Total $'+total.toFixed(2)+'</strong>';
-  } else {
-    prev.innerHTML = '';
-  }
-  // Update bundle preview
-  var bp = document.getElementById('sl-bundle-preview');
-  if(bp && isBundled){
-    var repairName = (document.getElementById('sl-name').value||'').trim();
-    var accType = document.getElementById('sl-bundle-acc').value;
-    var accName = accType==='Custom' ? (document.getElementById('sl-bundle-custom-name')?.value||'').trim() : accType;
-    if(repairName && accName){
-      bp.innerHTML = '→ Will log as: <strong>'+repairName+' + '+accName+'</strong>';
-    } else {
-      bp.innerHTML = '';
-    }
-  } else if(bp){
-    bp.innerHTML = '';
-  }
-}
-
-function slToggleBundle(){
-  var checked = document.getElementById('sl-bundle-check').checked;
-  document.getElementById('sl-bundle-wrap').style.display = checked ? 'block' : 'none';
-  if(!checked){
-    document.getElementById('sl-bundle-acc').value='';
-    document.getElementById('sl-bundle-price').value='';
-    document.getElementById('sl-bundle-custom-wrap').style.display='none';
-    document.getElementById('sl-bundle-preview').innerHTML='';
-  }
-  slCalcEntry();
-}
-
-function slBundleAccChange(){
-  var val = document.getElementById('sl-bundle-acc').value;
-  document.getElementById('sl-bundle-custom-wrap').style.display = val==='Custom' ? 'block' : 'none';
-  slCalcEntry();
-}
-
-function slAddEntry(){
-  var name = (document.getElementById('sl-name').value||'').trim();
-  var amt  = parseFloat(document.getElementById('sl-amount').value)||0;
-  var pay  = document.getElementById('sl-pay').value;
-  var tip  = parseFloat(document.getElementById('sl-tip').value)||0;
-  var emp  = document.getElementById('sl-emp').value;
-  var loc  = document.getElementById('sl-loc').value;
-
-  if(!name){ toast('Enter an item or repair name','err'); document.getElementById('sl-name').focus(); return; }
-  if(amt<=0 && tip<=0){ toast('Enter an amount or tip','err'); document.getElementById('sl-tip').focus(); return; }
-  if(!loc){ toast('Select a location','err'); const el=document.getElementById('sl-loc'); if(el){el.style.border='2px solid var(--red)';el.focus();el.onchange=function(){el.style.border='';};} return; }
-
-  // Check for bundled accessory
-  var isBundled = document.getElementById('sl-bundle-check').checked;
-  var bundledAcc = '', bundledPrice = 0;
-  if(isBundled){
-    var accType = document.getElementById('sl-bundle-acc').value;
-    if(!accType){ toast('Select an accessory to bundle','err'); return; }
-    bundledAcc = accType === 'Custom'
-      ? (document.getElementById('sl-bundle-custom-name').value||'').trim()
-      : accType;
-    if(!bundledAcc){ toast('Enter custom accessory name','err'); return; }
-    bundledPrice = parseFloat(document.getElementById('sl-bundle-price').value)||0;
-    if(bundledPrice<=0){ toast('Enter accessory price','err'); document.getElementById('sl-bundle-price').focus(); return; }
-  }
-
-  var combinedName = isBundled ? name + ' + ' + bundledAcc : name;
-  var combinedAmt  = amt + bundledPrice;
-  var tax   = (pay==='Credit/Debit') ? Math.round(combinedAmt*0.0825*100)/100 : 0;
-  var total = Math.round((combinedAmt+tax+tip)*100)/100;
-
-  slItems.push({ name:combinedName, amount:combinedAmt, pay:pay, tax:tax, tip:tip, total:total, emp:emp, loc:loc, type:'repair', bundled:isBundled });
-
-  // Clear fields
-  document.getElementById('sl-name').value='';
-  document.getElementById('sl-amount').value='';
-  document.getElementById('sl-tip').value='';
-  document.getElementById('sl-entry-preview').innerHTML='';
-  document.getElementById('sl-bundle-check').checked=false;
-  document.getElementById('sl-loc').value='';
-  document.getElementById('sl-bundle-wrap').style.display='none';
-  document.getElementById('sl-bundle-acc').value='';
-  document.getElementById('sl-bundle-price').value='';
-  document.getElementById('sl-bundle-preview').innerHTML='';
-  document.getElementById('sl-bundle-custom-wrap').style.display='none';
-  document.getElementById('sl-name').focus();
-
-  slRenderList();
-  slUpdateTotals();
-  toast(combinedName+' added','ok');
-}
-
-function slAccTypeChange(){
-  var val = document.getElementById('sl-acc-type').value;
-  document.getElementById('sl-acc-custom-wrap').style.display = val==='Custom' ? 'block' : 'none';
-}
-
-function slAddAccessory(){
-  var type = document.getElementById('sl-acc-type').value;
-  var price = parseFloat(document.getElementById('sl-acc-price').value)||0;
-  var pay  = document.getElementById('sl-acc-pay').value;
-  var emp  = document.getElementById('sl-acc-emp').value;
-  var loc  = document.getElementById('sl-acc-loc').value;
-
-  if(!type){ toast('Select an accessory','err'); return; }
-  if(price<=0){ toast('Enter a price','err'); document.getElementById('sl-acc-price').focus(); return; }
-  if(!loc){ toast('Select a location','err'); const el=document.getElementById('sl-acc-loc'); if(el){el.style.border='2px solid var(--red)';el.focus();el.onchange=function(){el.style.border='';};} return; }
-
-  var name = type;
-  if(type==='Custom'){
-    name = (document.getElementById('sl-acc-custom-name').value||'').trim();
-    if(!name){ toast('Enter custom item name','err'); document.getElementById('sl-acc-custom-name').focus(); return; }
-    // Apply same auto-cap
-    name = name.replace(/iphon(e)?/gi,'iPhone').replace(/ipad/gi,'iPad');
-    if(!name.match(/^iPhone/) && !name.match(/^iPad/) && name.length>0)
-      name = name.charAt(0).toUpperCase()+name.slice(1);
-  }
-
-  var tax   = (pay==='Credit/Debit') ? Math.round(price*0.0825*100)/100 : 0;
-  var total = Math.round((price+tax)*100)/100;
-
-  slItems.push({ name:name, amount:price, pay:pay, tax:tax, tip:0, total:total, emp:emp, type:'accessory' });
-
-  // Reset
-  document.getElementById('sl-acc-type').value='';
-  document.getElementById('sl-acc-loc').value='';
-  document.getElementById('sl-acc-price').value='';
-  document.getElementById('sl-acc-custom-wrap').style.display='none';
-  document.getElementById('sl-acc-custom-name') && (document.getElementById('sl-acc-custom-name').value='');
-
-  slRenderList();
-  slUpdateTotals();
-  toast(name+' added','ok');
-}
-
-function slRemoveItem(idx){
-  slItems.splice(idx,1);
-  slRenderList();
-  slUpdateTotals();
-}
-
-function slClearAll(){
-  if(!slItems.length) return;
-  if(!confirm('Clear all logged items?')) return;
-  slItems=[];
-  slRenderList();
-  slUpdateTotals();
-}
-
-function slRenderList(){
-  var el = document.getElementById('sl-list');
-  document.getElementById('sl-count').textContent = slItems.length;
-  if(!slItems.length){
-    el.innerHTML='<div class="sl-empty">Nothing added yet. Use Add Entry or Quick Accessories above.</div>';
-    return;
-  }
-  el.innerHTML = slItems.map(function(item,i){
-    var payBadgeColor = item.pay==='Credit/Debit'?'var(--bluebg);color:var(--blue)':
-                        item.pay==='Cash'?'var(--greenbg);color:var(--green)':
-                        item.pay==='CashApp'?'var(--amberbg);color:var(--amber)':
-                        'var(--purplebg);color:var(--purple)';
-    var taxLine = item.tax>0 ? ' <span style="color:var(--text3);font-size:10px;">+$'+item.tax.toFixed(2)+' tax</span>' : '';
-    var tipLine = item.tip>0 ? ' <span style="color:var(--teal);font-size:10px;">+$'+item.tip.toFixed(2)+' tip</span>' : '';
-    return '<div class="sl-item">'
-      +'<div style="flex:1;">'
-        +'<div class="sl-item-name">'+escH(item.name)+'</div>'
-        +'<div class="sl-item-sub">'
-          +'<span style="background:'+payBadgeColor+';padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;">'+item.pay+'</span>'
-          +' · '+item.emp
-          +taxLine+tipLine
-        +'</div>'
-      +'</div>'
-      +'<div class="sl-item-amt">$'+item.total.toFixed(2)+'</div>'
-      +'<button class="sl-item-remove" onclick="slRemoveItem('+i+')" title="Remove">✕</button>'
-    +'</div>';
-  }).join('');
-}
-
-function slUpdateTotals(){
-  // Manual items — exclude tip-only from sale total
-  var manualTotal = slItems.reduce(function(s,i){ return s+(i.amount>0?i.total:0); },0);
-  var manualTax   = slItems.reduce(function(s,i){ return s+i.tax; },0);
-  var manualTip   = slItems.reduce(function(s,i){ return s+i.tip; },0);
-  // Tracker items (already in Firebase — show for reference only)
-  var trackerTotal = slTrackerItems.reduce(function(s,r){ return s+(parseFloat(r.TotalCollected||r.Quote||0)); },0);
-  var trackerTip   = slTrackerItems.reduce(function(s,r){ return s+(parseFloat(r.Tip||0)); },0);
-  var grand = manualTotal + trackerTotal;
-  var allTips = manualTip + trackerTip;
-  document.getElementById('sl-grand-total').textContent = '$'+grand.toFixed(2);
-  var taxLine = document.getElementById('sl-tax-line');
-  var parts=[];
-  if(slTrackerItems.length) parts.push(slTrackerItems.length+' tracker repair'+(slTrackerItems.length!==1?'s':''));
-  if(slItems.length) parts.push(slItems.length+' manual entr'+(slItems.length!==1?'ies':'y'));
-  if(manualTax>0) parts.push('Tax $'+manualTax.toFixed(2));
-  if(allTips>0) parts.push('Tips $'+allTips.toFixed(2));
-  taxLine.textContent = parts.length ? parts.join(' · ') : '';
-}
-
-function slSubmit(){
-  var totalItems = slItems.length + slTrackerItems.length;
-  if(!totalItems){ toast('Nothing to submit — complete a repair or add an entry first','err'); return; }
-
-  var manualTax   = slItems.reduce(function(s,i){return s+i.tax;},0);
-  var manualTip   = slItems.reduce(function(s,i){return s+i.tip;},0);
-  var manualTotal = slItems.reduce(function(s,i){return s+i.total;},0);
-  var trackerTotal = slTrackerItems.reduce(function(s,r){return s+(parseFloat(r.TotalCollected||r.Quote||0));},0);
-  var trackerTip   = slTrackerItems.reduce(function(s,r){return s+(parseFloat(r.Tip||0));},0);
-  var grand = manualTotal + trackerTotal;
-  var allTips = manualTip + trackerTip;
-
-  // Combined employee breakdown across both sources
-  var byEmp={};
-  slTrackerItems.forEach(function(r){
-    var emp=r.AssignedTo||'Unknown';
-    if(!byEmp[emp]) byEmp[emp]={items:[],total:0,tips:0};
-    byEmp[emp].items.push({name:r.RepairName||r.Device||'—',fromTracker:true});
-    byEmp[emp].total+=parseFloat(r.TotalCollected||r.Quote||0);
-    byEmp[emp].tips+=parseFloat(r.Tip||0);
-  });
-  slItems.forEach(function(item){
-    if(!byEmp[item.emp]) byEmp[item.emp]={items:[],total:0,tips:0};
-    byEmp[item.emp].items.push({name:item.name,fromTracker:false});
-    byEmp[item.emp].total+=item.total;
-    byEmp[item.emp].tips+=item.tip;
-  });
-
-  var body='';
-
-  // Tracker repairs section
-  if(slTrackerItems.length){
-    body+='<div style="margin-bottom:16px;">'
-      +'<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--green2);margin-bottom:8px;">✓ From Tracker ('+slTrackerItems.length+') — already in dashboard</div>'
-      +'<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;">'
-      +slTrackerItems.map(function(r,i){
-        var amt=parseFloat(r.TotalCollected||r.Quote||0);
-        var tip=parseFloat(r.Tip||0);
-        return '<div style="display:flex;align-items:center;padding:9px 12px;border-bottom:1px solid var(--border);background:'+(i%2?'var(--bg2)':'var(--bg)')+';">'
-          +'<div style="flex:1;font-size:13px;font-weight:500;">'+escH(r.RepairName||r.Device||'—')
-          +(r.CustomerName&&r.CustomerName!=='Walk-in'?' <span style="font-size:11px;color:var(--text3);">· '+escH(r.CustomerName)+'</span>':'')
-          +'<br><span style="font-size:11px;color:var(--text3);">'+(r.PayMethod||'—')+' · '+(r.AssignedTo||'—')+(tip>0?' · Tip $'+tip.toFixed(2):'')+'</span></div>'
-          +'<div style="font-weight:700;font-size:14px;color:var(--green);">$'+amt.toFixed(2)+'</div>'
-          +'<div style="font-size:10px;color:var(--green);font-weight:700;margin-left:8px;">✓</div>'
-          +'</div>';
-      }).join('')
-      +'</div></div>';
-  }
-
-  // Manual additions section
-  if(slItems.length){
-    body+='<div style="margin-bottom:16px;">'
-      +'<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--navy);margin-bottom:8px;">➕ Manual Additions ('+slItems.length+') — will be synced now</div>'
-      +'<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;">'
-      +slItems.map(function(item,i){
-        var taxLine = item.tax>0?' +$'+item.tax.toFixed(2)+' tax':'';
-        var tipLine = item.tip>0?' · Tip $'+item.tip.toFixed(2):'';
-        return '<div style="display:flex;align-items:center;padding:9px 12px;border-bottom:1px solid var(--border);background:'+(i%2?'var(--bg2)':'var(--bg)')+';">'
-          +'<div style="flex:1;font-size:13px;font-weight:500;">'+escH(item.name)+'<br>'
-          +'<span style="font-size:11px;color:var(--text3);">'+item.pay+' · '+item.emp+taxLine+tipLine+'</span></div>'
-          +'<div style="font-weight:700;font-size:14px;color:var(--navy);">$'+item.total.toFixed(2)+'</div>'
-          +'</div>';
-      }).join('')
-      +'</div></div>';
-  }
-
-  // By employee breakdown
-  body+='<div style="margin-bottom:16px;">'
-    +'<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px;">By Employee</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;">'
-    +Object.entries(byEmp).map(function(e){
-      return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;">'
-        +'<div style="font-weight:700;font-size:13px;">'+e[0]+'</div>'
-        +'<div style="font-size:20px;font-weight:800;color:var(--navy);margin:4px 0;">$'+e[1].total.toFixed(2)+'</div>'
-        +(e[1].tips>0?'<div style="font-size:11px;color:var(--teal);">Tips $'+e[1].tips.toFixed(2)+'</div>':'')
-        +'<div style="font-size:10px;color:var(--text3);">'+e[1].items.length+' item'+(e[1].items.length!==1?'s':'')+'</div>'
-        +'</div>';
-    }).join('')
-    +'</div></div>';
-
-  // Grand total
-  body+='<div style="background:var(--navy);border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">'
-    +'<div>'
-    +'<div style="color:rgba(255,255,255,.6);font-size:12px;font-weight:600;">Shift Total</div>'
-    +(manualTax>0?'<div style="color:rgba(255,255,255,.4);font-size:11px;">Tax $'+manualTax.toFixed(2)+'</div>':'')
-    +(allTips>0?'<div style="color:rgba(255,255,255,.4);font-size:11px;">Tips $'+allTips.toFixed(2)+'</div>':'')
-    +(slItems.length>0?'<div style="color:rgba(255,255,255,.35);font-size:10px;margin-top:4px;">'+slItems.length+' new item'+(slItems.length!==1?'s':'')+' will be synced</div>':'<div style="color:rgba(255,255,255,.35);font-size:10px;margin-top:4px;">All repairs already synced — no new records needed</div>')
-    +'</div>'
-    +'<div style="font-size:24px;font-weight:800;color:#fff;">$'+grand.toFixed(2)+'</div>'
-    +'</div>';
-
-  document.getElementById('sl-confirm-body').innerHTML=body;
-  document.getElementById('sl-confirm-modal').classList.add('open');
-}
-
-async function slConfirmSync(){
-  var btn=document.getElementById('sl-confirm-modal').querySelector('.btn.blue');
-  btn.textContent='Syncing…';btn.disabled=true;
-
-  try{
-    // Only push manual items — tracker repairs are already in Firebase
-    if(!slItems.length){
-      toast('All tracker repairs already synced — nothing new to push','ok');
-      closeM('sl-confirm-modal');
-      closeM('sales-logger-modal');
-      slItems=[];
-      btn.textContent='🚀 Sync to Dashboard';btn.disabled=false;
-      return;
-    }
-
-    await fbEnsureRepairsKeyed();
-
-    // Build new records — manual additions only
-    var now = new Date();
-    var stamp = now.getFullYear()+(now.getMonth()+1+'').padStart(2,'0')+(now.getDate()+'').padStart(2,'0');
-    var timePart = (now.getHours()+'').padStart(2,'0')+(now.getMinutes()+'').padStart(2,'0')+(now.getSeconds()+'').padStart(2,'0');
-    var newRecords = slItems.map(function(item,idx){
-      var id = 'SL-'+stamp+'-'+timePart+'-'+(idx+1+'').padStart(2,'0');
-      var isTipOnly = item.amount<=0 && item.tip>0;
-      return {
-        ID: id,
-        RepairName: item.name,
-        Device: item.name,
-        Category: item.type==='accessory' ? 'Accessory' : 'Repair',
-        CustomerName: 'Walk-in',
-        Phone1: '',
-        Location: item.loc||'Dayton',
-        AssignedTo: item.emp,
-        Status: 'Completed',
-        PayMethod: item.pay,
-        Quote: isTipOnly ? '0.00' : String(item.amount.toFixed(2)),
-        Tax: isTipOnly ? 0 : item.tax,
-        Tip: item.tip,
-        TotalCollected: isTipOnly ? 0 : item.total,
-        DropoffDate: now.toISOString().split('T')[0],
-        CompletedDate: now.toISOString(),
-        CreatedAt: now.toISOString(),
-        Notes: isTipOnly ? 'Sales Logger — tip only entry' : 'Sales Logger — manual entry',
-        HandoffNotes: '',
-        ActivityLog: [{t:'Logged via Sales Logger by '+(cu?cu.name:'Staff'),ts:now.toLocaleString()}],
-        IsLoggerEntry: true
-      };
-    });
-
-    // Write each new record under its own ID — never rewrites the whole node
-    var payload = {};
-    newRecords.forEach(function(rec){ payload[rec.ID] = rec; });
-    await fbPatch('lopeztechrepairs/repairs', payload);
-    // Reflect immediately on the in-memory board
-    newRecords.forEach(function(rec){ if(!repairs.find(function(x){return x.ID===rec.ID;})) repairs.unshift(rec); });
-
-    toast('✓ '+newRecords.length+' manual item'+(newRecords.length!==1?'s':'')+' synced to dashboard','ok');
-    slItems=[];
-    slTrackerItems=[];
-    slRenderList();
-    slUpdateTotals();
-    closeM('sl-confirm-modal');
-    closeM('sales-logger-modal');
-
-  } catch(err){
-    console.error('Sales Logger sync error:',err);
-    toast('Sync failed: '+err.message,'err');
-    btn.textContent='🚀 Sync to Dashboard';
-    btn.disabled=false;
-  }
-}
-
-
-
 </script>
 
 <!-- SETTINGS MODAL -->
+<div class="cov" id="settings-auth-modal">
+  <div class="cmodal" style="max-width:360px;">
+    <div class="chd"><div class="ctitle">🔒 Settings Login</div><button class="cclose" onclick="closeM('settings-auth-modal')">✕</button></div>
+    <div class="cbody">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">Enter the settings username and password.</div>
+      <div class="ff" style="margin-bottom:10px;"><label>Username</label><input id="sa-user" type="text" autocomplete="off" autocapitalize="off" placeholder="username" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('sa-pass').focus();}"/></div>
+      <div class="ff" style="margin-bottom:6px;"><label>Password</label><input id="sa-pass" type="password" autocomplete="off" placeholder="password" onkeydown="if(event.key==='Enter'){event.preventDefault();submitSettingsAuth();}"/></div>
+      <div id="sa-err" style="display:none;font-size:12px;color:var(--red);margin-top:6px;font-weight:600;">Incorrect username or password.</div>
+    </div>
+    <div class="cfoot">
+      <button class="btn" onclick="closeM('settings-auth-modal')">Cancel</button>
+      <button class="btn green" onclick="submitSettingsAuth()">Unlock</button>
+    </div>
+  </div>
+</div>
+
 <div class="cov" id="settings-modal">
   <div class="cmodal" style="max-width:540px;">
     <div class="chd"><div class="ctitle">⚙️ Settings</div><button class="cclose" onclick="closeM('settings-modal')">✕</button></div>
@@ -7116,250 +5857,6 @@ async function slConfirmSync(){
 </div>
 
 <!-- SALES LOGGER MODAL -->
-<div class="cov" id="sales-logger-modal">
-  <div class="cmodal" style="max-width:780px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;">
-    <div class="chd" style="flex-shrink:0;">
-      <div>
-        <div class="ctitle">📋 Sales Logger</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px;">Log repairs &amp; sales · Submit at end of shift</div>
-      </div>
-      <button class="cclose" onclick="closeM('sales-logger-modal')">✕</button>
-    </div>
-    <div class="cbody" style="overflow-y:auto;flex:1;padding:20px 24px;">
-
-      <!-- ADD REPAIR/SERVICE ENTRY -->
-      <div class="sl-section">
-        <h3>➕ Add Entry</h3>
-        <!-- Row 1: repair name full width -->
-        <div class="sl-field" style="margin-bottom:8px;">
-          <label>Repair / Sale Title</label>
-          <input id="sl-name" type="text" placeholder="e.g. iPhone 13 Screen Repair" oninput="slFormatName(this)" onkeydown="if(event.key==='Enter')slAddEntry()" style="font-size:14px;font-weight:500;padding:10px 12px;"/>
-        </div>
-        <!-- Row 2: amount + payment + tip -->
-        <div style="display:grid;grid-template-columns:120px 1fr 100px;gap:8px;margin-bottom:8px;">
-          <div class="sl-field">
-            <label>Amount ($)</label>
-            <input id="sl-amount" type="number" placeholder="0.00" step="0.01" min="0" oninput="slCalcEntry()"/>
-          </div>
-          <div class="sl-field">
-            <label>Payment</label>
-            <select id="sl-pay" onchange="slCalcEntry()">
-              <option value="Cash">Cash (No Tax)</option>
-              <option value="Credit/Debit">Credit/Debit (Tax)</option>
-              <option value="CashApp">CashApp</option>
-              <option value="Zelle">Zelle</option>
-            </select>
-          </div>
-          <div class="sl-field">
-            <label>Tip ($)</label>
-            <input id="sl-tip" type="number" placeholder="0.00" step="0.01" min="0"/>
-          </div>
-        </div>
-        <!-- Row 3: employee + location + add button -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 42px;gap:8px;align-items:end;margin-bottom:10px;">
-          <div class="sl-field">
-            <label>Employee</label>
-            <select id="sl-emp">
-              <option value="Saul">Saul</option>
-              <option value="David">David</option>
-              <option value="Juan">Juan</option>
-              <option value="Noemy">Noemy</option>
-            </select>
-          </div>
-          <div class="sl-field">
-            <label>Location</label>
-            <select id="sl-loc">
-              <option value="">— Select location —</option>
-              <option value="Dayton">Dayton</option>
-              <option value="Crosby">Crosby</option>
-            </select>
-          </div>
-          <div class="sl-field" style="justify-content:flex-end;">
-            <button class="sl-add-btn" onclick="slAddEntry()" title="Add to list" style="padding:9px 11px;font-size:16px;">+</button>
-          </div>
-        </div>
-
-        <!-- Bundle with accessory checkbox -->
-        <label style="display:flex;align-items:center;gap:8px;margin-top:4px;cursor:pointer;user-select:none;width:fit-content;">
-          <input type="checkbox" id="sl-bundle-check" onchange="slToggleBundle()" style="width:15px;height:15px;accent-color:var(--green);cursor:pointer;"/>
-          <span style="font-size:12px;font-weight:600;color:var(--text2);">Include accessory with this repair?</span>
-          <span style="font-size:11px;color:var(--text3);">Combines into one line item</span>
-        </label>
-
-        <!-- Bundle accessory picker (hidden by default) -->
-        <div id="sl-bundle-wrap" style="display:none;margin-top:10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
-          <div style="font-size:11px;font-weight:700;color:var(--green2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">+ Bundled Accessory</div>
-          <div style="display:grid;grid-template-columns:1fr 100px;gap:8px;">
-            <div class="sl-field">
-              <label>Accessory</label>
-              <select id="sl-bundle-acc" onchange="slBundleAccChange()">
-                <option value="">— Select accessory —</option>
-                <option value="iPhone/iPad Tempered Glass Screen Protector">iPhone/iPad Tempered Glass Screen Protector</option>
-                <option value="Privacy Tempered Glass Screen Protector">Privacy Tempered Glass Screen Protector</option>
-                <option value="USB-C to iPhone Cable">USB-C to iPhone Cable</option>
-                <option value="USB-C to Android Cable">USB-C to Android Cable</option>
-                <option value="Camera Glass Protector">Camera Glass Protector</option>
-                <option value="Apple Watch Protector">Apple Watch Protector</option>
-                <option value="Hard Case">Hard Case</option>
-                <option value="USB-C Charging Block">USB-C Charging Block</option>
-                <option value="USB-A to iPhone Cable">USB-A to iPhone Cable</option>
-                <option value="USB-A to Android Cable">USB-A to Android Cable</option>
-                <option value="USB-A Charging Block">USB-A Charging Block</option>
-                <option value="Custom">Custom…</option>
-              </select>
-            </div>
-            <div class="sl-field">
-              <label>Price ($)</label>
-              <input id="sl-bundle-price" type="number" placeholder="0.00" step="0.01" min="0" oninput="slCalcEntry()"/>
-            </div>
-          </div>
-          <div id="sl-bundle-custom-wrap" style="display:none;margin-top:8px;">
-            <div class="sl-field">
-              <label>Custom Accessory Name</label>
-              <input id="sl-bundle-custom-name" type="text" placeholder="Enter accessory name" oninput="slFormatName(this)"/>
-            </div>
-          </div>
-          <div id="sl-bundle-preview" style="font-size:11px;color:var(--green2);margin-top:8px;font-weight:600;min-height:16px;"></div>
-        </div>
-
-        <div id="sl-entry-preview" style="font-size:11px;color:var(--text3);margin-top:8px;min-height:16px;"></div>
-      </div>
-
-      <!-- QUICK ACCESSORIES -->
-      <div class="sl-section">
-        <h3>⚡ Quick Accessories</h3>
-        <div style="display:grid;grid-template-columns:1fr 90px 90px 150px 36px;gap:8px;align-items:end;margin-bottom:10px;">
-          <div class="sl-field">
-            <label>Accessory</label>
-            <select id="sl-acc-type" onchange="slAccTypeChange()">
-              <option value="">— Select accessory —</option>
-              <option value="iPhone/iPad Tempered Glass Screen Protector">iPhone/iPad Tempered Glass Screen Protector</option>
-              <option value="Privacy Tempered Glass Screen Protector">Privacy Tempered Glass Screen Protector</option>
-              <option value="USB-C to iPhone Cable">USB-C to iPhone Cable</option>
-              <option value="USB-C to Android Cable">USB-C to Android Cable</option>
-              <option value="Camera Glass Protector">Camera Glass Protector</option>
-              <option value="Apple Watch Protector">Apple Watch Protector</option>
-              <option value="Hard Case">Hard Case</option>
-              <option value="USB-C Charging Block">USB-C Charging Block</option>
-              <option value="USB-A to iPhone Cable">USB-A to iPhone Cable</option>
-              <option value="USB-A to Android Cable">USB-A to Android Cable</option>
-              <option value="USB-A Charging Block">USB-A Charging Block</option>
-              <option value="Custom">Custom…</option>
-            </select>
-          </div>
-          <div class="sl-field">
-            <label>Price ($)</label>
-            <input id="sl-acc-price" type="number" placeholder="0.00" step="0.01" min="0"/>
-          </div>
-          <div class="sl-field">
-            <label>Tip ($)</label>
-            <input id="sl-acc-tip" type="number" placeholder="0.00" step="0.01" min="0"/>
-          </div>
-          <div class="sl-field">
-            <label>Payment</label>
-            <select id="sl-acc-pay">
-              <option value="Cash">Cash (No Tax)</option>
-              <option value="Credit/Debit">Credit/Debit (Tax)</option>
-              <option value="CashApp">CashApp</option>
-              <option value="Zelle">Zelle</option>
-            </select>
-          </div>
-          <div class="sl-field" style="justify-content:flex-end;">
-            <button class="sl-add-btn" onclick="slAddAccessory()" title="Add accessory" style="padding:9px 10px;">+</button>
-          </div>
-        </div>
-        <!-- Custom name field (hidden by default) -->
-        <div id="sl-acc-custom-wrap" style="display:none;margin-bottom:10px;">
-          <div class="sl-field">
-            <label>Custom Item Name</label>
-            <input id="sl-acc-custom-name" type="text" placeholder="Enter accessory name" oninput="slFormatName(this)"/>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span style="font-size:11px;color:var(--text3);font-weight:600;">Employee:</span>
-            <select id="sl-acc-emp" class="fsel" style="font-size:12px;">
-              <option value="Saul">Saul</option>
-              <option value="David">David</option>
-              <option value="Juan">Juan</option>
-              <option value="Noemy">Noemy</option>
-            </select>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span style="font-size:11px;color:var(--text3);font-weight:600;">Location:</span>
-            <select id="sl-acc-loc" class="fsel" style="font-size:12px;">
-              <option value="">— Location —</option>
-              <option value="Dayton">Dayton</option>
-              <option value="Crosby">Crosby</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- TODAY'S TRACKER REPAIRS (auto-loaded) -->
-      <div class="sl-section">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <h3 style="margin:0;color:var(--green2);">✓ From Tracker Today (<span id="sl-tracker-count">0</span>)</h3>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <select id="sl-loc-filter" onchange="slRenderTrackerItems()" style="font-size:11px;font-weight:600;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer;font-family:'Geist',sans-serif;">
-              <option value="">All Locations</option>
-              <option value="Dayton">Dayton</option>
-              <option value="Crosby">Crosby</option>
-            </select>
-            <button onclick="slLoadTodayRepairs()" style="background:none;border:none;font-size:11px;color:var(--blue);cursor:pointer;font-weight:600;">↻ Refresh</button>
-          </div>
-        </div>
-        <div id="sl-tracker-loading" style="display:none;font-size:11px;color:var(--text3);padding:6px 0;">Loading today's repairs…</div>
-        <div id="sl-tracker-list"><div class="sl-empty">Loading…</div></div>
-      </div>
-
-      <!-- MANUALLY ADDED ITEMS -->
-      <div class="sl-section">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <h3 style="margin:0;">➕ Manual Additions (<span id="sl-count">0</span>)</h3>
-          <button onclick="slClearAll()" style="background:none;border:none;font-size:11px;color:var(--red);cursor:pointer;font-weight:600;" title="Clear all">Clear all</button>
-        </div>
-        <div id="sl-list">
-          <div class="sl-empty">Nothing added yet. Use Add Entry or Quick Accessories above.</div>
-        </div>
-      </div>
-
-      <!-- TOTALS -->
-      <div class="sl-total-bar">
-        <div>
-          <div class="lbl">Subtotal</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:2px;" id="sl-tax-line"></div>
-        </div>
-        <div class="val" id="sl-grand-total">$0.00</div>
-      </div>
-
-      <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button class="btn" onclick="closeM('sales-logger-modal')">Cancel</button>
-        <button class="btn blue" onclick="slSubmit()" id="sl-submit-btn" style="padding:10px 24px;font-size:14px;">Submit Shift Log</button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- SALES LOGGER CONFIRMATION MODAL -->
-<div class="cov" id="sl-confirm-modal">
-  <div class="cmodal" style="max-width:580px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;">
-    <div class="chd" style="flex-shrink:0;">
-      <div class="ctitle">✅ Confirm Shift Log</div>
-      <button class="cclose" onclick="closeM('sl-confirm-modal')">✕</button>
-    </div>
-    <div class="cbody" style="overflow-y:auto;flex:1;padding:20px 24px;">
-      <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">Review everything below before syncing to the revenue dashboard.</p>
-      <div id="sl-confirm-body"></div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
-        <button class="btn" onclick="closeM('sl-confirm-modal')">← Go Back</button>
-        <button class="btn blue" onclick="slConfirmSync()" style="padding:10px 24px;font-size:14px;">🚀 Sync to Dashboard</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
 // Drag-to-scroll for status pills
 (function(){
