@@ -480,14 +480,6 @@ button,.emp-card,.loc-chip,.admin-tab,.edit-btn,.paystub-btn,.hdr-btn{
         <div id="step-setup" style="display:none;">
           <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:16px;">First time setup — create a 4-digit PIN</div>
           <div class="form-field" style="margin-bottom:10px;">
-            <label class="form-label">Address</label>
-            <input class="form-input" id="setup-address" type="text" placeholder="123 Main St, City TX 77000"/>
-          </div>
-          <div class="form-field" style="margin-bottom:10px;">
-            <label class="form-label">Last 4 of SSN</label>
-            <input class="form-input" id="setup-ssn" type="password" maxlength="4" placeholder="••••"/>
-          </div>
-          <div class="form-field" style="margin-bottom:10px;">
             <label class="form-label">Create PIN (4 digits)</label>
             <input class="form-input" id="setup-pin" type="password" maxlength="4" placeholder="••••"/>
           </div>
@@ -655,6 +647,16 @@ button,.emp-card,.loc-chip,.admin-tab,.edit-btn,.paystub-btn,.hdr-btn{
       <div class="modal-title">Paystub Preview</div>
       <button class="modal-close" onclick="closeModal('paystub-modal')">✕</button>
     </div>
+    <div style="padding:16px 24px 0;display:flex;gap:10px;">
+      <div class="form-field" style="flex:1;">
+        <label class="form-label">Address (not saved)</label>
+        <input class="form-input" id="paystub-addr-input" type="text" placeholder="123 Main St, City TX 77000" oninput="renderPaystub()"/>
+      </div>
+      <div class="form-field" style="width:120px;">
+        <label class="form-label">Last 4 SSN (not saved)</label>
+        <input class="form-input" id="paystub-ssn-input" type="text" maxlength="4" placeholder="••••" oninput="this.value=this.value.replace(/\D/g,'').slice(0,4);renderPaystub()"/>
+      </div>
+    </div>
     <div class="modal-body" id="paystub-preview" style="max-height:70vh;overflow-y:auto;"></div>
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('paystub-modal')">Close</button>
@@ -691,11 +693,11 @@ let currentEmp=null; // logged in employee
 let pinBuffer='';
 let pinMode='enter'; // 'enter' | 'setup'
 let entries=lsLoad(LS_TC,[]); // all time entries
-let empProfiles=lsLoad(LS_EMP,{
-  'David Thompson':{rate:14,pin:null,address:'',ssn4:''},
-  'Juan Reynoso':{rate:10,pin:null,address:'',ssn4:''},
-  'Noemy Olvera':{rate:10,pin:null,address:'',ssn4:''},
-});
+let empProfiles={
+  'David Thompson':{rate:14,pin:null},
+  'Juan Reynoso':{rate:10,pin:null},
+  'Noemy Olvera':{rate:10,pin:null},
+}; // employee profiles — Firebase only, never cached to localStorage
 let selectedLoc='Dayton';
 let sessionStart=null;
 let sessionInterval=null;
@@ -710,7 +712,36 @@ const ADMIN_PIN='7679';
 // ── INIT ──
 setInterval(updateClocks,1000);
 updateClocks();
-loadFromCloud();
+initApp();
+
+async function initApp(){
+  document.getElementById('login-sub').textContent='Loading...';
+  document.querySelectorAll('.emp-card').forEach(c=>{c.style.pointerEvents='none';c.style.opacity='.5';});
+  const ok=await loadFromCloud();
+  if(!ok){
+    document.getElementById('login-sub').textContent='Connection failed — check internet and reload the page';
+    return;
+  }
+  document.querySelectorAll('.emp-card').forEach(c=>{c.style.pointerEvents='';c.style.opacity='';});
+  await cleanupSensitiveData();
+  document.getElementById('login-sub').textContent='Who are you clocking in as?';
+}
+
+// One-time (self-healing) wipe of any leftover address/SSN data from before this update.
+// Runs on every load — if it ever finds nothing to clean, it's a no-op.
+async function cleanupSensitiveData(){
+  let dirty=false;
+  Object.keys(empProfiles).forEach(k=>{
+    const p=empProfiles[k];
+    if(p&&('address'in p||'ssn4'in p)){
+      const{address,ssn4,...clean}=p;
+      empProfiles[k]=clean;
+      dirty=true;
+    }
+  });
+  localStorage.removeItem(LS_EMP);
+  if(dirty)await saveEmpToCloud().catch(()=>{});
+}
 
 function updateClocks(){
   const now=new Date();
@@ -811,19 +842,21 @@ function checkPin(){
 }
 
 function finishSetup(){
-  const addr=(document.getElementById('setup-address')?.value||'').trim();
-  const ssn=(document.getElementById('setup-ssn')?.value||'').trim();
   const pin=(document.getElementById('setup-pin')?.value||'').trim();
   const pin2=(document.getElementById('setup-pin2')?.value||'').trim();
   const err=document.getElementById('setup-error');
-  if(!addr){err.textContent='Address required';return;}
-  if(ssn.length!==4||!/^\d{4}$/.test(ssn)){err.textContent='Enter last 4 digits of SSN';return;}
   if(pin.length!==4||!/^\d{4}$/.test(pin)){err.textContent='PIN must be 4 digits';return;}
   if(pin!==pin2){err.textContent='PINs do not match';return;}
-  empProfiles[currentEmp]={...empProfiles[currentEmp],pin,address:addr,ssn4:ssn};
-  lsSave(LS_EMP,empProfiles);
-  saveEmpToCloud();
-  showView('clock');
+  const prev=empProfiles[currentEmp];
+  empProfiles[currentEmp]={...empProfiles[currentEmp],pin};
+  err.textContent='Saving...';
+  saveEmpToCloud().then(()=>{
+    showView('clock');
+  }).catch(()=>{
+    empProfiles[currentEmp]=prev;
+    err.textContent='Could not save — check your connection and try again';
+    toast('PIN save failed, check connection');
+  });
 }
 
 function logout(){
@@ -1195,7 +1228,7 @@ function renderAdminSettings(){
   let empRows=emps.map(emp=>{
     const p=empProfiles[emp]||{};
     return`<div class="settings-row">
-      <div><div class="settings-label">${emp}</div><div class="settings-sub">PIN ${p.pin?'set':'not set'} · ${p.address||'No address'}</div></div>
+      <div><div class="settings-label">${emp}</div><div class="settings-sub">PIN ${p.pin?'set':'not set'}</div></div>
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:12px;color:var(--text3);">$</span>
         <input class="settings-input" type="number" value="${p.rate||10}" min="1" step="0.5"
@@ -1226,18 +1259,28 @@ function renderAdminSettings(){
 }
 
 function updateRate(emp,val){
+  const prev=empProfiles[emp];
   empProfiles[emp]={...empProfiles[emp],rate:parseFloat(val)||10};
-  lsSave(LS_EMP,empProfiles);
-  saveEmpToCloud();
-  toast('Rate updated for '+emp.split(' ')[0]);
+  saveEmpToCloud().then(()=>{
+    toast('Rate updated for '+emp.split(' ')[0]);
+  }).catch(()=>{
+    empProfiles[emp]=prev;
+    renderAdminSettings();
+    toast('Could not save — check your connection');
+  });
 }
 
 function resetPin(emp){
   if(!confirm(`Reset PIN for ${emp}? They will need to set up again.`))return;
+  const prev=empProfiles[emp];
   empProfiles[emp]={...empProfiles[emp],pin:null};
-  lsSave(LS_EMP,empProfiles);
-  saveEmpToCloud();
-  toast('PIN reset for '+emp.split(' ')[0]);
+  saveEmpToCloud().then(()=>{
+    toast('PIN reset for '+emp.split(' ')[0]);
+    renderAdminSettings();
+  }).catch(()=>{
+    empProfiles[emp]=prev;
+    toast('Could not reset — check your connection');
+  });
 }
 
 function saveFbSettings(){
@@ -1326,9 +1369,20 @@ function deleteEntry(){
 // ── PAYSTUB ──
 function openPaystub(emp,weekOffset){
   paystubTarget={emp,weekOffset};
+  document.getElementById('paystub-addr-input').value='';
+  document.getElementById('paystub-ssn-input').value='';
+  renderPaystub();
+  document.getElementById('paystub-modal').classList.add('open');
+}
+
+function renderPaystub(){
+  if(!paystubTarget)return;
+  const{emp,weekOffset}=paystubTarget;
   const week=getWeekRange(weekOffset);
   const profile=empProfiles[emp]||{};
   const rate=profile.rate||10;
+  const addrInput=(document.getElementById('paystub-addr-input')?.value||'').trim();
+  const ssnInput=(document.getElementById('paystub-ssn-input')?.value||'').trim();
   const empEntries=entries.filter(e=>e.emp===emp&&e.date>=week.start&&e.date<=week.end&&!e.flagged&&e.clockOut).sort((a,b)=>a.clockIn-b.clockIn);
 
   let totalHrs=0;
@@ -1378,8 +1432,8 @@ function openPaystub(emp,weekOffset){
         <div>
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;">Employee</div>
           <div style="font-size:15px;font-weight:700;color:var(--text);">${emp}</div>
-          <div style="font-size:12px;color:var(--text3);">${profile.address||'Address on file'}</div>
-          <div style="font-size:12px;color:var(--text3);">SSN: XXX-XX-${profile.ssn4||'XXXX'}</div>
+          <div style="font-size:12px;color:var(--text3);">${addrInput||'Address on file'}</div>
+          <div style="font-size:12px;color:var(--text3);">SSN: XXX-XX-${ssnInput||'XXXX'}</div>
         </div>
         <div style="text-align:right;">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;">Pay Rate</div>
@@ -1420,7 +1474,6 @@ function openPaystub(emp,weekOffset){
     </div>`;
   document.getElementById('paystub-preview').innerHTML=html;
   document.getElementById('paystub-print').innerHTML=html;
-  document.getElementById('paystub-modal').classList.add('open');
 }
 
 function printPaystub(){
@@ -1497,25 +1550,27 @@ function saveEntries(){
 }
 
 function saveEmpToCloud(){
-  lsSave(LS_EMP,empProfiles);
-  if(hasCloud()){
-    fetch(getFbUrl()+'/lopeztechrepairs/empProfiles.json?auth='+getFbKey(),{
-      method:'PUT',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(empProfiles)
-    }).catch(()=>{});
-  }
+  if(!hasCloud())return Promise.reject(new Error('no cloud configured'));
+  const put=()=>fetch(getFbUrl()+'/lopeztechrepairs/empProfiles.json?auth='+getFbKey(),{
+    method:'PUT',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(empProfiles)
+  }).then(r=>{if(!r.ok)throw new Error('save failed');return r;});
+  return put().catch(()=>new Promise((resolve,reject)=>{
+    setTimeout(()=>{put().then(resolve).catch(reject);},2000);
+  }));
 }
 
 async function loadFromCloud(){
-  if(!hasCloud())return;
+  if(!hasCloud())return true;
   try{
     const r1=await fetch(getFbUrl()+'/lopeztechrepairs/timeclock.json?auth='+getFbKey());
     const d1=await r1.json();
     if(Array.isArray(d1)&&d1.length){entries=d1;lsSave(LS_TC,entries);}
     const r2=await fetch(getFbUrl()+'/lopeztechrepairs/empProfiles.json?auth='+getFbKey());
     const d2=await r2.json();
-    if(d2&&typeof d2==='object'){empProfiles={...empProfiles,...d2};lsSave(LS_EMP,empProfiles);}
-  }catch(e){}
+    if(d2&&typeof d2==='object'){empProfiles={...empProfiles,...d2};}
+    return true;
+  }catch(e){return false;}
 }
 
 // Auto-sync every 60 seconds
