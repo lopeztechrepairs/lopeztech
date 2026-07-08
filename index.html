@@ -989,27 +989,45 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
           <input id="f-device" type="text" placeholder="e.g. iPhone 11 Screen Repair, PS5 HDMI Port" oninput="upPrev();devSuggest();updateDevicePreview();nrAutoCapName(this)" autocomplete="off"/>
           <div class="dev-drop" id="dev-drop"></div>
         </div>
+        <!-- Device Type — mirrors the New Repair modal, filters the categories below -->
+        <div class="ff">
+          <label>Device Type</label>
+          <div class="dev-type-chips" id="edit-dev-types" style="margin-top:4px;">
+            <div class="dev-type-chip" data-type="phone" onclick="editSelectDevType(this)">
+              <span class="dt-icon">📱</span><span class="dt-label">Phone</span>
+            </div>
+            <div class="dev-type-chip" data-type="tablet" onclick="editSelectDevType(this)">
+              <span class="dt-icon">📟</span><span class="dt-label">Tablet</span>
+            </div>
+            <div class="dev-type-chip" data-type="computer" onclick="editSelectDevType(this)">
+              <span class="dt-icon">💻</span><span class="dt-label">Computer</span>
+            </div>
+            <div class="dev-type-chip" data-type="console" onclick="editSelectDevType(this)">
+              <span class="dt-icon">🎮</span><span class="dt-label">Game Console</span>
+            </div>
+          </div>
+        </div>
         <!-- Multi-select category chips -->
         <div class="ff">
           <label>Repair Category * <span style="font-size:10px;font-weight:400;color:var(--text3);">— select one or more</span></label>
           <!-- hidden field keeps backward compat -->
           <input type="hidden" id="f-cat2"/>
           <div id="cat-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
-            <button type="button" class="cat-chip" data-cat="Display/Screen" onclick="toggleCatChip(this)">Display/Screen</button>
-            <button type="button" class="cat-chip" data-cat="Digitizer (iPad only)" onclick="toggleCatChip(this)">Digitizer</button>
-            <button type="button" class="cat-chip" data-cat="Battery" onclick="toggleCatChip(this)">Battery</button>
-            <button type="button" class="cat-chip" data-cat="Charging Port" onclick="toggleCatChip(this)">Charging Port</button>
-            <button type="button" class="cat-chip" data-cat="Front Camera" onclick="toggleCatChip(this)">Front Camera</button>
-            <button type="button" class="cat-chip" data-cat="Rear Camera" onclick="toggleCatChip(this)">Rear Camera</button>
-            <button type="button" class="cat-chip" data-cat="Ear Speaker" onclick="toggleCatChip(this)">Ear Speaker</button>
-            <button type="button" class="cat-chip" data-cat="Loud Speaker" onclick="toggleCatChip(this)">Loud Speaker</button>
-            <button type="button" class="cat-chip" data-cat="Back Glass" onclick="toggleCatChip(this)">Back Glass</button>
-            <button type="button" class="cat-chip" data-cat="HDMI Port (Game Console only)" onclick="toggleCatChip(this)">HDMI Port</button>
-            <button type="button" class="cat-chip" data-cat="Software/OS" onclick="toggleCatChip(this)">Software/OS</button>
-            <button type="button" class="cat-chip" data-cat="Motherboard" onclick="toggleCatChip(this)">Motherboard</button>
-            <button type="button" class="cat-chip" data-cat="SSD/HDD Repair" onclick="toggleCatChip(this)">SSD/HDD</button>
-            <button type="button" class="cat-chip" data-cat="RAM Repair" onclick="toggleCatChip(this)">RAM</button>
-            <button type="button" class="cat-chip" data-cat="Misc. Labor" onclick="toggleCatChip(this)">Misc. Labor</button>
+            <button type="button" class="cat-chip" data-cat="Display/Screen" data-dt="phone tablet computer" onclick="toggleCatChip(this)">Display/Screen</button>
+            <button type="button" class="cat-chip" data-cat="Digitizer (iPad only)" data-dt="tablet" onclick="toggleCatChip(this)">Digitizer</button>
+            <button type="button" class="cat-chip" data-cat="Battery" data-dt="phone tablet computer" onclick="toggleCatChip(this)">Battery</button>
+            <button type="button" class="cat-chip" data-cat="Charging Port" data-dt="phone tablet computer console" onclick="toggleCatChip(this)">Charging Port</button>
+            <button type="button" class="cat-chip" data-cat="Front Camera" data-dt="phone tablet" onclick="toggleCatChip(this)">Front Camera</button>
+            <button type="button" class="cat-chip" data-cat="Rear Camera" data-dt="phone tablet" onclick="toggleCatChip(this)">Rear Camera</button>
+            <button type="button" class="cat-chip" data-cat="Ear Speaker" data-dt="phone" onclick="toggleCatChip(this)">Ear Speaker</button>
+            <button type="button" class="cat-chip" data-cat="Loud Speaker" data-dt="phone tablet" onclick="toggleCatChip(this)">Loud Speaker</button>
+            <button type="button" class="cat-chip" data-cat="Back Glass" data-dt="phone tablet" onclick="toggleCatChip(this)">Back Glass</button>
+            <button type="button" class="cat-chip" data-cat="HDMI Port (Game Console only)" data-dt="console" onclick="toggleCatChip(this)">HDMI Port</button>
+            <button type="button" class="cat-chip" data-cat="Software/OS" data-dt="phone tablet computer console" onclick="toggleCatChip(this)">Software/OS</button>
+            <button type="button" class="cat-chip" data-cat="Motherboard" data-dt="phone tablet computer console" onclick="toggleCatChip(this)">Motherboard</button>
+            <button type="button" class="cat-chip" data-cat="SSD/HDD Repair" data-dt="computer console" onclick="toggleCatChip(this)">SSD/HDD</button>
+            <button type="button" class="cat-chip" data-cat="RAM Repair" data-dt="computer" onclick="toggleCatChip(this)">RAM</button>
+            <button type="button" class="cat-chip" data-cat="Misc. Labor" data-dt="phone tablet computer console" onclick="toggleCatChip(this)">Misc. Labor</button>
           </div>
         </div>
         <div class="ff" id="qualfield" style="display:none;"><label>Screen Quality</label>
@@ -2394,7 +2412,7 @@ function fillFromHistory(id,mode){
   const r=repairs.find(x=>x.ID===id);if(!r)return;
   closeM('ret-modal');stab('repair');
   document.getElementById('f-device').value=r.Device||'';
-  const _catVal=r.Categories&&r.Categories.length?r.Categories.join(','):(r.Category||'');setSelectedCats(_catVal);
+  const _catVal=r.Categories&&r.Categories.length?r.Categories.join(','):(r.Category||'');setSelectedCats(_catVal);setEditDevType(r.DeviceType||'');
   document.getElementById('f-qual').value=r.Quality||'OEM';
   if(r.Category==='Misc. Labor'&&r.MiscDesc)document.getElementById('f-misc-desc').value=r.MiscDesc||'';
   togQual();togMiscDesc();
@@ -2535,6 +2553,7 @@ function openRepair(id){
     // Restore categories — support both old single and new multi, with fallback
     const _catVal=(r.Categories&&r.Categories.length)?r.Categories.join(','):(r.Category||'');
     setSelectedCats(_catVal);
+    setEditDevType(r.DeviceType||''); // load device type + filter category chips
     // Restore tech — read directly from repair object
     const techEl=document.getElementById('f-tech2');
     if(techEl)techEl.value=r.AssignedTo||'';
@@ -2577,6 +2596,7 @@ function openRepair(id){
     const fmd=document.getElementById('f-misc-desc');if(fmd)fmd.value='';
     document.getElementById('f-cat2').value='';
     setSelectedCats('');
+    setEditDevType(''); // no device type on a fresh panel — show all categories
     document.getElementById('f-qual').value='OEM';
     document.getElementById('f-tech2').value='';
     document.getElementById('f-loc2').value='';
@@ -3039,6 +3059,38 @@ function toggleCatChip(el){
   upPrev();updateDevicePreview();
 }
 
+// ── EDIT-PANEL DEVICE TYPE ──
+// Mirrors the New Repair modal: picking a type narrows the category chips to the
+// ones relevant for that device instead of showing the full mixed list. Selected
+// categories always stay visible so editing never hides one the repair uses.
+// No type selected = show every category (legacy behavior).
+function editSelectDevType(el){
+  const already=el.classList.contains('selected');
+  document.querySelectorAll('#edit-dev-types .dev-type-chip').forEach(c=>c.classList.remove('selected'));
+  if(!already)el.classList.add('selected'); // tapping the active chip clears it
+  filterEditCatChips();
+}
+function getEditDevType(){
+  const sel=document.querySelector('#edit-dev-types .dev-type-chip.selected');
+  return sel?sel.dataset.type:'';
+}
+function setEditDevType(type){
+  document.querySelectorAll('#edit-dev-types .dev-type-chip').forEach(c=>{
+    c.classList.toggle('selected', !!type && c.dataset.type===type);
+  });
+  filterEditCatChips();
+}
+function filterEditCatChips(){
+  const t=getEditDevType();
+  document.querySelectorAll('#cat-chips .cat-chip').forEach(el=>{
+    const selected=el.classList.contains('selected');
+    const custom=el.dataset.custom==='1';
+    const dt=(el.dataset.dt||'').split(' ').filter(Boolean);
+    // Show if: no type chosen, matches the type, already selected, or a custom category.
+    el.style.display=(!t||selected||custom||dt.includes(t))?'':'none';
+  });
+}
+
 function togQual(){
   const cats=getSelectedCats();
   const dev=(document.getElementById('f-device')?.value||'').toLowerCase();
@@ -3206,7 +3258,7 @@ async function saveRepair(){
     CustomerNotes:document.getElementById('f-cnotes').value.trim(),
     Flagged:false,
     FlagReason:'',
-    Device:dev,Category:cat,Categories:selectedCats,Quality:qual,RepairName:repairName,MiscDesc:misc,Updated:Date.now(),
+    Device:dev,Category:cat,Categories:selectedCats,Quality:qual,RepairName:repairName,MiscDesc:misc,DeviceType:getEditDevType(),Updated:Date.now(),
     IMEI:document.getElementById('f-imei').value.trim(),
     Passcode:document.getElementById('f-pass').value.trim(),
     AssignedTo:document.getElementById('f-tech2').value,
