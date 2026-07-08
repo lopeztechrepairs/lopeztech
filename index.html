@@ -985,7 +985,7 @@ body{font-family:'Geist',sans-serif;font-size:13px;background:var(--bg3);color:v
       </div>
       <div id="rsec-device" style="display:none;border-bottom:1px solid var(--border);padding:12px 18px;display:flex;flex-direction:column;gap:10px;">
         <div class="ff dev-wrap">
-          <label>Repair Title *</label>
+          <label>Repair Task Name *</label>
           <input id="f-device" type="text" placeholder="e.g. iPhone 11 Screen Repair, PS5 HDMI Port" oninput="upPrev();devSuggest();updateDevicePreview();nrAutoCapName(this)" autocomplete="off"/>
           <div class="dev-drop" id="dev-drop"></div>
         </div>
@@ -1993,6 +1993,7 @@ function autoPastDue(){
     if(r.Status==='Ready for Pickup'&&r.ReadyDate){
       if(Math.floor((n-new Date(r.ReadyDate))/86400000)>=30){
         r.Status='Past Due';r.PastDueDate=new Date().toISOString();
+        r.Updated=Date.now();
         logAct(r,'Auto-moved to Past Due (30 days in Ready for Pickup)','');
         changed=true;
       }
@@ -2313,6 +2314,7 @@ async function qStatus(id,status,secId){
   const old=r.Status;
   r.Status=status;
   r.LastStatusChange=new Date().toISOString();
+  r.Updated=Date.now(); // version stamp for last-write-wins sync guard
   if(status==='Ready for Pickup'&&old!=='Ready for Pickup')r.ReadyDate=new Date().toISOString();
   logAct(r,`Status: ${old} → ${status}`,getActiveUser());
   renderRepairs();toast(`Moved to ${status}`,'ok');
@@ -3204,7 +3206,7 @@ async function saveRepair(){
     CustomerNotes:document.getElementById('f-cnotes').value.trim(),
     Flagged:false,
     FlagReason:'',
-    Device:dev,Category:cat,Categories:selectedCats,Quality:qual,RepairName:repairName,MiscDesc:misc,
+    Device:dev,Category:cat,Categories:selectedCats,Quality:qual,RepairName:repairName,MiscDesc:misc,Updated:Date.now(),
     IMEI:document.getElementById('f-imei').value.trim(),
     Passcode:document.getElementById('f-pass').value.trim(),
     AssignedTo:document.getElementById('f-tech2').value,
@@ -3273,7 +3275,7 @@ async function confirmDelete(){
   // Bulk delete from dashboard selection
   if(selectedRows.size>0){
     const removedIds=[...selectedRows];
-    tombstone(removedIds);
+    recordPurges(removedIds); // tombstones locally AND writes to the shared purge list so no other device re-adds them
     selectedRows.forEach(id=>{
       const r=repairs.find(x=>x.ID===id);if(!r)return;
       deleted.unshift({...r,DeletedBy:cu.name,DeletedAt:new Date().toISOString(),DeleteReason:reason});
@@ -3295,7 +3297,7 @@ async function confirmDelete(){
   // Single delete from panel
   if(!editId)return;
   const delId=editId;
-  tombstone(delId);
+  recordPurges([delId]); // tombstones locally AND writes to the shared purge list so no other device re-adds it
   const r=repairs.find(x=>x.ID===editId);if(!r)return;
   deleted.unshift({...r,DeletedBy:cu.name,DeletedAt:new Date().toISOString(),DeleteReason:reason});
   const pruned=deleted.filter(x=>x.DeletedAt>cutoff);
@@ -4515,6 +4517,7 @@ function restoreFromSearch(id, deletedAt){
     IsWarranty:d.IsWarranty||false,
   };
   untombstone(d.ID);
+  if(hasCloud())fbPatch('lopeztechrepairs/purged',{[d.ID]:null}).catch(()=>{}); // clear the purge so it isn't re-suppressed on other devices
   repairs.unshift(restored);
   
   const newDeleted=deleted.filter(x=>!(x.ID===id&&x.DeletedAt===deletedAt));
@@ -4565,6 +4568,7 @@ function restoreRepair(idx){
   };
   // Add back to repairs
   untombstone(d.ID);
+  if(hasCloud())fbPatch('lopeztechrepairs/purged',{[d.ID]:null}).catch(()=>{}); // clear the purge so it isn't re-suppressed on other devices
   repairs.unshift(restored);
   
   // Remove from deleted log
@@ -4963,15 +4967,19 @@ function applyCloudData(data){
       const merged=incoming.map(fbR=>{
         const local=localMap.get(fbR.ID);
         if(!local)return fbR;
-        // Merge NotesArr — keep all unique notes by timestamp
-        const fbNotes=fbR.NotesArr||[];
-        const localNotes=local.NotesArr||[];
-        const seen=new Set(fbNotes.map(n=>n.ts));
-        const extraLocal=localNotes.filter(n=>!seen.has(n.ts));
-        if(extraLocal.length){
-          fbR.NotesArr=[...fbNotes,...extraLocal].sort((a,b)=>a.ts>b.ts?1:-1);
-        }
-        return fbR;
+        // Last-write-wins: if THIS device holds a strictly newer version (higher
+        // Updated stamp) keep the local copy, so an incoming stale snapshot can't
+        // revert a just-completed or just-edited repair back to an old state.
+        // Missing stamps count as oldest (0), so any stamped change beats legacy data.
+        const base=((local.Updated||0)>(fbR.Updated||0))?{...local}:fbR;
+        // Union NotesArr from both copies regardless of which base won.
+        const byTs=new Map();
+        [...(fbR.NotesArr||[]),...(local.NotesArr||[])].forEach(n=>{
+          if(n&&n.ts!=null&&!byTs.has(n.ts))byTs.set(n.ts,n);
+        });
+        const allNotes=[...byTs.values()].sort((a,b)=>a.ts>b.ts?1:-1);
+        if(allNotes.length)base.NotesArr=allNotes;
+        return base;
       });
       merged.push(...localOnly);
       merged.sort((a,b)=>new Date(b.CreatedAt||0)-new Date(a.CreatedAt||0));
@@ -5107,6 +5115,21 @@ async function pushAllToCloud(){
     // are never written back.
     const payload={};
     repairs.forEach(r=>{if(r&&r.ID&&!deletedTombstones.has(r.ID)){const c={...r};delete c._local;payload[r.ID]=c;}});
+    // Stale-write guard: never overwrite a cloud record that is newer than ours.
+    // This stops a device holding an outdated copy (e.g. a repair completed on
+    // another device while this tab was asleep) from reverting it on push.
+    // Uses the live stream mirror when connected (free); otherwise reads once —
+    // only when the stream is down, which is exactly when staleness is likeliest.
+    try{
+      let cloudRepairs=(streamConnected&&cloudMirror&&cloudMirror.repairs)?cloudMirror.repairs:null;
+      if(!cloudRepairs)cloudRepairs=await fbRead('lopeztechrepairs/repairs');
+      if(cloudRepairs){
+        Object.keys(payload).forEach(id=>{
+          const c=cloudRepairs[id];
+          if(c&&(c.Updated||0)>(payload[id].Updated||0))delete payload[id]; // cloud is newer — keep it
+        });
+      }
+    }catch(e){/* if the check fails, fall through and push — availability over strictness */}
     if(Object.keys(payload).length)await fbPatch('lopeztechrepairs/repairs',payload);
     // Supporting data lives under its own keys; patching the root replaces only
     // these keys and leaves the repairs node untouched.
@@ -5572,6 +5595,7 @@ function confirmComplete(){
   const dateMDY=cpFmtMDY(document.getElementById('cp-date').value);
   r.Status='Completed';
   r.CompletedDate=new Date().toISOString();
+  r.Updated=Date.now(); // version stamp so a stale device can't revert this to active
   r.PayMethod=t.method==='split'?'Split':cpPayLabel(t.method);
   r.PayMethodKey=t.method;
   r.SaleAmount=t.amount;
@@ -6307,10 +6331,12 @@ function nrBuildRepairName(){
     if(sub&&sub.length)return`${svc.label} (${sub.join(' & ')})`;
     return svc.label;
   }).filter(Boolean);
-  // Always combine device + services into title
-  if(device&&parts.length)return`${device} ${parts.join(' + ')}`;
+  // The Repair Task Name the user typed IS the title — do NOT append the
+  // selected service chips to it. Appending produced doubled titles like
+  // "Computer Virus Removal Virus / Malware Removal". The services are still
+  // saved separately to Category / Categories for badges and filtering.
   if(device)return device;
-  return parts.join(' + ');
+  return parts.join(' + '); // fallback only if the task name was left blank
 }
 
 function nrSave(){
@@ -6325,7 +6351,7 @@ function nrSave(){
   if(!ph1){toast('Primary phone number is required','err');document.getElementById('nr-ph1')?.focus();return;}
   if(!nrDevType){toast('Select a device type','err');return;}
   if(!nrSelectedSvc.length){toast('Select at least one repair service','err');return;}
-  if(!device){toast('Enter the device name','err');document.getElementById('nr-device')?.focus();return;}
+  if(!device){toast('Enter the repair task name','err');document.getElementById('nr-device')?.focus();return;}
   if(!loc){toast('Select a store location','err');document.getElementById('nr-loc')?.focus();return;}
   const cat=nrDevType==='tablet'?'phone':nrDevType;
   const list=getSvcList(cat);
@@ -6364,7 +6390,8 @@ function nrSave(){
     DeviceType:nrDevType,
     CreatedBy:nrCreatedBy||getActiveUser()||cu?.name||'Staff',
     Notes:'',HandoffNotes:'',ActivityLog:[],_local:true,
-    CreatedAt:new Date().toISOString()
+    CreatedAt:new Date().toISOString(),
+    Updated:Date.now()
   };
   // Store issue notes as first note
   if(issueNotes){
@@ -6549,8 +6576,8 @@ document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{if(typeof upda
           Device &amp; Issue
         </div>
         <div class="nr-field">
-          <label class="nr-label">Device Name *</label>
-          <input class="nr-input" id="nr-device" type="text" placeholder="e.g. iPhone 15 Pro Max, Dell XPS 15…" oninput="nrAutoCapName(this)" autocomplete="off"/>
+          <label class="nr-label">Repair Task Name *</label>
+          <input class="nr-input" id="nr-device" type="text" placeholder="e.g. iPhone 11 Screen Repair, PS5 HDMI Port" oninput="nrAutoCapName(this)" autocomplete="off"/>
         </div>
         <!-- Screen Quality — only for screen repair -->
         <div class="nr-field" id="nr-qual-field" style="display:none;">
