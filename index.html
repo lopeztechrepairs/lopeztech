@@ -4087,7 +4087,7 @@ function togWarrantyCheck(){
   const ph1=document.getElementById('f-ph1').value.trim();
   const rph=phoneRaw(ph1);
   const prev=repairs.filter(r=>r.CustomerName===cname&&phoneRaw(r.Phone1)===rph&&r.Status==='Completed'&&!r.IsWarranty)
-    .sort((a,b)=>new Date(b.CompletedDate)-new Date(a.CompletedDate));
+    .sort((a,b)=>(completedTs(b)??-Infinity)-(completedTs(a)??-Infinity));
   if(!prev.length){
     res.innerHTML='<div style="font-size:12px;color:var(--text3);">⚠ No completed repairs found for this customer.</div>';
     return;
@@ -5761,9 +5761,21 @@ function printCPReceipt(){
   doPrint(html, '@page{size:letter;margin:12mm;}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:system-ui,sans-serif;font-size:13px;color:#111;padding:0;}table{border-collapse:collapse;width:100%;}');
 }
 
+// Resolve a reliable "when completed" timestamp for sorting. Falls back through
+// the next-best signals so legacy repairs that never stored CompletedDate still
+// sort sensibly, and returns null when nothing usable exists so callers can sink
+// those to the bottom deterministically instead of letting NaN scramble the order.
+function completedTs(r){
+  const raw=r&&(r.CompletedDate||r.LastStatusChange||r.ReadyDate||r.CreatedAt);
+  const t=raw?new Date(raw).getTime():NaN;
+  return isNaN(t)?null:t;
+}
+
 function renderCompletedPage(pg){
-  const list=repairs.filter(r=>r.Status==='Completed')
-    .sort((a,b)=>new Date(b.CompletedDate||b.CreatedAt)-new Date(a.CompletedDate||a.CreatedAt));
+  const list=repairs.filter(r=>r.Status==='Completed').sort((a,b)=>
+    ((completedTs(b)??-Infinity)-(completedTs(a)??-Infinity)) // newest completed first; undated sink to bottom
+    || ((a.ID||'')<(b.ID||'')?1:-1)                          // stable tiebreak so order never looks random
+  );
   pg.innerHTML=`
     <div class="ptop">Completed Repairs</div>
     <div class="psub2">${list.length} completed repair${list.length!==1?'s':''}</div>
