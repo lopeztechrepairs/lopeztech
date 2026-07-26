@@ -631,6 +631,7 @@ button,.emp-card,.loc-chip,.admin-tab,.edit-btn,.paystub-btn,.hdr-btn{
         </div>
       </div>
       <div style="font-size:11px;color:var(--text3);">Note: edits are logged for transparency.</div>
+      <div id="edit-history"></div>
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('edit-modal')">Cancel</button>
@@ -1028,7 +1029,7 @@ function renderTodaySummary(){
 function renderTimecard(){
   const week=getWeekRange(currentWeekOffset);
   document.getElementById('tc-week-label').textContent=`Week of ${fmtDate(week.start)} – ${fmtDate(week.end)}`;
-  const empEntries=entries.filter(e=>e.emp===currentEmp&&e.date>=week.start&&e.date<=week.end&&!e.flagged);
+  const empEntries=entries.filter(e=>e.emp===currentEmp&&e.date>=week.start&&e.date<=week.end&&!e.flagged&&!e.deleted);
   const content=document.getElementById('tc-content');
   if(!empEntries.length){content.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);">No entries for this week</div>';return;}
 
@@ -1122,14 +1123,23 @@ function getEmpCurrentStatus(emp){
 function renderAdminTimecards(){
   const week=getWeekRange(adminWeekOffset);
   const emps=['David Thompson','Juan Reynoso','Noemy Olvera'];
+  const isCurrentWeek=adminWeekOffset===0;
   let html=`<div class="week-picker" style="margin-bottom:16px;">
     <button class="week-nav" onclick="adminWeekOffset--;adminTab('timecards')">‹</button>
-    <div class="week-label">Week of ${fmtDate(week.start)} – ${fmtDate(week.end)}</div>
-    <button class="week-nav" onclick="adminWeekOffset++;adminTab('timecards')">›</button>
+    <div class="week-label">Week of ${fmtDate(week.start)} – ${fmtDate(week.end)}${isCurrentWeek?' (Current)':''}</div>
+    <button class="week-nav" onclick="adminWeekOffset++;adminTab('timecards')" ${isCurrentWeek?'disabled style="opacity:.4;cursor:not-allowed;"':''}>›</button>
   </div>`;
 
   emps.forEach(emp=>{
-    const empEntries=entries.filter(e=>e.emp===emp&&e.date>=week.start&&e.date<=week.end&&!e.flagged).sort((a,b)=>a.clockIn-b.clockIn);
+    // Filter: correct week, not deleted, not flagged
+    const empEntries=entries.filter(e=>
+      e.emp===emp&&
+      e.date>=week.start&&
+      e.date<=week.end&&
+      !e.flagged&&
+      !e.deleted
+    ).sort((a,b)=>a.clockIn-b.clockIn);
+
     const rate=empProfiles[emp]?.rate||10;
     const ini=emp.split(' ').map(w=>w[0]).join('');
     const avColors={'David Thompson':'background:#d4edda;color:#27500A','Juan Reynoso':'background:#fde8c0;color:#633806','Noemy Olvera':'background:#e8e6ff;color:#3C3489'};
@@ -1139,19 +1149,23 @@ function renderAdminTimecards(){
 
     let rows='';
     if(!empEntries.length){
-      rows='<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:16px;">No entries this week</td></tr>';
+      rows=`<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:16px;">No entries this week</td></tr>`;
     } else {
       empEntries.forEach(e=>{
         const cin=new Date(e.clockIn).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
         const cout=e.clockOut?new Date(e.clockOut).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'Active';
         const paidHrs=e.clockOut?calcPaidHrs(e):0;
+        const badges=[];
+        if(e.edited)badges.push(`<span style="font-size:9px;background:var(--amberbg);color:var(--amber2);border:1px solid var(--amber);border-radius:10px;padding:1px 5px;font-weight:600;">✎ edited</span>`);
+        if(e.addedManually)badges.push(`<span style="font-size:9px;background:var(--bluebg);color:var(--blue);border:1px solid var(--blue);border-radius:10px;padding:1px 5px;font-weight:600;">+ manual</span>`);
         rows+=`<tr>
           <td>${fmtDate(e.date)}</td>
           <td>${cin}</td>
           <td>${cout}</td>
-          <td>${e.lunchMinutes} min</td>
-          <td>${e.breakMinutes} min</td>
+          <td>${e.lunchMinutes||0} min</td>
+          <td>${e.breakMinutes||0} min</td>
           <td><strong>${e.clockOut?fmtHrs(paidHrs):'—'}</strong></td>
+          <td>${badges.join(' ')}</td>
           <td><button class="edit-btn" onclick="openEditModal('${e.id}')">Edit</button></td>
         </tr>`;
       });
@@ -1170,7 +1184,7 @@ function renderAdminTimecards(){
       </div>
       <div style="overflow-x:auto;">
         <table class="time-table">
-          <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Lunch</th><th>Breaks</th><th>Paid</th><th></th></tr></thead>
+          <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Lunch</th><th>Breaks</th><th>Paid</th><th></th><th></th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
@@ -1183,8 +1197,9 @@ function renderAdminTimecards(){
       </div>
     </div>`;
   });
-  // Add entry button
-  html+=`<button class="btn btn-primary" onclick="openAddEntry()" style="margin-top:8px;">+ Add Manual Entry</button>`;
+
+  // Add manual entry button — pre-fills date to first day of viewed week
+  html+=`<button class="btn btn-primary" onclick="openAddEntryForWeek('${week.start}')" style="margin-top:8px;">+ Add Manual Entry for This Week</button>`;
   document.getElementById('admin-content').innerHTML=html;
 }
 
@@ -1305,13 +1320,38 @@ function openEditModal(id){
   document.getElementById('edit-lunch').value=e.lunchMinutes||0;
   document.getElementById('edit-breaks').value=Math.round((e.breakMinutes||0)/15);
   document.getElementById('edit-loc').value=e.location||'Dayton';
+  // Show delete button for existing entries
+  const delBtn=document.getElementById('edit-delete-btn');
+  if(delBtn)delBtn.style.display='inline-block';
+  // Show edit history if any
+  const histEl=document.getElementById('edit-history');
+  if(histEl){
+    if(e.editHistory&&e.editHistory.length){
+      histEl.innerHTML=`<div style="margin-top:12px;padding:10px;background:var(--amberbg);border:1px solid var(--amber);border-radius:8px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--amber2);margin-bottom:6px;">Edit History (${e.editHistory.length} change${e.editHistory.length>1?'s':''})</div>
+        ${e.editHistory.map(h=>{
+          const prev=h.prev||{};
+          const prevIn=prev.clockIn?new Date(prev.clockIn).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'—';
+          const prevOut=prev.clockOut?new Date(prev.clockOut).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'—';
+          return`<div style="font-size:11px;color:var(--amber2);padding:2px 0;">
+            ${new Date(h.at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})} by ${h.by||'Admin'} — was ${prevIn}–${prevOut}
+          </div>`;
+        }).join('')}
+      </div>`;
+    } else {
+      histEl.innerHTML='';
+    }
+  }
   document.getElementById('edit-modal').classList.add('open');
 }
 
 function openAddEntry(){
+  openAddEntryForWeek(new Date().toISOString().split('T')[0]);
+}
+
+function openAddEntryForWeek(weekStart){
   editingEntryId=null;
-  const today=new Date().toISOString().split('T')[0];
-  document.getElementById('edit-date').value=today;
+  document.getElementById('edit-date').value=weekStart;
   const empSel=document.getElementById('edit-emp');
   empSel.innerHTML=['David Thompson','Juan Reynoso','Noemy Olvera'].map(n=>`<option>${n}</option>`).join('');
   document.getElementById('edit-in').value='09:00';
@@ -1319,7 +1359,8 @@ function openAddEntry(){
   document.getElementById('edit-lunch').value=30;
   document.getElementById('edit-breaks').value=0;
   document.getElementById('edit-loc').value='Dayton';
-  document.getElementById('edit-delete-btn').style.display='none';
+  const delBtn=document.getElementById('edit-delete-btn');
+  if(delBtn)delBtn.style.display='none';
   document.getElementById('edit-modal').classList.add('open');
 }
 
@@ -1331,24 +1372,39 @@ function saveEditEntry(){
   const lunch=parseInt(document.getElementById('edit-lunch').value)||0;
   const breaks=parseInt(document.getElementById('edit-breaks').value)||0;
   const loc=document.getElementById('edit-loc').value;
+  if(!date||!inTime){toast('Date and clock-in time are required');return;}
 
   const clockIn=new Date(date+'T'+inTime).getTime();
   const clockOut=outTime?new Date(date+'T'+outTime).getTime():null;
+  const now=new Date().toISOString();
 
   if(editingEntryId){
     const e=entries.find(x=>x.id===editingEntryId);
     if(e){
+      // Keep edit history
+      if(!e.editHistory)e.editHistory=[];
+      e.editHistory.push({
+        at:now,
+        by:'Admin',
+        prev:{clockIn:e.clockIn,clockOut:e.clockOut,lunchMinutes:e.lunchMinutes,breakMinutes:e.breakMinutes,date:e.date}
+      });
       e.date=date;e.emp=emp;e.clockIn=clockIn;e.clockOut=clockOut;
       e.lunchMinutes=lunch;e.breakMinutes=breaks*15;e.location=loc;
-      e.edited=true;e.flagged=false;e.flagReason='';
+      e.edited=true;e.editedAt=now;e.flagged=false;e.flagReason='';
+      e.deleted=false; // restore if it was soft-deleted
     }
   } else {
+    // Adding new manual entry
     entries.push({
-      id:'tc_manual_'+Date.now(),emp,location:loc,date,
-      clockIn,clockOut,lunchMinutes:lunch,breakMinutes:breaks*15,
-      onLunch:false,onBreak:false,edited:true,flagged:false,flagReason:''
+      id:'tc_manual_'+Date.now(),
+      emp,location:loc,date,
+      clockIn,clockOut,
+      lunchMinutes:lunch,breakMinutes:breaks*15,
+      onLunch:false,onBreak:false,
+      edited:true,editedAt:now,
+      addedManually:true,addedBy:'Admin',
+      flagged:false,flagReason:'',deleted:false
     });
-    document.getElementById('edit-delete-btn').style.display='';
   }
   saveEntries();
   closeModal('edit-modal');
@@ -1358,12 +1414,17 @@ function saveEditEntry(){
 
 function deleteEntry(){
   if(!editingEntryId)return;
-  if(!confirm('Delete this time entry permanently?'))return;
-  entries=entries.filter(x=>x.id!==editingEntryId);
+  if(!confirm('Remove this time entry? It will be hidden but kept in records.'))return;
+  const e=entries.find(x=>x.id===editingEntryId);
+  if(e){
+    e.deleted=true;
+    e.deletedAt=new Date().toISOString();
+    e.deletedBy='Admin';
+  }
   saveEntries();
   closeModal('edit-modal');
   adminTab('timecards',null);
-  toast('Entry deleted');
+  toast('Entry removed');
 }
 
 // ── PAYSTUB ──
