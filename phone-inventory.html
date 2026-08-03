@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Phone Inventory – Lopez Tech Repairs</title>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&family=Barlow:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
     --navy:      #0f1f3d;
@@ -407,30 +407,30 @@
   }
   #labelPreview .lbl-title {
     font-family:'Barlow',Arial,sans-serif;
-    font-size:11.5pt; font-weight:800; text-align:center; text-transform:uppercase;
-    border-bottom:1.5pt solid #000; padding-bottom:4px; margin-bottom:6px;
-    line-height:1.15; letter-spacing:.5px;
+    font-size:12.5pt; font-weight:900; text-align:center; text-transform:uppercase;
+    border-bottom:2.5pt solid #000; padding-bottom:4px; margin-bottom:6px;
+    line-height:1.12; letter-spacing:.3px;
   }
   #labelPreview .lbl-info { margin-bottom:0; }
   #labelPreview .lbl-row {
-    display:flex; gap:6px; font-size:7.5pt; line-height:1.3; margin-bottom:3px;
+    display:flex; gap:7px; font-size:10pt; line-height:1.18; margin-bottom:3px;
     align-items:center; font-family:'Barlow',Arial,sans-serif;
   }
   #labelPreview .lbl-row .lico {
     width:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
   }
   #labelPreview .lbl-row .lk {
-    font-weight:700; text-transform:uppercase; width:106px; flex-shrink:0; letter-spacing:.2px;
+    font-size:8pt; font-weight:800; text-transform:uppercase; width:118px; flex-shrink:0; letter-spacing:0; white-space:nowrap;
   }
-  #labelPreview .lbl-row .lv { flex:1; font-weight:500; word-break:break-word; }
+  #labelPreview .lbl-row .lv { flex:1; font-size:10pt; font-weight:900; word-break:break-word; }
   #labelPreview .lbl-price-box {
     position:absolute; bottom:8px;
     left:50%; transform:translateX(-50%);
-    border:2.5pt solid #000;
-    width:154px; height:48px;
+    border:3.5pt solid #000;
+    width:158px; height:50px;
     display:flex; align-items:center; justify-content:center;
     font-family:'Barlow',Arial,sans-serif;
-    font-size:18pt; font-weight:800; white-space:nowrap; letter-spacing:-.5px;
+    font-size:19pt; font-weight:900; white-space:nowrap; letter-spacing:-.5px;
   }
 
   /* PRINT — exact dimensions for Brother QL-820NWB landscape */
@@ -451,26 +451,26 @@
     }
     #printLabelWrap .plbl .lbl-title {
       font-family:'Barlow',Arial,sans-serif;
-      font-size:8pt; font-weight:800; text-align:center; text-transform:uppercase;
-      border-bottom:1pt solid #000; padding-bottom:2pt; margin-bottom:3pt;
-      line-height:1.15; letter-spacing:.3px;
+      font-size:8.5pt; font-weight:900; text-align:center; text-transform:uppercase;
+      border-bottom:1.75pt solid #000; padding-bottom:2pt; margin-bottom:3pt;
+      line-height:1.12; letter-spacing:.2px;
     }
     #printLabelWrap .plbl .lbl-row {
-      display:flex; gap:3pt; font-size:5.8pt; line-height:1.25; margin-bottom:1.5pt;
+      display:flex; gap:3.5pt; font-size:6.8pt; line-height:1.18; margin-bottom:1.5pt;
       align-items:center; font-family:'Barlow',Arial,sans-serif;
     }
     #printLabelWrap .plbl .lbl-row .lico {
       width:9pt; flex-shrink:0; display:flex; align-items:center; justify-content:center;
     }
-    #printLabelWrap .plbl .lbl-row .lk { font-weight:700; text-transform:uppercase; width:0.78in; flex-shrink:0; }
-    #printLabelWrap .plbl .lbl-row .lv { font-weight:500; flex:1; }
+    #printLabelWrap .plbl .lbl-row .lk { font-size:5.6pt; font-weight:800; text-transform:uppercase; width:0.8in; flex-shrink:0; white-space:nowrap; letter-spacing:0; }
+    #printLabelWrap .plbl .lbl-row .lv { font-size:6.8pt; font-weight:900; flex:1; word-break:break-word; }
     #printLabelWrap .plbl .lbl-price-box {
       position:absolute; bottom:0.05in;
       left:50%; transform:translateX(-50%);
-      border:1.5pt solid #000; width:0.95in; height:0.3in;
+      border:2.25pt solid #000; width:0.98in; height:0.31in;
       display:flex; align-items:center; justify-content:center;
       font-family:'Barlow',Arial,sans-serif;
-      font-size:9.5pt; font-weight:800; white-space:nowrap;
+      font-size:10.5pt; font-weight:900; white-space:nowrap;
     }
     @page { size:2.4in 1.5in landscape; margin:0; }
   }
@@ -1531,7 +1531,7 @@ function setVal(id,val) {
 var ICONS = {
   imei: '<svg width="12" height="11" viewBox="0 0 12 11" fill="#000" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="1.3" height="11"/><rect x="2.2" y="0" width="0.9" height="11"/><rect x="4" y="0" width="1.9" height="11"/><rect x="6.8" y="0" width="0.9" height="11"/><rect x="8.6" y="0" width="0.9" height="11"/><rect x="10.4" y="0" width="1.3" height="11"/></svg>',
   carrier: '<svg width="11" height="11" viewBox="0 0 11 11" fill="#000" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="7" width="2" height="4" rx=".3"/><rect x="3" y="4.5" width="2" height="6.5" rx=".3"/><rect x="6" y="2" width="2" height="9" rx=".3"/><rect x="9" y="0" width="2" height="11" rx=".3"/></svg>',
-  battery: '<svg width="14" height="9" viewBox="0 0 14 9" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="1" width="11" height="7" rx="1.5" stroke="#000" stroke-width="1.1" fill="none"/><rect x="11" y="3" width="3" height="3" rx=".8" fill="#000"/><rect x="1.5" y="2.5" width="7.5" height="4" rx=".5" fill="#000"/></svg>',
+  battery: '<svg width="14" height="9" viewBox="0 0 14 9" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="1" width="11" height="7" rx="1.5" stroke="#000" stroke-width="1.5" fill="none"/><rect x="11" y="3" width="3" height="3" rx=".8" fill="#000"/><rect x="1.5" y="2.5" width="7.5" height="4" rx=".5" fill="#000"/></svg>',
   grade: '<svg width="12" height="11" viewBox="0 0 24 23" fill="#000" xmlns="http://www.w3.org/2000/svg"><path d="M12 1l3.09 6.26L22 8.27l-5 4.87 1.18 6.88L12 16.77l-6.18 3.25L7 13.14 2 8.27l6.91-1.01z"/></svg>',
   repair: '<svg width="11" height="11" viewBox="0 0 24 24" fill="#000" xmlns="http://www.w3.org/2000/svg"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>'
 };
