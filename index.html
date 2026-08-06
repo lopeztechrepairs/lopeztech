@@ -88,6 +88,13 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 .col-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 .col-name{font-size:13px;font-weight:700;flex:1;letter-spacing:-.1px;}
 .col-count{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#fff;color:var(--text2);border:1px solid var(--border);}
+.col-min{width:24px;height:24px;border:none;background:transparent;color:var(--text3);border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;padding:0;}
+.col-min:hover{background:var(--border);color:var(--text);}
+.col-min svg{width:16px;height:16px;}
+.col.collapsed{width:50px;cursor:pointer;}
+.col.collapsed:hover{background:var(--skybg2);}
+.col-collapsed-inner{display:flex;flex-direction:column;align-items:center;gap:11px;padding:13px 0 16px;height:100%;}
+.col-vname{writing-mode:vertical-rl;text-orientation:mixed;font-size:12.5px;font-weight:700;color:var(--text2);white-space:nowrap;letter-spacing:-.1px;margin-top:2px;}
 .col-body{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:9px;}
 .card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 12px;cursor:pointer;transition:all .12s;box-shadow:var(--shadow);border-left:3px solid transparent;}
 .card:hover{border-color:var(--border2);box-shadow:var(--shadow2);transform:translateY(-1px);}
@@ -531,6 +538,8 @@ let editId=null;
 let pendingNotes=[];
 let curLoc='';
 let boardView='board';
+let collapsedCols=new Set();
+function toggleCol(id){if(collapsedCols.has(id))collapsedCols.delete(id);else collapsedCols.add(id);renderBoard();}
 let curView='board';
 let settings={pastDueDays:30, invUrl:DEFAULT_INV_URL};
 let pendingUndo=null;
@@ -705,8 +714,13 @@ function renderBoard(){
   const board=document.getElementById('board');
   board.innerHTML=STATUSES.map(s=>{
     const items=list.filter(r=>r.Status===s.id);
+    if(collapsedCols.has(s.id)){
+      return `<div class="col collapsed" onclick="toggleCol('${esc(s.id)}')" title="Expand ${esc(s.short)}">
+        <div class="col-collapsed-inner"><span class="col-dot" style="background:${s.color}"></span><span class="col-count">${items.length}</span><span class="col-vname">${esc(s.short)}</span></div>
+      </div>`;
+    }
     return `<div class="col">
-      <div class="col-hdr"><span class="col-dot" style="background:${s.color}"></span><span class="col-name">${s.short}</span><span class="col-count">${items.length}</span></div>
+      <div class="col-hdr"><span class="col-dot" style="background:${s.color}"></span><span class="col-name">${s.short}</span><span class="col-count">${items.length}</span><button class="col-min" onclick="toggleCol('${esc(s.id)}')" title="Minimize column"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg></button></div>
       <div class="col-body" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropCard(event,'${esc(s.id)}')">${items.map(cardHtml).join('')||'<div style="text-align:center;color:var(--text3);font-size:12px;padding:20px 0">Empty</div>'}</div>
     </div>`;
   }).join('');
