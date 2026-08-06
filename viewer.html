@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<title>Lopez Tech · Viewer</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --sky:#0EA5E9;--sky-d:#0284c7;--ink:#0f172a;--ink2:#334155;--mut:#64748b;--mut2:#94a3b8;
+    --line:#e5e9f0;--bg:#f2f4f7;--card:#fff;--green:#15803d;--red:#b91c1c;
+    --safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);
+  }
+  html,body{height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  input,select,textarea,button{font-family:inherit;font-size:16px;color:inherit}
+
+  /* top bar */
+  .top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);padding:calc(var(--safe-t) + 10px) 14px 10px}
+  .top-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .brand{font-size:17px;font-weight:800;letter-spacing:-.01em;flex:1;display:flex;align-items:center;gap:8px}
+  .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--mut2);flex-shrink:0}
+  .brand .dot.on{background:#22c55e}
+  .refresh{width:38px;height:38px;border:1px solid var(--line);background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--ink2)}
+  .refresh:active{background:#f1f5f9}
+  .refresh svg{width:18px;height:18px}
+  .search{width:100%;height:44px;border:1px solid var(--line);border-radius:12px;padding:0 14px;background:#f8fafc;font-size:16px}
+  .search:focus{outline:none;border-color:var(--sky);background:#fff}
+  .chips{display:flex;gap:7px;overflow-x:auto;padding:10px 0 2px;margin:0 -14px;padding-left:14px;padding-right:14px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;padding:7px 13px;border:1px solid var(--line);background:#fff;border-radius:999px;font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .loc-row{display:flex;gap:7px;margin-top:8px}
+  .loc{flex:1;padding:8px;border:1px solid var(--line);background:#fff;border-radius:10px;font-size:13px;font-weight:600;color:var(--ink2);text-align:center}
+  .loc.on{background:#e0f2fe;color:var(--sky-d);border-color:#bae6fd}
+
+  /* list */
+  .list{padding:12px 14px calc(var(--safe-b) + 24px);display:flex;flex-direction:column;gap:10px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:14px;box-shadow:0 1px 2px rgba(15,23,42,.04);position:relative}
+  .card:active{background:#fafbfc}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .card-name{font-size:15.5px;font-weight:700;line-height:1.25;letter-spacing:-.01em}
+  .card-cust{font-size:13.5px;color:var(--sky-d);margin-top:3px;font-weight:600}
+  .card-meta{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .pill{font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap}
+  .tag{font-size:12px;color:var(--mut);display:flex;align-items:center;gap:4px}
+  .quote{font-size:14px;font-weight:800;color:var(--green)}
+  .empty{text-align:center;color:var(--mut);padding:60px 20px;font-size:14px}
+  .count{font-size:12px;color:var(--mut);padding:2px 2px 8px;font-weight:600}
+
+  /* detail */
+  .sheet{position:fixed;inset:0;z-index:40;background:var(--bg);transform:translateY(100%);transition:transform .26s cubic-bezier(.4,0,.2,1);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .sheet.open{transform:translateY(0)}
+  .sheet-top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:calc(var(--safe-t) + 12px) 14px 12px;display:flex;align-items:center;gap:12px}
+  .back{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .back:active{background:#f1f5f9}
+  .back svg{width:20px;height:20px;color:var(--ink)}
+  .sheet-title{flex:1;font-size:16px;font-weight:800;line-height:1.2;letter-spacing:-.01em}
+  .sheet-id{font-size:11px;color:var(--mut);font-weight:600;font-family:ui-monospace,monospace}
+  .sec{padding:16px 14px 4px}
+  .sec-h{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--mut);text-transform:uppercase;margin-bottom:9px}
+  .fld{margin-bottom:13px}
+  .fld label{display:block;font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+  .inp{width:100%;height:46px;border:1px solid var(--line);border-radius:11px;padding:0 13px;background:#fff;font-size:16px}
+  .inp:focus{outline:none;border-color:var(--sky)}
+  textarea.inp{height:auto;min-height:60px;padding:11px 13px;line-height:1.4;resize:none}
+  .row2{display:flex;gap:10px}.row2>*{flex:1}
+  .stat-pills{display:flex;flex-wrap:wrap;gap:7px}
+  .sp{padding:9px 12px;border:1.5px solid var(--line);background:#fff;border-radius:11px;font-size:13px;font-weight:700;color:var(--ink2)}
+  .sp.on{border-color:transparent;color:#fff}
+  .call{display:flex;align-items:center;gap:6px;color:var(--sky-d);font-weight:700;font-size:14px;text-decoration:none;padding:2px 0}
+  .notes{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+  .note{background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px 12px}
+  .note-h{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-bottom:4px;font-weight:600}
+  .note-b{font-size:14px;line-height:1.4;color:var(--ink2)}
+  .note-none{color:var(--mut2);font-size:13px;text-align:center;padding:14px;border:1px dashed var(--line);border-radius:11px}
+  .addnote{display:flex;gap:8px;align-items:flex-end}
+  .addnote textarea{flex:1}
+  .save-bar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:12px 14px calc(var(--safe-b) + 12px);display:flex;gap:10px;margin-top:20px}
+  .btn{flex:1;height:50px;border:none;border-radius:13px;font-size:16px;font-weight:800;letter-spacing:-.01em}
+  .btn-p{background:linear-gradient(135deg,var(--sky),var(--sky-d));color:#fff;box-shadow:0 3px 12px rgba(14,165,233,.35)}
+  .btn-p:active{filter:brightness(.95)}
+  .btn-s{background:#fff;border:1px solid var(--line);color:var(--ink2);flex:0 0 96px}
+  .mini{height:46px;padding:0 16px;border-radius:11px;border:none;background:var(--sky);color:#fff;font-weight:700;font-size:14px;flex:0 0 auto}
+  .mini:active{filter:brightness(.95)}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:calc(var(--safe-b) + 24px);transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:90;white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .spin{animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-row">
+    <div class="brand"><span class="dot" id="dot"></span>Repairs Viewer</div>
+    <button class="refresh" id="refbtn" onclick="reload(true)" aria-label="Refresh"><svg id="refsvg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg></button>
+  </div>
+  <input class="search" id="q" type="search" placeholder="Search name, phone, or repair…" oninput="render()" autocomplete="off"/>
+  <div class="chips" id="chips"></div>
+  <div class="loc-row" id="locs"></div>
+</div>
+
+<div class="count" id="count" style="padding-left:14px"></div>
+<div class="list" id="list"></div>
+
+<!-- DETAIL SHEET -->
+<div class="sheet" id="sheet">
+  <div class="sheet-top">
+    <button class="back" onclick="closeSheet()" aria-label="Back"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div style="flex:1;min-width:0"><div class="sheet-title" id="d-title">—</div><div class="sheet-id" id="d-id"></div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h">Status</div>
+    <div class="stat-pills" id="d-status"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h">Customer</div>
+    <div class="fld"><label>Name</label><input class="inp" id="d-name"/></div>
+    <div class="row2">
+      <div class="fld"><label>Primary phone</label><input class="inp" id="d-phone1" inputmode="tel"/></div>
+      <div class="fld"><label>Alt phone</label><input class="inp" id="d-phone2" inputmode="tel"/></div>
+    </div>
+    <a class="call" id="d-call" href="#"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>Call primary</a>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h">Repair</div>
+    <div class="fld"><label>Repair / task</label><input class="inp" id="d-repair"/></div>
+    <div class="row2">
+      <div class="fld"><label>Quote ($)</label><input class="inp" id="d-quote" inputmode="decimal"/></div>
+      <div class="fld"><label>Device</label><input class="inp" id="d-device"/></div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>Technician</label><select class="inp" id="d-tech"></select></div>
+      <div class="fld"><label>Location</label><select class="inp" id="d-loc"><option value="">—</option><option>Dayton</option><option>Crosby</option></select></div>
+    </div>
+    <div class="fld"><label>Note / reported issue</label><textarea class="inp" id="d-notes"></textarea></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h">Notes log</div>
+    <div class="notes" id="d-notelist"></div>
+    <div class="addnote"><textarea class="inp" id="d-newnote" placeholder="Add a note…"></textarea><button class="mini" onclick="addNote()">Add</button></div>
+  </div>
+
+  <div class="save-bar">
+    <button class="btn btn-s" onclick="closeSheet()">Cancel</button>
+    <button class="btn btn-p" onclick="saveDetail()">Save changes</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══ FIREBASE (same project as the main app; hardcoded — nothing stored locally) ══ */
+const FB={apiKey:"AIzaSyAKeb68narBC-QxnHrw5v346xiCR2Q_Oxo",databaseURL:"https://lopez-tech-repairs-82c87-default-rtdb.firebaseio.com",projectId:"lopez-tech-repairs-82c87"};
+const REPAIRS_PATH="repairs";
+const STATUSES=[
+  {id:"Intake & Acceptance",  short:"Intake",     bg:"#f1f5f9",fg:"#475569"},
+  {id:"In Progress",          short:"In Progress",bg:"#e0f2fe",fg:"#0369a1"},
+  {id:"Dispatched to Specialist",short:"Specialist",bg:"#ede9fe",fg:"#6d28d9"},
+  {id:"Awaiting Parts",       short:"Awaiting",   bg:"#fef3c7",fg:"#b45309"},
+  {id:"Ready for Pickup",     short:"Ready",      bg:"#dcfce7",fg:"#15803d"},
+  {id:"Completed",            short:"Completed",  bg:"#e2e8f0",fg:"#334155"},
+];
+const DEFAULT_EMP=["Saul","David","Juan"];
+
+let authToken='',refreshTok='',authTmr=null,es=null;
+let repairs=[],employees=[],openId=null;
+let fStatus='',fLoc='';
+
+/* auth */
+async function ensureAuth(){
+  try{
+    const r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({returnSecureToken:true})});
+    const d=await r.json();
+    if(d&&d.idToken){authToken=d.idToken;refreshTok=d.refreshToken||'';schedule(d.expiresIn);}
+  }catch(e){}
+}
+function schedule(exp){const ms=Math.max(60000,((parseInt(exp||3600)||3600)-300)*1000);clearTimeout(authTmr);authTmr=setTimeout(refresh,ms);}
+async function refresh(){
+  if(!refreshTok)return ensureAuth();
+  try{const r=await fetch('https://securetoken.googleapis.com/v1/token?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(refreshTok)});const d=await r.json();if(d&&d.id_token){authToken=d.id_token;refreshTok=d.refresh_token||refreshTok;schedule(d.expires_in);}}catch(e){}
+}
+function url(p){return FB.databaseURL.replace(/\/$/,'')+'/'+p+'.json'+(authToken?'?auth='+encodeURIComponent(authToken):'');}
+async function fbFetch(p,opts,retry){const res=await fetch(url(p),opts);if((res.status===401||res.status===403)&&!retry){await ensureAuth();return fbFetch(p,opts,true);}return res;}
+async function fbGet(p){const r=await fbFetch(p);if(!r.ok)throw new Error('read '+r.status);return r.json();}
+async function fbPut(p,o){const r=await fbFetch(p,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(o)});if(!r.ok)throw new Error('write '+r.status);return r;}
+
+/* helpers */
+function esc(s){return (s==null?'':''+s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function pr(p){return (p==null?'':''+p).replace(/\D/g,'');}
+function fphone(p){const r=pr(p);return r.length===10?`(${r.slice(0,3)}) ${r.slice(3,6)}-${r.slice(6)}`:(p||'');}
+function num(v){const n=parseFloat((''+(v==null?'':v)).replace(/[^0-9.]/g,''));return isNaN(n)?0:n;}
+function money(v){return '$'+num(v).toFixed(2);}
+function stat(id){return STATUSES.find(s=>s.id===id)||STATUSES[0];}
+function daysSince(d){if(!d)return 0;const t=new Date(d).getTime();if(isNaN(t))return 0;return Math.floor((Date.now()-t)/864e5);}
+function isActive(r){return r.Status!=='Completed'&&!r.deleted;}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),2200);}
+
+/* load */
+async function boot(){
+  buildChips();buildLocs();
+  await ensureAuth();
+  try{const e=await fbGet('meta/employees');if(Array.isArray(e)&&e.length)employees=e.map(x=>x&&x.name?x.name:x).filter(Boolean);else if(e&&typeof e==='object')employees=Object.values(e).map(x=>x&&x.name?x.name:x).filter(Boolean);else employees=DEFAULT_EMP.slice();}catch(_){employees=DEFAULT_EMP.slice();}
+  await reload(false);
+  live();
+}
+async function reload(spin){
+  if(spin)document.getElementById('refsvg').classList.add('spin');
+  try{
+    const data=await fbGet(REPAIRS_PATH);
+    repairs=[];
+    if(data&&typeof data==='object')Object.keys(data).forEach(k=>{const r=data[k];if(r&&typeof r==='object'){if(!r.ID)r.ID=k;repairs.push(r);}});
+    document.getElementById('dot').classList.add('on');
+    render();
+  }catch(e){document.getElementById('dot').classList.remove('on');toast('Load failed');}
+  if(spin)setTimeout(()=>document.getElementById('refsvg').classList.remove('spin'),400);
+}
+function live(){
+  if(typeof EventSource==='undefined')return;
+  try{if(es)es.close();es=new EventSource(url(REPAIRS_PATH));let d=null;const f=()=>{clearTimeout(d);d=setTimeout(()=>{if(!document.getElementById('sheet').classList.contains('open'))reload(false);},700);};es.addEventListener('put',f);es.addEventListener('patch',f);es.onerror=()=>{};}catch(e){}
+}
+
+/* filters */
+function buildChips(){
+  const wrap=document.getElementById('chips');
+  const all=[{id:'',short:'All'}].concat(STATUSES);
+  wrap.innerHTML=all.map(s=>`<div class="chip${s.id===fStatus?' on':''}" onclick="setStatus('${esc(s.id)}')">${esc(s.short)}</div>`).join('');
+}
+function buildLocs(){
+  document.getElementById('locs').innerHTML=['','Dayton','Crosby'].map(l=>`<div class="loc${l===fLoc?' on':''}" onclick="setLoc('${l}')">${l||'All stores'}</div>`).join('');
+}
+function setStatus(s){fStatus=s;buildChips();render();}
+function setLoc(l){fLoc=l;buildLocs();render();}
+
+/* list */
+function render(){
+  const q=(document.getElementById('q').value||'').toLowerCase().trim();
+  let rows=repairs.filter(r=>!r.deleted);
+  if(fStatus)rows=rows.filter(r=>(r.Status||'')===fStatus);
+  if(fLoc)rows=rows.filter(r=>(r.Location||'')===fLoc);
+  if(q)rows=rows.filter(r=>((r.CustomerName||'')+' '+(r.RepairName||'')+' '+pr(r.Phone1)).toLowerCase().includes(q));
+  rows.sort((a,b)=>{
+    const aa=isActive(a),ba=isActive(b);
+    if(aa!==ba)return aa?-1:1;
+    return new Date(b.DropoffDate||b.Created||0)-new Date(a.DropoffDate||a.Created||0);
+  });
+  document.getElementById('count').textContent=rows.length+(rows.length===1?' repair':' repairs');
+  const list=document.getElementById('list');
+  if(!rows.length){list.innerHTML='<div class="empty">No repairs match.</div>';return;}
+  list.innerHTML=rows.map(r=>{
+    const overdue=r.Status==='Ready for Pickup'&&daysSince(r.ReadyDate||r.LastStatusChange||r.DropoffDate)>=30;
+    const s=overdue?{short:'Past Due',bg:'#fee2e2',fg:'#b91c1c'}:stat(r.Status);
+    return `<div class="card" onclick="openDetail('${esc(r.ID)}')">
+      <div class="card-top">
+        <div style="min-width:0"><div class="card-name">${esc(r.RepairName||r.Device||'Repair')}</div><div class="card-cust">${esc(r.CustomerName||'—')}</div></div>
+        ${r.Quote?`<div class="quote">${money(r.Quote)}</div>`:''}
+      </div>
+      <div class="card-meta">
+        <span class="pill" style="background:${s.bg};color:${s.fg}">${s.short}</span>
+        ${r.Location?`<span class="tag">📍 ${esc(r.Location)}</span>`:''}
+        ${r.AssignedTo?`<span class="tag">👤 ${esc(r.AssignedTo)}</span>`:''}
+        <span class="tag" style="margin-left:auto">${daysSince(r.DropoffDate)}d</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* detail */
+function openDetail(id){
+  const r=repairs.find(x=>x.ID===id);if(!r)return;
+  openId=id;
+  document.getElementById('d-title').textContent=r.RepairName||r.Device||'Repair';
+  document.getElementById('d-id').textContent=r.ID||'';
+  document.getElementById('d-status').innerHTML=STATUSES.map(s=>`<div class="sp${(r.Status||'')===s.id?' on':''}" style="${(r.Status||'')===s.id?`background:${s.fg}`:''}" data-s="${esc(s.id)}" onclick="pickStatus(this)">${esc(s.short)}</div>`).join('');
+  document.getElementById('d-name').value=r.CustomerName||'';
+  document.getElementById('d-phone1').value=fphone(r.Phone1);
+  document.getElementById('d-phone2').value=r.Phone2?fphone(r.Phone2):'';
+  document.getElementById('d-repair').value=r.RepairName||'';
+  document.getElementById('d-quote').value=r.Quote!=null?r.Quote:'';
+  document.getElementById('d-device').value=r.Device||'';
+  document.getElementById('d-loc').value=r.Location||'';
+  document.getElementById('d-notes').value=r.Notes||'';
+  const tech=document.getElementById('d-tech');
+  tech.innerHTML='<option value="">— Unassigned —</option>'+employees.map(n=>`<option${r.AssignedTo===n?' selected':''}>${esc(n)}</option>`).join('');
+  const call=document.getElementById('d-call');const p=pr(r.Phone1);
+  if(p){call.href='tel:'+p;call.style.display='';}else call.style.display='none';
+  renderNoteLog(r);
+  document.getElementById('d-newnote').value='';
+  const sh=document.getElementById('sheet');sh.scrollTop=0;sh.classList.add('open');
+}
+function pickStatus(el){
+  document.querySelectorAll('#d-status .sp').forEach(x=>{x.classList.remove('on');x.style.background='';});
+  el.classList.add('on');const s=stat(el.dataset.s);el.style.background=s.fg;
+}
+function renderNoteLog(r){
+  const arr=(r.NotesArr||[]).slice();
+  const el=document.getElementById('d-notelist');
+  el.innerHTML=arr.length?arr.map(n=>`<div class="note"><div class="note-h"><span>${esc(n.who||'')}</span><span>${n.at?new Date(n.at).toLocaleDateString():''}</span></div><div class="note-b">${esc(n.text||'')}</div></div>`).join(''):'<div class="note-none">No notes yet</div>';
+}
+function closeSheet(){document.getElementById('sheet').classList.remove('open');openId=null;}
+
+async function addNote(){
+  const r=repairs.find(x=>x.ID===openId);if(!r)return;
+  const t=document.getElementById('d-newnote').value.trim();if(!t)return;
+  (r.NotesArr=r.NotesArr||[]).push({who:'Saul',at:Date.now(),text:t});
+  r.Notes=t;
+  document.getElementById('d-newnote').value='';
+  renderNoteLog(r);
+  try{await fbPut(REPAIRS_PATH+'/'+r.ID,r);toast('Note added ✓');render();}catch(e){toast('Save failed');}
+}
+
+async function saveDetail(){
+  const r=repairs.find(x=>x.ID===openId);if(!r)return;
+  const sel=document.querySelector('#d-status .sp.on');
+  const newStatus=sel?sel.dataset.s:r.Status;
+  const prevStatus=r.Status;
+  r.CustomerName=document.getElementById('d-name').value.trim();
+  r.Phone1=pr(document.getElementById('d-phone1').value);
+  r.Phone2=pr(document.getElementById('d-phone2').value);
+  r.RepairName=document.getElementById('d-repair').value.trim();
+  r.Quote=document.getElementById('d-quote').value.trim();
+  r.Device=document.getElementById('d-device').value.trim();
+  r.AssignedTo=document.getElementById('d-tech').value;
+  r.Location=document.getElementById('d-loc').value;
+  r.Notes=document.getElementById('d-notes').value.trim();
+  if(newStatus!==prevStatus){
+    r.Status=newStatus;r.LastStatusChange=Date.now();
+    if(newStatus==='Ready for Pickup'&&!r.ReadyDate)r.ReadyDate=new Date().toISOString().slice(0,10);
+    if(newStatus==='Completed'&&!r.CompletedDate)r.CompletedDate=new Date().toISOString().slice(0,10);
+    (r.ActivityLog=r.ActivityLog||[]).push({who:'Saul',at:Date.now(),action:'Status → '+newStatus});
+  }
+  r.Updated=Date.now();
+  render();
+  try{await fbPut(REPAIRS_PATH+'/'+r.ID,r);toast('Saved ✓');closeSheet();}catch(e){toast('Save failed');}
+}
+
+window.addEventListener('DOMContentLoaded',boot);
+</script>
+</body>
+</html>
