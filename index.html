@@ -1091,6 +1091,7 @@ function postNote(){
 
 /* ══ SAVE / DELETE ══ */
 async function saveRepair(){
+  const isNew=!editId;
   const name=document.getElementById('f-name').value.trim();
   const phone1=document.getElementById('f-phone1').value.trim();
   const repair=document.getElementById('f-repair').value.trim();
@@ -1098,10 +1099,9 @@ async function saveRepair(){
   const dt=document.querySelector('.dtchip.active')?.dataset.dt||'';
   if(!name){toast('Customer name is required','warn');return;}
   if(!phone1){toast('Primary phone is required','warn');return;}
-  if(!dt){toast('Select a device type','warn');return;}
+  if(isNew && !dt){toast('Select a device type','warn');return;}
   if(!repair){toast('Repair task name is required','warn');return;}
   if(!loc){toast('Pick a store location','warn');return;}
-  const isNew=!editId;
   let r;
   if(isNew){
     const prefix=loc==='Crosby'?'CRB':'DAY';
@@ -1111,7 +1111,7 @@ async function saveRepair(){
   if(!r)return;
   const oldQuote=r.Quote, oldTech=r.AssignedTo;
   r.CustomerName=name;r.Phone1=phoneRaw(phone1);r.Phone2=phoneRaw(document.getElementById('f-phone2').value);
-  r.RepairName=repair;r.DeviceType=dt;r.Notes=document.getElementById('f-notes').value.trim();
+  r.RepairName=repair;if(dt)r.DeviceType=dt;r.Notes=document.getElementById('f-notes').value.trim();
   r.IMEI=document.getElementById('f-imei').value.trim();r.Passcode=document.getElementById('f-pass').value.trim();
   r.Quote=parseNum(document.getElementById('f-quote').value)||'';
   r.AssignedTo=document.getElementById('f-tech2').value;r.Location=loc;
