@@ -88,13 +88,13 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 .col-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 .col-name{font-size:13px;font-weight:700;flex:1;letter-spacing:-.1px;}
 .col-count{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#fff;color:var(--text2);border:1px solid var(--border);}
-.col-min{width:24px;height:24px;border:none;background:transparent;color:var(--text3);border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;padding:0;}
-.col-min:hover{background:var(--border);color:var(--text);}
-.col-min svg{width:16px;height:16px;}
-.col.collapsed{width:50px;cursor:pointer;}
-.col.collapsed:hover{background:var(--skybg2);}
-.col-collapsed-inner{display:flex;flex-direction:column;align-items:center;gap:11px;padding:13px 0 16px;height:100%;}
-.col-vname{writing-mode:vertical-rl;text-orientation:upright;font-size:12px;font-weight:700;color:var(--text2);white-space:nowrap;letter-spacing:1px;margin-top:2px;}
+.col-chev{width:22px;height:22px;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:transform .18s;flex-shrink:0;}
+.col-chev svg{width:16px;height:16px;}
+.col-hdr{cursor:pointer;}
+.col-hdr:hover .col-chev{color:var(--text);}
+.col.collapsed{align-self:flex-start;}
+.col.collapsed .col-hdr{border-bottom:none;}
+.col.collapsed .col-chev{transform:rotate(180deg);}
 .col-body{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:9px;}
 .card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 12px;cursor:pointer;transition:all .12s;box-shadow:var(--shadow);border-left:3px solid transparent;}
 .card:hover{border-color:var(--border2);box-shadow:var(--shadow2);transform:translateY(-1px);}
@@ -337,7 +337,7 @@ input,select,textarea{font-family:inherit;font-size:14px;}
       <div class="ni" data-view="pastdue" onclick="switchView('pastdue')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="ni-label">Past Due</span><span class="ni-badge red" id="nb-past">0</span></div>
       <div class="ni" data-view="completed" onclick="switchView('completed')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span class="ni-label">Completed</span></div>
       <div class="nsec">Tools</div>
-      <div class="ni" data-view="search" onclick="switchView('search')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span class="ni-label">Record Search</span></div>
+      <div class="ni" data-view="search" onclick="switchView('search')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg><span class="ni-label">Customers</span></div>
       <div class="ni" data-view="settings" onclick="switchView('settings')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1V21a2 2 0 11-4 0v-.1A1.6 1.6 0 006 19.4a1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00-1.1-2.7H0a2 2 0 110-4h.1A1.6 1.6 0 001.6 6a1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H6a1.6 1.6 0 001-1.5V0a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V6a1.6 1.6 0 001.5 1H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z" transform="translate(1.5 1.5) scale(0.86)"/></svg><span class="ni-label">Settings</span></div>
       <div class="ni" data-view="deleted" onclick="switchView('deleted')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg><span class="ni-label">Recently Deleted</span><span class="ni-badge" id="nb-del">0</span></div>
       <div class="ni linkout" id="inv-link" onclick="openInventory()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg><span class="ni-label">Inventory</span><svg style="width:13px;height:13px;margin-left:auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 17L17 7M7 7h10v10"/></svg></div>
@@ -383,7 +383,7 @@ input,select,textarea{font-family:inherit;font-size:14px;}
     <!-- SIMPLE VIEWS -->
     <div id="view-pastdue" class="hidden"><div class="topbar"><div class="tb-row"><div class="tb-title">Past Due</div></div><p style="color:var(--text2);font-size:13px;margin-bottom:8px">Ready for pickup longer than <b id="pd-days-lbl">30</b> days.</p></div><div class="listwrap" id="pastdue-list"></div></div>
     <div id="view-completed" class="hidden"><div class="topbar"><div class="tb-row"><div class="tb-title">Completed</div></div><p style="color:var(--text2);font-size:13px;margin-bottom:8px">Finished repairs, newest first.</p></div><div class="listwrap" id="completed-list"></div></div>
-    <div id="view-search" class="hidden"><div class="topbar"><div class="tb-row"><div class="tb-title">Record Search</div></div><div class="filters"><div class="sw" style="max-width:460px"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="rec-search" placeholder="Search by name, any phone number, or repair title…" oninput="renderRecordSearch()"/></div></div></div><div class="listwrap" id="search-list"></div></div>
+    <div id="view-search" class="hidden"><div class="topbar"><div class="tb-row"><div class="tb-title">Customers</div></div><div class="filters"><div class="sw" style="max-width:460px"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="rec-search" placeholder="Search customers by name, phone, or a repair…" oninput="renderRecordSearch()"/></div></div></div><div class="listwrap" id="search-list"></div></div>
     <div id="view-deleted" class="hidden"><div class="topbar"><div class="tb-row"><div class="tb-title">Recently Deleted</div></div><p style="color:var(--text2);font-size:13px;margin-bottom:8px">Deleted repairs are kept 5 days, then permanently erased.</p></div><div class="listwrap" id="deleted-list"></div></div>
     <div id="view-settings" class="hidden"><div class="topbar"><div class="tb-row"><div class="tb-title">Settings</div></div></div><div class="listwrap" id="settings-body"></div></div>
   </main>
@@ -714,14 +714,10 @@ function renderBoard(){
   const board=document.getElementById('board');
   board.innerHTML=STATUSES.map(s=>{
     const items=list.filter(r=>r.Status===s.id);
-    if(collapsedCols.has(s.id)){
-      return `<div class="col collapsed" onclick="toggleCol('${esc(s.id)}')" title="Expand ${esc(s.short)}">
-        <div class="col-collapsed-inner"><span class="col-dot" style="background:${s.color}"></span><span class="col-count">${items.length}</span><span class="col-vname">${esc(s.short)}</span></div>
-      </div>`;
-    }
-    return `<div class="col">
-      <div class="col-hdr"><span class="col-dot" style="background:${s.color}"></span><span class="col-name">${s.short}</span><span class="col-count">${items.length}</span><button class="col-min" onclick="toggleCol('${esc(s.id)}')" title="Minimize column"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg></button></div>
-      <div class="col-body" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropCard(event,'${esc(s.id)}')">${items.map(cardHtml).join('')||'<div style="text-align:center;color:var(--text3);font-size:12px;padding:20px 0">Empty</div>'}</div>
+    const col=collapsedCols.has(s.id);
+    return `<div class="col${col?' collapsed':''}">
+      <div class="col-hdr" onclick="toggleCol('${esc(s.id)}')" title="${col?'Expand':'Minimize'} ${esc(s.short)}"><span class="col-dot" style="background:${s.color}"></span><span class="col-name">${s.short}</span><span class="col-count">${items.length}</span><span class="col-chev"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg></span></div>
+      ${col?'':`<div class="col-body" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropCard(event,'${esc(s.id)}')">${items.map(cardHtml).join('')||'<div style="text-align:center;color:var(--text3);font-size:12px;padding:20px 0">Empty</div>'}</div>`}
     </div>`;
   }).join('');
   if(boardView==='list')renderList(list);
@@ -1406,10 +1402,22 @@ function renderRecordSearch(){
   const qd=q.replace(/[()\s-]/g,'');
   let rows=repairs.filter(r=>!r.deleted);
   if(q)rows=rows.filter(r=>(r.CustomerName||'').toLowerCase().includes(q)||(r.RepairName||'').toLowerCase().includes(q)||phoneRaw(r.Phone1).includes(qd)||phoneRaw(r.Phone2).includes(qd));
-  rows.sort((a,b)=>(a.CustomerName||'').localeCompare(b.CustomerName||''));
-  document.getElementById('search-list').innerHTML=rows.length?
-    `<table class="ltable"><thead><tr><th>Customer</th><th>Phone</th><th>Repair</th><th>Status</th><th>Location</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr onclick="openRepair('${esc(r.ID)}')"><td style="font-weight:600"><span style="color:var(--sky3);text-decoration:underline;text-underline-offset:2px" onclick="event.stopPropagation();openProfile('${esc((r.CustomerName||'').replace(/'/g,''))}','${phoneRaw(r.Phone1)}')">${esc(r.CustomerName||'—')}</span></td><td class="mono" style="font-size:12px">${fmtPhoneDisp(r.Phone1)}</td><td>${esc(r.RepairName||'—')}</td><td>${statusPill(r.Status)}</td><td>${esc(r.Location)}</td><td style="color:var(--text3);font-size:11px">${daysSince(r.DropoffDate)}d</td></tr>`).join('')}</tbody></table>`
-    :emptyHtml(q?'No matches':'Search your records','Find any repair by customer name, phone, or title.');
+  const map={};
+  rows.forEach(r=>{
+    const key=phoneRaw(r.Phone1)||(r.CustomerName||'').toLowerCase().trim()||'—';
+    if(!map[key])map[key]={name:r.CustomerName||'—',phone:r.Phone1||'',count:0,open:0,last:0};
+    const m=map[key];
+    m.count++;
+    if(isActive(r))m.open++;
+    const t=new Date(r.DropoffDate||r.Created||0).getTime();
+    if(t>m.last)m.last=t;
+    if((!m.name||m.name==='—')&&r.CustomerName)m.name=r.CustomerName;
+    if(!m.phone&&r.Phone1)m.phone=r.Phone1;
+  });
+  const custs=Object.values(map).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  document.getElementById('search-list').innerHTML=custs.length?
+    `<table class="ltable"><thead><tr><th>Customer</th><th>Phone</th><th>Repairs</th><th>Open</th><th>Last activity</th></tr></thead><tbody>${custs.map(c=>`<tr onclick="openProfile('${esc((c.name||'').replace(/'/g,''))}','${phoneRaw(c.phone)}')"><td style="font-weight:600;color:var(--sky3);text-decoration:underline;text-underline-offset:2px">${esc(c.name||'—')}</td><td class="mono" style="font-size:12px">${fmtPhoneDisp(c.phone)}</td><td>${c.count}</td><td>${c.open?'<span style="color:var(--sky3);font-weight:700">'+c.open+'</span>':'<span style="color:var(--text3)">0</span>'}</td><td style="color:var(--text3);font-size:12px">${c.last?fmtDate(new Date(c.last).toISOString().slice(0,10)):'—'}</td></tr>`).join('')}</tbody></table>`
+    :emptyHtml(q?'No matches':'Customer directory','Find a customer by name, phone, or a repair they had.');
 }
 function renderDeleted(){
   const rows=repairs.filter(r=>r.deleted).sort((a,b)=>(b.DeletedAt||0)-(a.DeletedAt||0));
