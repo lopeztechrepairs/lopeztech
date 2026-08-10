@@ -110,6 +110,8 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 .tav{width:18px;height:18px;border-radius:50%;background:var(--skybg);color:var(--sky3);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;}
 .card-price{font-size:12px;font-weight:700;color:var(--green);}
 .card-age{margin-left:auto;font-size:10.5px;font-weight:600;color:var(--text3);display:flex;align-items:center;gap:4px;}
+.age-pill{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;line-height:1.35;}
+.age-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
 .pastdue-badge{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:20px;background:var(--amberbg);color:var(--amber);display:inline-flex;align-items:center;gap:3px;}
 .pastdue-badge.over{background:var(--redbg);color:var(--red);}
 .col-body::-webkit-scrollbar,.nav::-webkit-scrollbar,.board-scroll::-webkit-scrollbar{height:8px;width:8px;}
@@ -541,7 +543,7 @@ let boardView='board';
 let collapsedCols=new Set();
 function toggleCol(id){if(collapsedCols.has(id))collapsedCols.delete(id);else collapsedCols.add(id);renderBoard();}
 let curView='board';
-let settings={pastDueDays:30, invUrl:DEFAULT_INV_URL};
+let settings={pastDueDays:30, invUrl:DEFAULT_INV_URL, ageYellowDay:3, ageRedDay:7};
 let pendingUndo=null;
 let toastTmr=null, undoTmr=null;
 
@@ -580,8 +582,8 @@ async function fbPut(path,obj){const r=await fbFetch(path,{method:'PUT',headers:
 async function fbDel(path){try{await fbFetch(path,{method:'DELETE'});}catch(e){}}
 
 /* ══ SETTINGS + EMPLOYEES (stored in Firebase) ══ */
-async function loadSettings(){try{const s=await fbGet('meta/settings');if(s&&typeof s==='object'){settings.pastDueDays=s.pastDueDays||30;settings.invUrl=s.invUrl||DEFAULT_INV_URL;}}catch(e){}}
-async function saveSettings(){try{await fbPut('meta/settings',{pastDueDays:settings.pastDueDays,invUrl:settings.invUrl});}catch(e){}}
+async function loadSettings(){try{const s=await fbGet('meta/settings');if(s&&typeof s==='object'){settings.pastDueDays=s.pastDueDays||30;settings.invUrl=s.invUrl||DEFAULT_INV_URL;settings.ageYellowDay=s.ageYellowDay||3;settings.ageRedDay=s.ageRedDay||7;}}catch(e){}}
+async function saveSettings(){try{await fbPut('meta/settings',{pastDueDays:settings.pastDueDays,invUrl:settings.invUrl,ageYellowDay:settings.ageYellowDay,ageRedDay:settings.ageRedDay});}catch(e){}}
 async function loadEmployees(){
   try{
     const e=await fbGet('meta/employees');
@@ -680,6 +682,14 @@ function isActive(r){return !r.deleted && r.Status!==COMPLETED;}
 function readyAnchor(r){return r.ReadyDate||r.LastStatusChange||r.DropoffDate;}
 function isPastDue(r){return isActive(r)&&r.Status==='Ready for Pickup'&&daysSince(readyAnchor(r))>=settings.pastDueDays;}
 function pastDueSoon(r){return isActive(r)&&r.Status==='Ready for Pickup'&&daysSince(readyAnchor(r))>=settings.pastDueDays-1&&!isPastDue(r);}
+function ageColor(r){
+  if(r.Status===COMPLETED)return null;
+  const d=daysSince(r.DropoffDate);
+  const y=settings.ageYellowDay||3, rd=settings.ageRedDay||7;
+  if(d>=rd)return {c:'#dc2626',cb:'#fee2e2'};
+  if(d>=y)return {c:'#d97706',cb:'#fef3c7'};
+  return {c:'#16a34a',cb:'#dcfce7'};
+}
 
 /* ══ RENDER: BOARD ══ */
 function filteredActive(){
@@ -703,10 +713,12 @@ function cardHtml(r){
   else if(pastDueSoon(r))pd=`<span class="pastdue-badge">⚠ due</span>`;
   const price=r.Quote?`<span class="card-price">${money(r.Quote)}</span>`:'';
   const tech=r.AssignedTo?`<span class="card-tech"><span class="tav" style="background:${empColor(r.AssignedTo)}22;color:${empColor(r.AssignedTo)}">${initials(fullName(r.AssignedTo))}</span>${esc(r.AssignedTo)}</span>`:`<span class="card-tech" style="color:var(--text3)">Unassigned</span>`;
+  const ac=(!pd&&r.Status!==COMPLETED)?ageColor(r):null;
+  const ageEl=pd?pd:(ac?`<span class="age-pill" style="background:${ac.cb};color:${ac.c}"><span class="age-dot" style="background:${ac.c}"></span>${age}d</span>`:`${age}d`);
   return `<div class="card loc-${esc(r.Location)}" draggable="true" ondragstart="dragStart(event,'${esc(r.ID)}')" ondragend="dragEnd(event)" onclick="openRepair('${esc(r.ID)}')">
     <div class="card-title">${esc(r.RepairName||r.Device||'Untitled')}</div>
     <div class="card-cust">${esc(r.CustomerName||'—')}</div>
-    <div class="card-foot">${tech}${price}<span class="card-age">${pd||age+'d'}</span></div>
+    <div class="card-foot">${tech}${price}<span class="card-age">${ageEl}</span></div>
   </div>`;
 }
 function renderBoard(){
@@ -1456,6 +1468,16 @@ function renderSettings(){
     <div class="set-sec"><h3>Past Due</h3><div class="sub">A repair ready for pickup longer than this becomes past due (amber warning the day before).</div>
       <div style="display:flex;align-items:center;gap:10px"><input id="set-pd" type="number" min="1" value="${settings.pastDueDays}" style="width:100px;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px"/><span style="color:var(--text2)">days</span><button class="btn" onclick="savePd()">Save</button></div>
     </div>
+    <div class="set-sec"><h3>Aging Colors</h3><div class="sub">The day badge on each card starts green when fresh, turns yellow after a few days, then red once it has sat a while. Completed tickets are excluded.</div>
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:13px;color:var(--text2)">
+        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#16a34a"></span>Green, then</span>
+        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#d97706"></span>yellow at day</span>
+        <input id="set-ageY" type="number" min="1" value="${settings.ageYellowDay}" style="width:70px;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px"/>
+        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#dc2626"></span>red at day</span>
+        <input id="set-ageR" type="number" min="2" value="${settings.ageRedDay}" style="width:70px;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px"/>
+        <button class="btn" onclick="saveAging()">Save</button>
+      </div>
+    </div>
     <div class="set-sec"><h3>Store Info</h3><div class="sub">Printed on receipts and drop-off sheets.</div>
       <div style="font-size:13px;line-height:1.7;color:var(--text2)"><b style="color:var(--text)">Dayton</b> · ${LOC_INFO.Dayton.addr} · ${LOC_INFO.Dayton.phone}<br><b style="color:var(--text)">Crosby</b> · ${LOC_INFO.Crosby.addr} · ${LOC_INFO.Crosby.phone}</div>
     </div>
@@ -1477,6 +1499,7 @@ function addEmp(){
 }
 function removeEmp(i){if(!confirm('Remove '+employees[i].fullName+'?'))return;employees.splice(i,1);saveEmployees();refreshTechDropdowns();renderSettings();}
 function savePd(){const v=parseInt(document.getElementById('set-pd').value)||30;settings.pastDueDays=v;saveSettings();updateCounts();toast('Saved ✓');}
+function saveAging(){const y=Math.max(1,parseInt(document.getElementById('set-ageY').value)||3);const rd=Math.max(y+1,parseInt(document.getElementById('set-ageR').value)||7);settings.ageYellowDay=y;settings.ageRedDay=rd;saveSettings();renderBoard();renderSettings();toast('Aging colors saved ✓');}
 function saveInv(){settings.invUrl=document.getElementById('set-inv').value.trim()||DEFAULT_INV_URL;saveSettings();toast('Saved ✓');}
 /* ══ KEYBOARD + OUTSIDE CLICK ══ */
 document.addEventListener('keydown',function(e){
