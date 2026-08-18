@@ -140,7 +140,6 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 .nw-more-chev{width:16px;height:16px;color:var(--text3);transition:transform .18s;flex-shrink:0}
 .nw-more.open .nw-more-chev{transform:rotate(180deg)}
 #ov-nw .modal{max-width:500px}
-#ov-nw .m-body{min-height:380px}
 .pastdue-badge{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:20px;background:var(--amberbg);color:var(--amber);display:inline-flex;align-items:center;gap:3px;}
 .pastdue-badge.over{background:var(--redbg);color:var(--red);}
 .col-body::-webkit-scrollbar,.nav::-webkit-scrollbar,.board-scroll::-webkit-scrollbar{height:8px;width:8px;}
@@ -453,7 +452,7 @@ input,select,textarea{font-family:inherit;font-size:14px;}
     <div class="nw-lbl" style="margin-top:16px">Which store</div>
     <div class="nw-store"><button data-store="Dayton" onclick="nwStoreSel('Dayton')">Dayton</button><button data-store="Crosby" onclick="nwStoreSel('Crosby')">Crosby</button></div>
   </div>
-  <div class="nw-step" data-step="1" hidden>
+  <div class="nw-step" data-step="1" hidden style="min-height:336px">
     <div class="nw-lbl">Customer detail</div>
     <div class="fld" style="margin-bottom:12px"><label>Customer name</label><div class="acwrap"><input id="nw-name" placeholder="Jose Lopez" autocomplete="off" oninput="liveTitleCase(this);nwCustInput(this,'name')" onblur="nwHideAC()"/><div class="aclist" id="ac-nw-name"></div></div></div>
     <div style="display:flex;gap:10px">
@@ -748,7 +747,7 @@ function empColor(name){const e=employees.find(x=>x.name?.toLowerCase()===(name|
 function fullName(name){const e=employees.find(x=>x.name?.toLowerCase()===(name||'').toLowerCase());return e?e.fullName:name;}
 function empGlyph(name){
   const e=employees.find(x=>x.name?.toLowerCase()===(name||'').toLowerCase());
-  if(e&&e.icon==='person')return '<svg class="emp-ic" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8.5" r="3.6"/><path d="M12 13.4c-3.7 0-6.6 2.4-6.6 6.1v.5h13.2v-.5c0-3.7-2.9-6.1-6.6-6.1z"/></svg>';
+  if(e&&e.icon==='person')return '<svg class="emp-ic" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8.6" r="3.6"/><path d="M12 13c-3.7 0-6.6 2.4-6.6 5.6v.4h13.2v-.4c0-3.2-2.9-5.6-6.6-5.6z"/></svg>';
   return esc(initials((e&&e.fullName)||name));
 }
 function setEmpIcon(i,icon){if(!employees[i])return;employees[i].icon=icon;saveEmployees();renderSettings();renderAll();}
@@ -1631,7 +1630,7 @@ function openProfile(name,phone){
 
 /* ══ SETTINGS ══ */
 function renderSettings(){
-  const empHtml=employees.map((e,i)=>`<div class="emp-row"><div class="emp-row-top"><div class="emp-av" style="background:${e.color}">${empGlyph(e.name)}</div><div class="emp-info"><b>${esc(e.fullName)}</b> <span>· ${esc(e.role)}</span><div style="font-size:11px;color:var(--text3)">Shows as "${esc(e.name)}" on tickets</div></div><button class="emp-rm" onclick="removeEmp(${i})">Remove</button></div><div class="emp-iconrow"><span class="emp-ic-lbl">Avatar</span><button class="emp-ico ${(e.icon||'initials')==='initials'?'on':''}" onclick="setEmpIcon(${i},'initials')" title="Show initials">${esc(initials(e.fullName))}</button><button class="emp-ico ${e.icon==='person'?'on':''}" onclick="setEmpIcon(${i},'person')" title="Show person icon"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8.5" r="3.6"/><path d="M12 13.4c-3.7 0-6.6 2.4-6.6 6.1v.5h13.2v-.5c0-3.7-2.9-6.1-6.6-6.1z"/></svg></button></div></div>`).join('');
+  const empHtml=employees.map((e,i)=>`<div class="emp-row"><div class="emp-row-top"><div class="emp-av" style="background:${e.color}">${empGlyph(e.name)}</div><div class="emp-info"><b>${esc(e.fullName)}</b> <span>· ${esc(e.role)}</span><div style="font-size:11px;color:var(--text3)">Shows as "${esc(e.name)}" on tickets</div></div><button class="emp-rm" onclick="removeEmp(${i})">Remove</button></div><div class="emp-iconrow"><span class="emp-ic-lbl">Avatar</span><button class="emp-ico ${(e.icon||'initials')==='initials'?'on':''}" onclick="setEmpIcon(${i},'initials')" title="Show initials">${esc(initials(e.fullName))}</button><button class="emp-ico ${e.icon==='person'?'on':''}" onclick="setEmpIcon(${i},'person')" title="Show person icon"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8.6" r="3.6"/><path d="M12 13c-3.7 0-6.6 2.4-6.6 5.6v.4h13.2v-.4c0-3.2-2.9-5.6-6.6-5.6z"/></svg></button></div></div>`).join('');
   document.getElementById('settings-body').innerHTML=`
     <div class="set-sec"><h3>Employees</h3><div class="sub">These names fill the check-in screen and the technician dropdown.</div>
       ${empHtml}
