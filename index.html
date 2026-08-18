@@ -112,6 +112,24 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 .card-age{margin-left:auto;font-size:10.5px;font-weight:600;color:var(--text3);display:flex;align-items:center;gap:4px;}
 .age-pill{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;line-height:1.35;}
 .age-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.nw-seg{height:4px;flex:1;border-radius:3px;background:var(--border);transition:background .25s}
+.nw-seg.on{background:var(--sky)}
+.nw-emp{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--border);border-radius:13px;margin-bottom:9px;cursor:pointer;transition:.12s}
+.nw-emp:hover{border-color:var(--sky2);background:var(--skybg)}
+.nw-emp.on{border-color:var(--sky);background:var(--skybg)}
+.nw-eav{width:36px;height:36px;border-radius:50%;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nw-emp b{font-size:15px;color:var(--text)}
+.nw-emp span{font-size:12px;color:var(--text3);display:block}
+.nw-store{display:flex;gap:8px;margin-top:2px}
+.nw-store button{flex:1;padding:11px;border:1.5px solid var(--border);background:#fff;border-radius:11px;font-size:13.5px;font-weight:700;color:var(--text2);cursor:pointer}
+.nw-store button.on{background:var(--skybg);color:var(--sky3);border-color:var(--sky2)}
+.nw-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nw-tile{border:1.5px solid var(--border);border-radius:13px;padding:16px 10px;text-align:center;cursor:pointer;transition:.12s}
+.nw-tile:hover{border-color:var(--sky2);background:var(--skybg)}
+.nw-tile.on{border-color:var(--sky);background:var(--skybg)}
+.nw-tile svg{width:26px;height:26px;color:var(--sky);margin-bottom:6px}
+.nw-tile div{font-size:13px;font-weight:700;color:var(--text2)}
+.nw-lbl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--sky3);margin-bottom:10px}
 .pastdue-badge{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:20px;background:var(--amberbg);color:var(--amber);display:inline-flex;align-items:center;gap:3px;}
 .pastdue-badge.over{background:var(--redbg);color:var(--red);}
 .col-body::-webkit-scrollbar,.nav::-webkit-scrollbar,.board-scroll::-webkit-scrollbar{height:8px;width:8px;}
@@ -361,7 +379,7 @@ input,select,textarea{font-family:inherit;font-size:14px;}
             <button class="locbtn" data-loc="Crosby" onclick="setLoc('Crosby')">Crosby</button>
             <button class="locbtn" data-loc="Dayton" onclick="setLoc('Dayton')">Dayton</button>
           </div>
-          <button class="btn pri" onclick="openRepair(null)"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New Repair</button>
+          <button class="btn pri" onclick="openWizard()"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New Repair</button>
         </div>
         <div class="stats">
           <div class="stat"><b id="st-active">0</b><span>active repairs</span></div>
@@ -401,6 +419,49 @@ input,select,textarea{font-family:inherit;font-size:14px;}
   <div class="fld"><label>Alt phone</label><input id="ce-phone2" placeholder="Optional" inputmode="tel" oninput="fmtPhone(this)"/></div>
 </div>
 <div class="m-foot"><button class="btn" onclick="closeCustEdit()">Cancel</button><button class="btn pri" onclick="saveCustEdit()">Save customer</button></div>
+</div></div>
+
+<div class="ov" id="ov-labelprompt"><div class="modal sm"><div class="m-hdr"><div class="m-hdr-txt"><h2>✓ Repair created</h2><p>Print a label for this device?</p></div></div>
+<div class="m-body">
+  <div style="display:flex;justify-content:center;padding:8px 0 2px">
+    <svg fill="none" stroke="var(--sky)" stroke-width="1.6" viewBox="0 0 24 24" style="width:40px;height:40px"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+  </div>
+</div>
+<div class="m-foot"><button class="btn" onclick="closeLabelPrompt()">Not now</button><button class="btn pri" onclick="printPromptLabel()">Print label</button></div>
+</div></div>
+
+<div class="ov" id="ov-nw"><div class="modal sm"><div class="m-hdr"><div class="m-hdr-txt"><h2>New Repair</h2><p>Step <span id="nw-num">1</span> of 4</p></div><button class="mclose" onclick="closeWizard()">&times;</button></div>
+<div style="padding:14px 22px 0"><div style="display:flex;gap:5px"><div class="nw-seg" id="nw-seg0"></div><div class="nw-seg" id="nw-seg1"></div><div class="nw-seg" id="nw-seg2"></div><div class="nw-seg" id="nw-seg3"></div></div></div>
+<div class="m-body">
+  <div class="nw-step" data-step="0">
+    <div class="nw-lbl">Who's creating this ticket?</div>
+    <div id="nw-emps"></div>
+    <div class="nw-lbl" style="margin-top:16px">Which store</div>
+    <div class="nw-store"><button data-store="Dayton" onclick="nwStoreSel('Dayton')">Dayton</button><button data-store="Crosby" onclick="nwStoreSel('Crosby')">Crosby</button></div>
+  </div>
+  <div class="nw-step" data-step="1" hidden>
+    <div class="nw-lbl">Customer detail</div>
+    <div class="fld" style="margin-bottom:12px"><label>Customer name</label><input id="nw-name" placeholder="Jose Lopez" oninput="liveTitleCase(this)"/></div>
+    <div style="display:flex;gap:10px"><div class="fld" style="flex:1"><label>Primary phone</label><input id="nw-phone1" inputmode="tel" placeholder="(832) 000-0000" oninput="fmtPhone(this)"/></div><div class="fld" style="flex:1"><label>Alt phone</label><input id="nw-phone2" inputmode="tel" placeholder="Optional" oninput="fmtPhone(this)"/></div></div>
+  </div>
+  <div class="nw-step" data-step="2" hidden>
+    <div class="nw-lbl">Select the device</div>
+    <div class="nw-tiles">
+      <div class="nw-tile" data-dt="Phone" onclick="nwDevSel(this)"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2.5"/><line x1="11" y1="18" x2="13" y2="18"/></svg><div>Phone</div></div>
+      <div class="nw-tile" data-dt="Tablet" onclick="nwDevSel(this)"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2.5"/><line x1="10" y1="18" x2="14" y2="18"/></svg><div>Tablet</div></div>
+      <div class="nw-tile" data-dt="Computer" onclick="nwDevSel(this)"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><div>Computer</div></div>
+      <div class="nw-tile" data-dt="Game Console" onclick="nwDevSel(this)"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="6" x2="10" y1="12" y2="12"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="15" x2="15.01" y1="13" y2="13"/><line x1="18" x2="18.01" y1="11" y2="11"/><rect width="20" height="12" x="2" y="6" rx="2"/></svg><div>Game Console</div></div>
+    </div>
+  </div>
+  <div class="nw-step" data-step="3" hidden>
+    <div class="nw-lbl">Repair details</div>
+    <div class="fld" style="margin-bottom:12px"><label>Repair title</label><input id="nw-repair" placeholder="Screen repair" oninput="nwOnTitle()"/></div>
+    <div id="nw-qual-mount"></div>
+    <div style="display:flex;gap:10px"><div class="fld" style="flex:1"><label>SN / IMEI</label><input id="nw-imei" placeholder="Optional"/></div><div class="fld" style="flex:1"><label>Notes</label><input id="nw-notes" placeholder="Reported issue…"/></div></div>
+    <div style="display:flex;gap:10px"><div class="fld" style="flex:1"><label>Passcode</label><input id="nw-pass" placeholder="Optional"/></div><div class="fld" style="flex:1"><label>Price quote ($)</label><input id="nw-quote" inputmode="decimal" placeholder="0.00"/></div></div>
+  </div>
+</div>
+<div class="m-foot"><button class="btn" id="nw-back" onclick="nwGo(-1)" style="visibility:hidden">Back</button><button class="btn pri" id="nw-next" onclick="nwGo(1)" style="margin-left:auto">Next</button></div>
 </div></div>
 
 <!-- REPAIR MODAL -->
@@ -500,7 +561,7 @@ input,select,textarea{font-family:inherit;font-size:14px;}
     <div class="totalline grand"><span>Total</span><span id="cm-total">$0.00</span></div>
   </div>
 </div>
-<div class="m-foot"><button class="btn" onclick="closeComplete()">Cancel</button><label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text2);margin-right:auto"><input type="checkbox" id="cm-printrec" checked/> Print receipt</label><button class="btn" title="Print receipt now" onclick="printFromComplete()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg></button><button class="btn pri" style="background:linear-gradient(135deg,var(--green) 0%,#15803d 100%);box-shadow:0 2px 8px rgba(22,163,74,.35)" onclick="confirmComplete()">Complete</button></div>
+<div class="m-foot"><button class="btn" onclick="closeComplete()">Cancel</button><button class="btn" title="Print receipt now" onclick="printFromComplete()" style="margin-left:auto"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg></button><button class="btn pri" style="background:linear-gradient(135deg,var(--green) 0%,#15803d 100%);box-shadow:0 2px 8px rgba(22,163,74,.35)" onclick="confirmComplete()">Complete</button></div>
 </div></div>
 
 <!-- CUSTOMER PROFILE MODAL -->
@@ -821,6 +882,77 @@ function pickUser(name){
   _openRepair(null);
 }
 
+/* ══ NEW-REPAIR WIZARD ══ */
+let nwStep=0, nwUser='', nwStore='', nwDevType='', nwQuality='';
+function openWizard(){
+  nwStep=0;nwUser='';nwStore='';nwDevType='';nwQuality='';
+  const active=employees.filter(e=>e.active);
+  document.getElementById('nw-emps').innerHTML=active.map(e=>`<div class="nw-emp" data-emp="${esc(e.name)}" onclick="nwEmpSel('${esc(e.name)}')"><span class="nw-eav" style="background:${e.color}">${initials(e.fullName)}</span><div><b>${esc(e.fullName)}</b><span>${esc(e.role)}</span></div></div>`).join('')||'<p style="color:var(--text2);font-size:13px">No employees yet — add them in Settings.</p>';
+  ['nw-name','nw-phone1','nw-phone2','nw-repair','nw-imei','nw-notes','nw-pass','nw-quote'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('nw-qual-mount').innerHTML='';
+  document.querySelectorAll('#ov-nw .nw-tile').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('#ov-nw .nw-store button').forEach(b=>b.classList.remove('on'));
+  nwRender();
+  document.getElementById('ov-nw').classList.add('open');
+}
+function closeWizard(){document.getElementById('ov-nw').classList.remove('open');}
+function nwRender(){
+  document.querySelectorAll('#ov-nw .nw-step').forEach(s=>{s.hidden=(+s.dataset.step!==nwStep);});
+  for(let i=0;i<4;i++){document.getElementById('nw-seg'+i).classList.toggle('on',i<=nwStep);}
+  document.getElementById('nw-num').textContent=nwStep+1;
+  document.getElementById('nw-back').style.visibility=nwStep===0?'hidden':'visible';
+  document.getElementById('nw-next').textContent=nwStep===3?'Create repair':'Next';
+  document.getElementById('ov-nw').querySelector('.m-body').scrollTop=0;
+}
+function nwEmpSel(name){nwUser=name;document.querySelectorAll('#nw-emps .nw-emp').forEach(el=>el.classList.toggle('on',el.dataset.emp===name));const e=employees.find(x=>x.name===name);if(e)currentUser={name:e.name,fullName:e.fullName,role:e.role};}
+function nwStoreSel(s){nwStore=s;document.querySelectorAll('#ov-nw .nw-store button').forEach(b=>b.classList.toggle('on',b.dataset.store===s));}
+function nwDevSel(el){nwDevType=el.dataset.dt;document.querySelectorAll('#ov-nw .nw-tile').forEach(t=>t.classList.toggle('on',t===el));}
+function nwOnTitle(){
+  const v=document.getElementById('nw-repair').value;
+  if(/screen\s+repair/i.test(v))nwRenderQual();
+  else{document.getElementById('nw-qual-mount').innerHTML='';nwQuality='';}
+}
+function nwRenderQual(){
+  const opts=['Aftermarket','Premium','OEM'];
+  document.getElementById('nw-qual-mount').innerHTML=`<div class="qual-box"><div class="ql-t">🛠 Part quality (screen repair) — sets the warranty</div><div class="qual-opts">${opts.map(o=>`<button class="qual-opt ${nwQuality===o?'on':''}" onclick="nwApplyQual('${o}')">${o}</button>`).join('')}</div></div>`;
+}
+function nwApplyQual(q){
+  const el=document.getElementById('nw-repair');
+  let t=el.value.replace(/\s*(aftermarket|premium|oem)\s+/i,' ').replace(/\s{2,}/g,' ').trim();
+  t=t.replace(/(screen\s+repair)/i,q+' $1');
+  el.value=titleCase(t);nwQuality=q;nwRenderQual();
+}
+function nwGo(dir){
+  if(dir<0){if(nwStep>0){nwStep--;nwRender();}return;}
+  if(nwStep===0){ if(!nwUser){toast('Pick who is creating the ticket','warn');return;} if(!nwStore){toast('Pick a store','warn');return;} }
+  if(nwStep===1){ if(!document.getElementById('nw-name').value.trim()){toast('Customer name is required','warn');return;} if(!document.getElementById('nw-phone1').value.trim()){toast('Primary phone is required','warn');return;} }
+  if(nwStep===2){ if(!nwDevType){toast('Select a device type','warn');return;} }
+  if(nwStep===3){ if(!document.getElementById('nw-repair').value.trim()){toast('Repair title is required','warn');return;} nwCreate();return; }
+  nwStep++;nwRender();
+}
+function nwCreate(){
+  const loc=nwStore, prefix=loc==='Crosby'?'CRB':'DAY';
+  const nums=repairs.map(x=>{const m=(x.ID||'').match(new RegExp('^'+prefix+'-(\\d+)$'));return m?parseInt(m[1]):0;});
+  const r={ID:prefix+'-'+(Math.max(0,...nums)+1),Status:'Intake & Acceptance',ActivityLog:[],NotesArr:[]};
+  r.CustomerName=document.getElementById('nw-name').value.trim();
+  r.Phone1=phoneRaw(document.getElementById('nw-phone1').value);
+  r.Phone2=phoneRaw(document.getElementById('nw-phone2').value);
+  r.DeviceType=nwDevType;
+  r.RepairName=document.getElementById('nw-repair').value.trim();
+  r.IMEI=document.getElementById('nw-imei').value.trim();
+  r.Notes=document.getElementById('nw-notes').value.trim();
+  r.Passcode=document.getElementById('nw-pass').value.trim();
+  r.Quote=parseNum(document.getElementById('nw-quote').value)||'';
+  r.AssignedTo=nwUser;r.CreatedBy=nwUser;r.Location=loc;
+  r.DropoffDate=new Date().toISOString().slice(0,10);r.Created=Date.now();
+  if(nwQuality){r.Quality=nwQuality;r.WarrantyDays=warrantyDays(nwQuality);}
+  const e=employees.find(x=>x.name===nwUser);if(e)currentUser={name:e.name,fullName:e.fullName,role:e.role};
+  logAct(r,'Ticket created');
+  fbSave(r);
+  document.getElementById('ov-nw').classList.remove('open');
+  showLabelPrompt(r.ID);
+}
+
 /* ══ BOOT ══ */
 function refreshTechDropdowns(){
   const active=employees.filter(e=>e.active);
@@ -1131,9 +1263,14 @@ async function saveRepair(){
     if((oldTech||'')!==(r.AssignedTo||''))logAct(r,'Assigned to '+(r.AssignedTo||'Unassigned'));
   }
   await fbSave(r);
-  toast(isNew?'Repair created ✓':'Saved ✓');
   closeRepair();
+  if(isNew){showLabelPrompt(r.ID);}
+  else{toast('Saved ✓');}
 }
+let labelPromptId=null;
+function showLabelPrompt(id){labelPromptId=id;document.getElementById('ov-labelprompt').classList.add('open');}
+function closeLabelPrompt(){document.getElementById('ov-labelprompt').classList.remove('open');toast('Repair created ✓');}
+function printPromptLabel(){const r=repairs.find(x=>x.ID===labelPromptId);document.getElementById('ov-labelprompt').classList.remove('open');if(r)printLabelObj(r);}
 function deleteRepair(){
   if(!editId)return;
   const r=repairs.find(x=>x.ID===editId);if(!r)return;
@@ -1248,12 +1385,10 @@ function confirmComplete(){
   const payDesc=m==='split'?('Split: '+(r.SplitPayments||[]).map(s=>PAY_LABELS[s.method]+' '+money(s.amt)).join(' + ')):PAY_LABELS[m];
   logAct(r,'Completed — '+money(total)+' ('+payDesc+')');
   fbSave(r);
-  const printRec=document.getElementById('cm-printrec').checked;
   document.getElementById('ov-complete').classList.remove('open');
   document.getElementById('ov-repair').classList.remove('open');
   completeId=null;editId=null;
   toast('Repair completed ✓');
-  if(printRec)printReceipt(r);
 }
 function printFromComplete(){
   const r=repairs.find(x=>x.ID===completeId);if(!r)return;
@@ -1298,10 +1433,14 @@ function labelInner(r){
 function renderLabelPreview(r){
   document.getElementById('label-preview').innerHTML=`<div style="width:2.4in;height:1.5in;padding:.1in .13in;box-sizing:border-box;border:1px solid var(--border);border-radius:6px;background:#fff;color:#000;display:flex;flex-direction:column;justify-content:space-between;">${labelInner(r)}</div>`;
 }
-function printLabel(){
-  const r=repairs.find(x=>x.ID===editId);if(!r)return;
+function printLabelObj(r){
+  if(!r)return;
   doPrint(`<div style="width:2.4in;height:1.5in;padding:.1in .13in;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;font-family:'Geist',sans-serif;color:#000;">${labelInner(r)}</div>`,
     `@page{size:2.4in 1.5in landscape;margin:0}body{margin:0}`);
+}
+function printLabel(){
+  const r=repairs.find(x=>x.ID===editId);if(!r)return;
+  printLabelObj(r);
 }
 
 function payLinesHtml(r){
@@ -1504,6 +1643,8 @@ function saveInv(){settings.invUrl=document.getElementById('set-inv').value.trim
 /* ══ KEYBOARD + OUTSIDE CLICK ══ */
 document.addEventListener('keydown',function(e){
   if(e.key!=='Escape')return;
+  if(document.getElementById('ov-nw').classList.contains('open')){closeWizard();return;}
+  if(document.getElementById('ov-labelprompt').classList.contains('open')){closeLabelPrompt();return;}
   if(document.getElementById('ov-custedit').classList.contains('open')){closeCustEdit();return;}
   if(document.getElementById('ov-complete').classList.contains('open')){closeComplete();return;}
   if(document.getElementById('ov-profile').classList.contains('open')){closeEl('ov-profile');return;}
