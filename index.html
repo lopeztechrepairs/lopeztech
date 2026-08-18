@@ -139,6 +139,8 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 .nw-more:hover{background:var(--skybg)}
 .nw-more-chev{width:16px;height:16px;color:var(--text3);transition:transform .18s;flex-shrink:0}
 .nw-more.open .nw-more-chev{transform:rotate(180deg)}
+#ov-nw .modal{max-width:500px}
+#ov-nw .m-body{min-height:380px}
 .pastdue-badge{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:20px;background:var(--amberbg);color:var(--amber);display:inline-flex;align-items:center;gap:3px;}
 .pastdue-badge.over{background:var(--redbg);color:var(--red);}
 .col-body::-webkit-scrollbar,.nav::-webkit-scrollbar,.board-scroll::-webkit-scrollbar{height:8px;width:8px;}
@@ -323,7 +325,10 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 .set-sec{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:16px;}
 .set-sec h3{font-size:14px;font-weight:700;margin-bottom:4px;}
 .set-sec .sub{font-size:12px;color:var(--text2);margin-bottom:15px;}
-.emp-row{display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;margin-bottom:8px;}
+.emp-row{display:block;padding:11px 12px;border:1px solid var(--border);border-radius:9px;margin-bottom:8px;}
+.emp-row-top{display:flex;align-items:center;gap:11px;}
+.emp-iconrow{display:flex;align-items:center;gap:8px;margin-top:11px;padding-top:11px;border-top:1px dashed var(--border);}
+.emp-ic-lbl{font-size:11px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-right:2px;}
 .emp-av{width:34px;height:34px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
 .emp-info{flex:1;}
 .emp-info b{font-size:13px;font-weight:600;}
@@ -430,13 +435,13 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 <div class="m-foot"><button class="btn" onclick="closeCustEdit()">Cancel</button><button class="btn pri" onclick="saveCustEdit()">Save customer</button></div>
 </div></div>
 
-<div class="ov" id="ov-labelprompt"><div class="modal sm"><div class="m-hdr"><div class="m-hdr-txt"><h2>✓ Repair created</h2><p>Print a label for this device?</p></div></div>
-<div class="m-body">
-  <div style="display:flex;justify-content:center;padding:8px 0 2px">
-    <svg fill="none" stroke="var(--sky)" stroke-width="1.6" viewBox="0 0 24 24" style="width:40px;height:40px"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
-  </div>
+<div class="ov" id="ov-labelprompt"><div class="modal sm">
+<div style="padding:36px 26px 20px;text-align:center">
+  <div style="width:58px;height:58px;border-radius:50%;background:var(--greenbg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><svg width="30" height="30" fill="none" stroke="var(--green)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+  <div style="font-size:20px;font-weight:800;color:var(--text)">Repair created</div>
+  <div style="font-size:14px;color:var(--sky3);margin-top:8px">Print a label for this device?</div>
 </div>
-<div class="m-foot"><button class="btn" onclick="closeLabelPrompt()">Not now</button><button class="btn pri" onclick="printPromptLabel()">Print label</button></div>
+<div class="m-foot" style="justify-content:center"><button class="btn" onclick="closeLabelPrompt()">Not now</button><button class="btn pri" onclick="printPromptLabel()">Print label</button></div>
 </div></div>
 
 <div class="ov" id="ov-nw"><div class="modal sm"><div class="m-hdr"><div class="m-hdr-txt"><h2>New Repair</h2><p>Step <span id="nw-num">1</span> of 4</p></div><button class="mclose" onclick="closeWizard()">&times;</button></div>
@@ -1635,7 +1640,7 @@ function openProfile(name,phone){
 
 /* ══ SETTINGS ══ */
 function renderSettings(){
-  const empHtml=employees.map((e,i)=>`<div class="emp-row"><div class="emp-av" style="background:${e.color}">${empGlyph(e.name)}</div><div class="emp-info"><b>${esc(e.fullName)}</b> <span>· ${esc(e.role)}</span><div style="font-size:11px;color:var(--text3)">Shows as "${esc(e.name)}" on tickets</div></div><div class="emp-icpick"><button class="emp-ico ${(e.icon||'initials')==='initials'?'on':''}" onclick="setEmpIcon(${i},'initials')" title="Initials">${esc(initials(e.fullName))}</button><button class="emp-ico ${e.icon==='person'?'on':''}" onclick="setEmpIcon(${i},'person')" title="Person icon"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8.5" r="3.6"/><path d="M12 13.4c-3.7 0-6.6 2.4-6.6 6.1v.5h13.2v-.5c0-3.7-2.9-6.1-6.6-6.1z"/></svg></button></div><button class="emp-rm" onclick="removeEmp(${i})">Remove</button></div>`).join('');
+  const empHtml=employees.map((e,i)=>`<div class="emp-row"><div class="emp-row-top"><div class="emp-av" style="background:${e.color}">${empGlyph(e.name)}</div><div class="emp-info"><b>${esc(e.fullName)}</b> <span>· ${esc(e.role)}</span><div style="font-size:11px;color:var(--text3)">Shows as "${esc(e.name)}" on tickets</div></div><button class="emp-rm" onclick="removeEmp(${i})">Remove</button></div><div class="emp-iconrow"><span class="emp-ic-lbl">Avatar</span><button class="emp-ico ${(e.icon||'initials')==='initials'?'on':''}" onclick="setEmpIcon(${i},'initials')" title="Show initials">${esc(initials(e.fullName))}</button><button class="emp-ico ${e.icon==='person'?'on':''}" onclick="setEmpIcon(${i},'person')" title="Show person icon"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8.5" r="3.6"/><path d="M12 13.4c-3.7 0-6.6 2.4-6.6 6.1v.5h13.2v-.5c0-3.7-2.9-6.1-6.6-6.1z"/></svg></button></div></div>`).join('');
   document.getElementById('settings-body').innerHTML=`
     <div class="set-sec"><h3>Employees</h3><div class="sub">These names fill the check-in screen and the technician dropdown.</div>
       ${empHtml}
