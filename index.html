@@ -487,38 +487,31 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 
 <!-- REPAIR MODAL -->
 <div class="ov" id="ov-repair"><div class="modal"><div class="m-hdr"><div class="m-hdr-txt"><h2 id="rm-title">New Repair Ticket</h2><p id="rm-sub">Log the device, customer, and what they're paying</p></div><div id="cust-chip" style="display:none;position:relative;"><button class="hchip" style="cursor:pointer;padding:6px 11px;gap:8px;" onclick="toggleCustPop(event)"><span class="tav" id="cc-av" style="width:24px;height:24px;font-size:9px;">--</span><span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.15;text-align:left;"><b id="cc-name" style="font-size:12.5px;">Name</b><span id="cc-phone" style="font-size:10.5px;color:var(--text3);font-weight:400;"></span></span><svg style="width:13px;height:13px;color:var(--text3);flex-shrink:0;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div id="cust-pop" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:270px;background:#fff;border:1px solid var(--border2);border-radius:13px;box-shadow:var(--shadow3);z-index:70;padding:16px;"></div></div><button class="btn ghost" id="rm-del" style="display:none" onclick="deleteRepair()"><svg fill="none" stroke="var(--red)" stroke-width="2" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button><button class="mclose" onclick="closeRepair()">&times;</button></div>
-<div class="tabbar" id="rm-tabs" style="display:none"><button class="tab active" data-tab="repair" onclick="rmTab('repair')">Repair</button><button class="tab" data-tab="activity" onclick="rmTab('activity')">Activity</button><button class="tab" data-tab="print" onclick="rmTab('print')">Print</button></div>
 <div class="m-body">
-  <!-- REPAIR TAB -->
-  <div id="tab-repair">
-    <div id="edit-head" style="display:none">
-      <div class="repcard">
-        <h3 id="eh-title">—</h3>
-        <div class="created" id="eh-created"></div>
-        <div class="hchips" id="eh-chips"></div>
-      </div>
-      <div class="fld" style="margin-bottom:18px"><label>Status</label><div class="pill-row" id="status-pills"></div></div>
+  <div id="edit-head" style="display:none">
+    <div class="repcard">
+      <h3 id="eh-title">—</h3>
+      <div class="created" id="eh-created"></div>
+      <div class="hchips" id="eh-chips"></div>
     </div>
+    <div class="fld" style="margin-bottom:18px"><label>Status</label><div class="pill-row" id="status-pills"></div></div>
+  </div>
 
-    <div class="fsec" id="notes-sec">
-      <div class="fsec-hdr" style="display:flex;align-items:center;justify-content:space-between"><span style="display:flex;align-items:center;gap:8px"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Notes</span><button type="button" class="btn" style="padding:5px 11px;font-size:12.5px;gap:5px;text-transform:none;letter-spacing:0" onclick="toggleNoteComposer()"><svg style="width:14px;height:14px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New note</button></div>
-      <div class="notelist" id="notelist"></div>
-      <div class="addnote" id="note-composer" style="display:none">
-        <div class="addnote-top"><label>Posting as</label><select id="note-as"></select></div>
-        <textarea id="note-input" placeholder="Write a note… (Ctrl+Enter to add)" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter')postNote()"></textarea>
-        <div class="addnote-foot"><button class="btn pri" onclick="postNote()">Add note</button></div>
-      </div>
+  <div class="fsec" id="notes-sec">
+    <div class="fsec-hdr" style="display:flex;align-items:center;justify-content:space-between"><span style="display:flex;align-items:center;gap:8px"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Notes</span><button type="button" class="btn" style="padding:5px 11px;font-size:12.5px;gap:5px;text-transform:none;letter-spacing:0" onclick="toggleNoteComposer()"><svg style="width:14px;height:14px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New note</button></div>
+    <div class="notelist" id="notelist"></div>
+    <div class="addnote" id="note-composer" style="display:none">
+      <div class="addnote-top"><label>Posting as</label><select id="note-as"></select></div>
+      <textarea id="note-input" placeholder="Write a note… (Ctrl+Enter to add)" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter')postNote()"></textarea>
+      <div class="addnote-foot"><button class="btn pri" onclick="postNote()">Add note</button></div>
     </div>
+  </div>
 
-    <div class="fsec" id="cust-sec">
-      <div class="fsec-hdr"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1"/></svg>Customer</div>
-      <div class="fld" style="margin-bottom:12px"><label>Name <span class="req">*</span></label><div class="acwrap"><input id="f-name" placeholder="Jane Doe" autocomplete="off" oninput="liveTitleCase(this);onCustInput(this,'name')" onblur="hideAC()"/><div class="aclist" id="ac-name"></div></div></div>
-      <div class="frow">
-        <div class="fld"><label>Primary phone <span class="req">*</span></label><div class="acwrap"><input id="f-phone1" placeholder="(832) 000-0000" autocomplete="off" oninput="fmtPhone(this);onCustInput(this,'phone')" onblur="hideAC()"/><div class="aclist" id="ac-phone"></div></div></div>
-        <div class="fld"><label>Alt phone</label><input id="f-phone2" placeholder="Optional" oninput="fmtPhone(this)"/></div>
-      </div>
-    </div>
+  <button type="button" class="nw-more" id="hist-btn" onclick="toggleHistory()"><svg class="nw-more-chev" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><span style="flex:1;text-align:left">History</span><span style="color:var(--text3);font-weight:400;font-size:12px">activity log</span></button>
+  <div id="hist-body" hidden style="margin-top:10px"><div class="actlog" id="actlog"></div></div>
 
+  <button type="button" class="nw-more" id="details-btn" onclick="toggleEditDetails()" style="margin-top:8px"><svg class="nw-more-chev" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><span style="flex:1;text-align:left">Edit details</span><span style="color:var(--text3);font-weight:400;font-size:12px">device, quote, tech, IMEI…</span></button>
+  <div id="details-body" hidden style="margin-top:12px">
     <div class="fsec">
       <div class="fsec-hdr"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>Device Type</div>
       <div class="dtgrid" id="dtgrid">
@@ -528,18 +521,15 @@ input,select,textarea{font-family:inherit;font-size:14px;}
         <div class="dtchip" data-dt="Game Console" onclick="pickDevType(this)"><div class="dt-ic">🎮</div><div class="dt-lbl">Game Console</div></div>
       </div>
     </div>
-
     <div class="fsec" id="sec-device">
-      <div class="fsec-hdr"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Device &amp; Issue</div>
+      <div class="fsec-hdr"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Repair</div>
       <div id="qual-mount"></div>
       <div class="fld" style="margin-bottom:12px"><label>Repair task name <span class="req">*</span></label><input id="f-repair" placeholder="e.g. iPhone 11 Screen Repair, PS5 HDMI Port" oninput="liveTitleCase(this);onRepairInput()"/></div>
-      <div class="fld" style="margin-bottom:12px"><label>Note / reported issue</label><textarea id="f-notes" placeholder="Describe what the customer reported, visible damage, condition on drop-off…" oninput="liveSentenceCase(this)"></textarea></div>
       <div class="coll" id="coll-imei">
-        <div class="coll-hdr" onclick="togColl('coll-imei')"><svg class="ci" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15h.01M11 15h6"/></svg><span class="cl-t">IMEI / Serial &amp; Passcode <span class="cl-s">(optional)</span></span><svg class="chev" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
-        <div class="coll-body"><div class="frow"><div class="fld"><label>IMEI / Serial #</label><input id="f-imei" placeholder="Optional"/></div><div class="fld"><label>Passcode</label><input id="f-pass" placeholder="Optional"/></div></div></div>
+        <div class="coll-hdr" onclick="togColl('coll-imei')"><svg class="ci" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15h.01M11 15h6"/></svg><span class="cl-t">SN / IMEI &amp; Passcode <span class="cl-s">(optional)</span></span><svg class="chev" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+        <div class="coll-body"><div class="frow"><div class="fld"><label>SN / IMEI</label><input id="f-imei" placeholder="Optional"/></div><div class="fld"><label>Passcode</label><input id="f-pass" placeholder="Optional"/></div></div></div>
       </div>
     </div>
-
     <div class="fsec" id="sec-assign">
       <div class="fsec-hdr"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.9"/></svg>Assignment</div>
       <div class="frow">
@@ -551,19 +541,18 @@ input,select,textarea{font-family:inherit;font-size:14px;}
         <div class="fld"><label>Quote ($)</label><input id="f-quote" placeholder="0.00" inputmode="decimal"/></div>
       </div>
     </div>
-
   </div>
 
-  <!-- ACTIVITY TAB -->
-  <div id="tab-activity" style="display:none"><div class="fsec-hdr" style="margin-bottom:16px">Repair Activity Log</div><div class="actlog" id="actlog"></div></div>
-
-  <!-- PRINT TAB -->
-  <div id="tab-print" style="display:none">
-    <div class="printsec" id="ps-label"><div class="printsec-hdr" onclick="togPrint('ps-label')"><div class="bar" style="background:var(--sky)"></div><span class="ps-t">Repair Label</span><svg class="chev" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div><div class="printsec-body"><div class="preview" id="label-preview"></div><button class="btn pri" style="width:100%;justify-content:center" onclick="printLabel()">Print label</button></div></div>
-    <div class="printsec" id="ps-drop"><div class="printsec-hdr" onclick="togPrint('ps-drop')"><div class="bar" style="background:var(--purple)"></div><span class="ps-t">Drop-off Paper</span><svg class="chev" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div><div class="printsec-body"><p style="font-size:12.5px;color:var(--text2);margin-bottom:12px">Full-page intake sheet with device details, terms, and signature line.</p><button class="btn pri" style="width:100%;justify-content:center" onclick="printDropoff()">Print drop-off paper</button></div></div>
+  <div class="fsec" id="cust-sec" style="display:none">
+    <div class="fsec-hdr"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1"/></svg>Customer</div>
+    <div class="fld" style="margin-bottom:12px"><label>Name <span class="req">*</span></label><div class="acwrap"><input id="f-name" placeholder="Jane Doe" autocomplete="off" oninput="liveTitleCase(this);onCustInput(this,'name')" onblur="hideAC()"/><div class="aclist" id="ac-name"></div></div></div>
+    <div class="frow">
+      <div class="fld"><label>Primary phone <span class="req">*</span></label><div class="acwrap"><input id="f-phone1" placeholder="(832) 000-0000" autocomplete="off" oninput="fmtPhone(this);onCustInput(this,'phone')" onblur="hideAC()"/><div class="aclist" id="ac-phone"></div></div></div>
+      <div class="fld"><label>Alt phone</label><input id="f-phone2" placeholder="Optional" oninput="fmtPhone(this)"/></div>
+    </div>
   </div>
 </div>
-<div class="m-foot"><button class="btn" onclick="closeRepair()">Cancel</button><button class="btn pri" id="rm-save" onclick="saveRepair()">Create Repair</button></div>
+<div class="m-foot"><button class="btn" title="Print label" onclick="printLabel()" style="padding:0 13px"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg></button><button class="btn pri" id="rm-save" onclick="saveRepair()" style="margin-left:auto">Save Repair</button><button class="btn pri" id="rm-complete" style="background:linear-gradient(135deg,var(--green) 0%,#15803d 100%);box-shadow:0 2px 8px rgba(22,163,74,.35)" onclick="completeFromEdit()">Complete</button></div>
 </div></div>
 
 <!-- COMPLETE MODAL -->
@@ -1075,7 +1064,7 @@ function warrantyDays(q){return (q==='Premium'||q==='OEM')?60:30;}
 
 /* ══ REPAIR MODAL ══ */
 function blankForm(){
-  ['f-name','f-phone1','f-phone2','f-repair','f-notes','f-imei','f-pass','f-quote'].forEach(id=>document.getElementById(id).value='');
+  ['f-name','f-phone1','f-phone2','f-repair','f-imei','f-pass','f-quote'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.querySelectorAll('.dtchip').forEach(c=>c.classList.remove('active'));
   document.getElementById('f-tech2').value=currentUser?currentUser.name:'';
   document.getElementById('f-loc').value='';
@@ -1091,7 +1080,6 @@ function openRepair(id){
 function _openRepair(id){
   editId=id;
   const isNew=!id;
-  document.getElementById('rm-tabs').style.display=isNew?'none':'flex';
   document.getElementById('edit-head').style.display=isNew?'none':'block';
   document.getElementById('notes-sec').style.display=isNew?'none':'block';
   const nc=document.getElementById('note-composer');if(nc)nc.style.display='none';
@@ -1102,9 +1090,11 @@ function _openRepair(id){
   document.getElementById('rm-title').textContent=isNew?'New Repair Ticket':'Edit Repair';
   document.getElementById('rm-sub').textContent=isNew?"Log the device, customer, and what they're paying":'';
   document.getElementById('rm-save').textContent=isNew?'Create Repair':'Save Repair';
-  document.getElementById('sec-device').style.display=isNew?'none':'block';
-  document.getElementById('sec-assign').style.display=isNew?'none':'block';
-  rmTab('repair');
+  document.getElementById('rm-complete').style.display=isNew?'none':'inline-flex';
+  document.getElementById('sec-device').style.display='block';
+  document.getElementById('sec-assign').style.display='block';
+  ['hist-body','details-body'].forEach(bid=>{const b=document.getElementById(bid);if(b)b.hidden=true;});
+  ['hist-btn','details-btn'].forEach(bid=>{const b=document.getElementById(bid);if(b)b.classList.remove('open');});
   if(isNew){blankForm();}
   else{
     const r=repairs.find(x=>x.ID===id);if(!r){editId=null;return;}
@@ -1112,7 +1102,6 @@ function _openRepair(id){
     document.getElementById('f-phone1').value=fmtPhoneDisp(r.Phone1);
     document.getElementById('f-phone2').value=r.Phone2?fmtPhoneDisp(r.Phone2):'';
     document.getElementById('f-repair').value=r.RepairName||'';
-    document.getElementById('f-notes').value=r.Notes||'';
     document.getElementById('f-imei').value=r.IMEI||'';
     document.getElementById('f-pass').value=r.Passcode||'';
     document.getElementById('f-quote').value=r.Quote||'';
@@ -1122,10 +1111,13 @@ function _openRepair(id){
     document.getElementById('f-dropoff').value=(r.DropoffDate||'').slice(0,10);
     curQuality=r.Quality||'';
     onRepairInput();
-    renderEditHead(r);renderStatusPills(r);renderNotes(r);renderActivity(r);renderLabelPreview(r);renderCustChip(r);
+    renderEditHead(r);renderStatusPills(r);renderNotes(r);renderActivity(r);renderCustChip(r);
   }
   document.getElementById('ov-repair').classList.add('open');
 }
+function toggleHistory(){const b=document.getElementById('hist-body'),btn=document.getElementById('hist-btn');const show=b.hidden;b.hidden=!show;btn.classList.toggle('open',show);}
+function toggleEditDetails(){const b=document.getElementById('details-body'),btn=document.getElementById('details-btn');const show=b.hidden;b.hidden=!show;btn.classList.toggle('open',show);}
+function completeFromEdit(){const r=repairs.find(x=>x.ID===editId);if(!r)return;openComplete(r);}
 function closeRepair(){document.getElementById('ov-repair').classList.remove('open');editId=null;}
 function rmTab(t){
   document.querySelectorAll('#rm-tabs .tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));
@@ -1149,8 +1141,7 @@ function renderEditHead(r){
 }
 function pillLabel(id){return {'Awaiting Parts':'Awaiting','Ready for Pickup':'Ready','Dispatched to Specialist':'Specialist','Intake & Acceptance':'Intake'}[id]||statusDef(id).short;}
 function renderStatusPills(r){
-  const all=STATUSES.concat([{id:COMPLETED,short:'Completed',color:'#16A34A',bg:'#DCFCE7'}]);
-  document.getElementById('status-pills').innerHTML=all.map(s=>{
+  document.getElementById('status-pills').innerHTML=STATUSES.map(s=>{
     const on=r.Status===s.id;
     return `<button class="pill ${on?'on':''}" style="${on?`background:${s.color};`:''}" onclick="setStatus('${esc(r.ID)}','${esc(s.id)}')">${pillLabel(s.id)}</button>`;
   }).join('');
@@ -1298,7 +1289,7 @@ async function saveRepair(){
   if(!r)return;
   const oldQuote=r.Quote, oldTech=r.AssignedTo;
   r.CustomerName=name;r.Phone1=phoneRaw(phone1);r.Phone2=phoneRaw(document.getElementById('f-phone2').value);
-  r.RepairName=repair;if(dt)r.DeviceType=dt;r.Notes=document.getElementById('f-notes').value.trim();
+  r.RepairName=repair;if(dt)r.DeviceType=dt;const _ntEl=document.getElementById('f-notes');if(_ntEl)r.Notes=_ntEl.value.trim();
   r.IMEI=document.getElementById('f-imei').value.trim();r.Passcode=document.getElementById('f-pass').value.trim();
   r.Quote=parseNum(document.getElementById('f-quote').value)||'';
   r.AssignedTo=document.getElementById('f-tech2').value;r.Location=loc;
