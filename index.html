@@ -1146,10 +1146,12 @@ function renderStatusPills(r){
   }).join('');
 }
 function renderNotes(r){
-  const notes=r.NotesArr||[];
   const nl=document.getElementById('notelist');
-  nl.innerHTML=notes.length?notes.map(n=>`<div class="note"><div class="note-hd"><span class="note-av" style="background:${empColor(n.who)}22;color:${empColor(n.who)}">${empGlyph(n.who)}</span><span class="note-who">${esc(n.who)}</span><span class="note-time">${fmtDateTime(n.at)}</span></div><div class="note-body">${esc(n.text)}</div></div>`).join(''):'<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">No notes yet</div>';
-  const na=document.getElementById('note-as');if(currentUser)na.value=currentUser.name;
+  const items=[];
+  if(r.Notes&&r.Notes.trim())items.push({who:r.CreatedBy||'',at:r.Created||null,text:r.Notes.trim(),intake:true});
+  (r.NotesArr||[]).forEach(n=>items.push(n));
+  nl.innerHTML=items.length?items.map(n=>`<div class="note"><div class="note-hd"><span class="note-av" style="background:${empColor(n.who)}22;color:${empColor(n.who)}">${empGlyph(n.who)}</span><span class="note-who">${esc(n.who||'—')}</span>${n.intake?' <span style="font-size:9.5px;font-weight:700;color:var(--sky3);background:var(--skybg);border:1px solid var(--sky2);border-radius:20px;padding:1px 7px;text-transform:uppercase;letter-spacing:.03em">reported issue</span>':''}<span class="note-time">${n.at?fmtDateTime(n.at):''}</span></div><div class="note-body">${esc(n.text)}</div></div>`).join(''):'<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">No notes yet</div>';
+  const na=document.getElementById('note-as');if(na&&currentUser)na.value=currentUser.name;
 }
 function renderActivity(r){
   const log=(r.ActivityLog||[]).slice().reverse();
@@ -1259,7 +1261,6 @@ function postNote(){
   if(!editId){ pendingNotes.push({who,at:Date.now(),text:txt}); renderPendingNotes(); return; }
   const r=repairs.find(x=>x.ID===editId);if(!r)return;
   (r.NotesArr=r.NotesArr||[]).push({who,at:Date.now(),text:txt});
-  r.Notes=txt;
   logAct(r,'Added a note');
   fbSave(r);
   renderNotes(r);renderActivity(r);
