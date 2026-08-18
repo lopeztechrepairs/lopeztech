@@ -130,6 +130,15 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 .nw-tile svg{width:26px;height:26px;color:var(--sky);margin-bottom:6px}
 .nw-tile div{font-size:13px;font-weight:700;color:var(--text2)}
 .nw-lbl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--sky3);margin-bottom:10px}
+.emp-ic{width:64%;height:64%;display:block}
+.emp-icpick{display:flex;gap:6px;margin-right:8px}
+.emp-ico{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:#fff;color:var(--text2);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.emp-ico.on{border-color:var(--sky);background:var(--skybg);color:var(--sky3)}
+.emp-ico svg{width:17px;height:17px}
+.nw-more{display:flex;align-items:center;gap:8px;width:100%;padding:11px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:11px;font-size:13.5px;font-weight:700;color:var(--text2);cursor:pointer}
+.nw-more:hover{background:var(--skybg)}
+.nw-more-chev{width:16px;height:16px;color:var(--text3);transition:transform .18s;flex-shrink:0}
+.nw-more.open .nw-more-chev{transform:rotate(180deg)}
 .pastdue-badge{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:20px;background:var(--amberbg);color:var(--amber);display:inline-flex;align-items:center;gap:3px;}
 .pastdue-badge.over{background:var(--redbg);color:var(--red);}
 .col-body::-webkit-scrollbar,.nav::-webkit-scrollbar,.board-scroll::-webkit-scrollbar{height:8px;width:8px;}
@@ -441,8 +450,11 @@ input,select,textarea{font-family:inherit;font-size:14px;}
   </div>
   <div class="nw-step" data-step="1" hidden>
     <div class="nw-lbl">Customer detail</div>
-    <div class="fld" style="margin-bottom:12px"><label>Customer name</label><input id="nw-name" placeholder="Jose Lopez" oninput="liveTitleCase(this)"/></div>
-    <div style="display:flex;gap:10px"><div class="fld" style="flex:1"><label>Primary phone</label><input id="nw-phone1" inputmode="tel" placeholder="(832) 000-0000" oninput="fmtPhone(this)"/></div><div class="fld" style="flex:1"><label>Alt phone</label><input id="nw-phone2" inputmode="tel" placeholder="Optional" oninput="fmtPhone(this)"/></div></div>
+    <div class="fld" style="margin-bottom:12px"><label>Customer name</label><div class="acwrap"><input id="nw-name" placeholder="Jose Lopez" autocomplete="off" oninput="liveTitleCase(this);nwCustInput(this,'name')" onblur="nwHideAC()"/><div class="aclist" id="ac-nw-name"></div></div></div>
+    <div style="display:flex;gap:10px">
+      <div class="fld" style="flex:1"><label>Primary phone</label><div class="acwrap"><input id="nw-phone1" inputmode="tel" autocomplete="off" placeholder="(832) 000-0000" oninput="fmtPhone(this);nwCustInput(this,'phone1')" onblur="nwHideAC()"/><div class="aclist" id="ac-nw-phone1"></div></div></div>
+      <div class="fld" style="flex:1"><label>Alt phone</label><div class="acwrap"><input id="nw-phone2" inputmode="tel" autocomplete="off" placeholder="Optional" oninput="fmtPhone(this);nwCustInput(this,'phone2')" onblur="nwHideAC()"/><div class="aclist" id="ac-nw-phone2"></div></div></div>
+    </div>
   </div>
   <div class="nw-step" data-step="2" hidden>
     <div class="nw-lbl">Select the device</div>
@@ -455,10 +467,14 @@ input,select,textarea{font-family:inherit;font-size:14px;}
   </div>
   <div class="nw-step" data-step="3" hidden>
     <div class="nw-lbl">Repair details</div>
-    <div class="fld" style="margin-bottom:12px"><label>Repair title</label><input id="nw-repair" placeholder="Screen repair" oninput="nwOnTitle()"/></div>
+    <div class="fld" style="margin-bottom:12px"><label>Repair title</label><input id="nw-repair" placeholder="e.g. iPhone 11 Screen Repair" oninput="liveTitleCase(this);nwOnTitle()"/></div>
     <div id="nw-qual-mount"></div>
-    <div style="display:flex;gap:10px"><div class="fld" style="flex:1"><label>SN / IMEI</label><input id="nw-imei" placeholder="Optional"/></div><div class="fld" style="flex:1"><label>Notes</label><input id="nw-notes" placeholder="Reported issue…"/></div></div>
-    <div style="display:flex;gap:10px"><div class="fld" style="flex:1"><label>Passcode</label><input id="nw-pass" placeholder="Optional"/></div><div class="fld" style="flex:1"><label>Price quote ($)</label><input id="nw-quote" inputmode="decimal" placeholder="0.00"/></div></div>
+    <div class="fld" style="margin-bottom:12px"><label>Notes</label><textarea id="nw-notes" placeholder="Reported issue, condition on drop-off, what the customer said…" style="min-height:94px"></textarea></div>
+    <div class="fld" style="margin-bottom:12px"><label>Price quote ($)</label><input id="nw-quote" inputmode="decimal" placeholder="0.00"/></div>
+    <button type="button" class="nw-more" id="nw-more-btn" onclick="nwToggleMore()"><svg class="nw-more-chev" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><span style="flex:1;text-align:left">SN / IMEI &amp; passcode</span><span style="color:var(--text3);font-weight:400;font-size:12px">optional</span></button>
+    <div id="nw-more" hidden style="margin-top:10px">
+      <div style="display:flex;gap:10px"><div class="fld" style="flex:1"><label>SN / IMEI</label><input id="nw-imei" placeholder="Optional"/></div><div class="fld" style="flex:1"><label>Passcode</label><input id="nw-pass" placeholder="Optional"/></div></div>
+    </div>
   </div>
 </div>
 <div class="m-foot"><button class="btn" id="nw-back" onclick="nwGo(-1)" style="visibility:hidden">Back</button><button class="btn pri" id="nw-next" onclick="nwGo(1)" style="margin-left:auto">Next</button></div>
@@ -736,6 +752,12 @@ function initials(name){return (name||'?').trim().split(/\s+/).map(w=>w[0]).slic
 function esc(s){return (s==null?'':s+'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function empColor(name){const e=employees.find(x=>x.name?.toLowerCase()===(name||'').toLowerCase());return e?e.color:'#94A3B8';}
 function fullName(name){const e=employees.find(x=>x.name?.toLowerCase()===(name||'').toLowerCase());return e?e.fullName:name;}
+function empGlyph(name){
+  const e=employees.find(x=>x.name?.toLowerCase()===(name||'').toLowerCase());
+  if(e&&e.icon==='person')return '<svg class="emp-ic" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8.5" r="3.6"/><path d="M12 13.4c-3.7 0-6.6 2.4-6.6 6.1v.5h13.2v-.5c0-3.7-2.9-6.1-6.6-6.1z"/></svg>';
+  return esc(initials((e&&e.fullName)||name));
+}
+function setEmpIcon(i,icon){if(!employees[i])return;employees[i].icon=icon;saveEmployees();renderSettings();renderAll();}
 function statusDef(id){return STATUSES.find(s=>s.id===id)||{id,short:id,color:'#64748B',bg:'#F1F5F9'};}
 
 /* ══ STATUS / PAST-DUE HELPERS ══ */
@@ -773,7 +795,7 @@ function cardHtml(r){
   if(isPastDue(r))pd=`<span class="pastdue-badge over">⚠ ${daysSince(readyAnchor(r))}d</span>`;
   else if(pastDueSoon(r))pd=`<span class="pastdue-badge">⚠ due</span>`;
   const price=r.Quote?`<span class="card-price">${money(r.Quote)}</span>`:'';
-  const tech=r.AssignedTo?`<span class="card-tech"><span class="tav" style="background:${empColor(r.AssignedTo)}22;color:${empColor(r.AssignedTo)}">${initials(fullName(r.AssignedTo))}</span>${esc(r.AssignedTo)}</span>`:`<span class="card-tech" style="color:var(--text3)">Unassigned</span>`;
+  const tech=r.AssignedTo?`<span class="card-tech"><span class="tav" style="background:${empColor(r.AssignedTo)}22;color:${empColor(r.AssignedTo)}">${empGlyph(r.AssignedTo)}</span>${esc(r.AssignedTo)}</span>`:`<span class="card-tech" style="color:var(--text3)">Unassigned</span>`;
   const ac=(!pd&&r.Status!==COMPLETED)?ageColor(r):null;
   const ageEl=pd?pd:(ac?`<span class="age-pill" style="background:${ac.cb};color:${ac.c}"><span class="age-dot" style="background:${ac.c}"></span>${age}d</span>`:`${age}d`);
   return `<div class="card loc-${esc(r.Location)}" draggable="true" ondragstart="dragStart(event,'${esc(r.ID)}')" ondragend="dragEnd(event)" onclick="openRepair('${esc(r.ID)}')">
@@ -869,7 +891,7 @@ function showCheckin(){
   const g=document.getElementById('checkin-grid');
   const active=employees.filter(e=>e.active);
   g.innerHTML=active.map(e=>`<div class="checkin-card" onclick="pickUser('${esc(e.name)}')">
-    <div class="ci-av" style="background:${e.color}">${initials(e.fullName)}</div>
+    <div class="ci-av" style="background:${e.color}">${empGlyph(e.name)}</div>
     <div class="ci-name">${esc(e.fullName)}</div>
     <div class="ci-role">${esc(e.role)}</div>
   </div>`).join('')||'<p style="grid-column:1/-1;text-align:center;color:var(--text2)">No employees yet. Add them in Settings.</p>';
@@ -887,15 +909,35 @@ let nwStep=0, nwUser='', nwStore='', nwDevType='', nwQuality='';
 function openWizard(){
   nwStep=0;nwUser='';nwStore='';nwDevType='';nwQuality='';
   const active=employees.filter(e=>e.active);
-  document.getElementById('nw-emps').innerHTML=active.map(e=>`<div class="nw-emp" data-emp="${esc(e.name)}" onclick="nwEmpSel('${esc(e.name)}')"><span class="nw-eav" style="background:${e.color}">${initials(e.fullName)}</span><div><b>${esc(e.fullName)}</b><span>${esc(e.role)}</span></div></div>`).join('')||'<p style="color:var(--text2);font-size:13px">No employees yet — add them in Settings.</p>';
+  document.getElementById('nw-emps').innerHTML=active.map(e=>`<div class="nw-emp" data-emp="${esc(e.name)}" onclick="nwEmpSel('${esc(e.name)}')"><span class="nw-eav" style="background:${e.color}">${empGlyph(e.name)}</span><div><b>${esc(e.fullName)}</b><span>${esc(e.role)}</span></div></div>`).join('')||'<p style="color:var(--text2);font-size:13px">No employees yet — add them in Settings.</p>';
   ['nw-name','nw-phone1','nw-phone2','nw-repair','nw-imei','nw-notes','nw-pass','nw-quote'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('nw-qual-mount').innerHTML='';
+  document.getElementById('nw-more').hidden=true;document.getElementById('nw-more-btn').classList.remove('open');
+  ['ac-nw-name','ac-nw-phone1','ac-nw-phone2'].forEach(id=>{const b=document.getElementById(id);if(b)b.style.display='none';});
   document.querySelectorAll('#ov-nw .nw-tile').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('#ov-nw .nw-store button').forEach(b=>b.classList.remove('on'));
   nwRender();
   document.getElementById('ov-nw').classList.add('open');
 }
 function closeWizard(){document.getElementById('ov-nw').classList.remove('open');}
+function nwToggleMore(){const m=document.getElementById('nw-more'),b=document.getElementById('nw-more-btn');const show=m.hidden;m.hidden=!show;b.classList.toggle('open',show);}
+function nwCustInput(el,kind){
+  const boxId=kind==='name'?'ac-nw-name':(kind==='phone1'?'ac-nw-phone1':'ac-nw-phone2');
+  const box=document.getElementById(boxId);const v=el.value;let matches=[];
+  if(kind==='name'){ if(v.trim().length<2){box.style.display='none';return;} const lv=v.toLowerCase(); matches=customerIndex().filter(c=>(c.name||'').toLowerCase().includes(lv)).slice(0,6); }
+  else { const q=v.replace(/\D/g,''); if(q.length<3){box.style.display='none';return;} matches=customerIndex().filter(c=>phoneRaw(c.phone1).includes(q)||phoneRaw(c.phone2).includes(q)).slice(0,6); }
+  if(!matches.length){box.style.display='none';return;}
+  box.innerHTML=matches.map(c=>`<div class="acitem" onmousedown="nwPickCust(${esc(JSON.stringify(JSON.stringify(c)))})"><b>${esc(c.name)}</b><span>${fmtPhoneDisp(c.phone1)}${c.phone2?' · '+fmtPhoneDisp(c.phone2):''}</span></div>`).join('');
+  box.style.display='block';
+}
+function nwPickCust(js){
+  const c=JSON.parse(js);
+  document.getElementById('nw-name').value=c.name||'';
+  document.getElementById('nw-phone1').value=fmtPhoneDisp(c.phone1);
+  document.getElementById('nw-phone2').value=c.phone2?fmtPhoneDisp(c.phone2):'';
+  nwHideAC();
+}
+function nwHideAC(){setTimeout(()=>{['ac-nw-name','ac-nw-phone1','ac-nw-phone2'].forEach(id=>{const b=document.getElementById(id);if(b)b.style.display='none';});},150);}
 function nwRender(){
   document.querySelectorAll('#ov-nw .nw-step').forEach(s=>{s.hidden=(+s.dataset.step!==nwStep);});
   for(let i=0;i<4;i++){document.getElementById('nw-seg'+i).classList.toggle('on',i<=nwStep);}
@@ -1111,7 +1153,7 @@ function renderStatusPills(r){
 function renderNotes(r){
   const notes=r.NotesArr||[];
   const nl=document.getElementById('notelist');
-  nl.innerHTML=notes.length?notes.map(n=>`<div class="note"><div class="note-hd"><span class="note-av" style="background:${empColor(n.who)}22;color:${empColor(n.who)}">${initials(n.who)}</span><span class="note-who">${esc(n.who)}</span><span class="note-time">${fmtDateTime(n.at)}</span></div><div class="note-body">${esc(n.text)}</div></div>`).join(''):'<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">No notes yet</div>';
+  nl.innerHTML=notes.length?notes.map(n=>`<div class="note"><div class="note-hd"><span class="note-av" style="background:${empColor(n.who)}22;color:${empColor(n.who)}">${empGlyph(n.who)}</span><span class="note-who">${esc(n.who)}</span><span class="note-time">${fmtDateTime(n.at)}</span></div><div class="note-body">${esc(n.text)}</div></div>`).join(''):'<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">No notes yet</div>';
   const na=document.getElementById('note-as');if(currentUser)na.value=currentUser.name;
 }
 function renderActivity(r){
@@ -1213,7 +1255,7 @@ function toggleNoteComposer(){
 }
 function renderPendingNotes(){
   const nl=document.getElementById('notelist');
-  nl.innerHTML=pendingNotes.length?pendingNotes.map(n=>`<div class="note"><div class="note-hd"><span class="note-av" style="background:${empColor(n.who)}22;color:${empColor(n.who)}">${initials(n.who)}</span><span class="note-who">${esc(n.who)}</span><span class="note-time">will attach on create</span></div><div class="note-body">${esc(n.text)}</div></div>`).join(''):'<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">Jot notes here — they attach when you create the ticket</div>';
+  nl.innerHTML=pendingNotes.length?pendingNotes.map(n=>`<div class="note"><div class="note-hd"><span class="note-av" style="background:${empColor(n.who)}22;color:${empColor(n.who)}">${empGlyph(n.who)}</span><span class="note-who">${esc(n.who)}</span><span class="note-time">will attach on create</span></div><div class="note-body">${esc(n.text)}</div></div>`).join(''):'<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">Jot notes here — they attach when you create the ticket</div>';
 }
 function postNote(){
   const txt=document.getElementById('note-input').value.trim();if(!txt)return;
@@ -1593,7 +1635,7 @@ function openProfile(name,phone){
 
 /* ══ SETTINGS ══ */
 function renderSettings(){
-  const empHtml=employees.map((e,i)=>`<div class="emp-row"><div class="emp-av" style="background:${e.color}">${initials(e.fullName)}</div><div class="emp-info"><b>${esc(e.fullName)}</b> <span>· ${esc(e.role)}</span><div style="font-size:11px;color:var(--text3)">Shows as "${esc(e.name)}" on tickets</div></div><button class="emp-rm" onclick="removeEmp(${i})">Remove</button></div>`).join('');
+  const empHtml=employees.map((e,i)=>`<div class="emp-row"><div class="emp-av" style="background:${e.color}">${empGlyph(e.name)}</div><div class="emp-info"><b>${esc(e.fullName)}</b> <span>· ${esc(e.role)}</span><div style="font-size:11px;color:var(--text3)">Shows as "${esc(e.name)}" on tickets</div></div><div class="emp-icpick"><button class="emp-ico ${(e.icon||'initials')==='initials'?'on':''}" onclick="setEmpIcon(${i},'initials')" title="Initials">${esc(initials(e.fullName))}</button><button class="emp-ico ${e.icon==='person'?'on':''}" onclick="setEmpIcon(${i},'person')" title="Person icon"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8.5" r="3.6"/><path d="M12 13.4c-3.7 0-6.6 2.4-6.6 6.1v.5h13.2v-.5c0-3.7-2.9-6.1-6.6-6.1z"/></svg></button></div><button class="emp-rm" onclick="removeEmp(${i})">Remove</button></div>`).join('');
   document.getElementById('settings-body').innerHTML=`
     <div class="set-sec"><h3>Employees</h3><div class="sub">These names fill the check-in screen and the technician dropdown.</div>
       ${empHtml}
