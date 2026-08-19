@@ -1,1626 +1,466 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Phone Inventory – Lopez Tech Repairs</title>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&family=Barlow:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Phone Inventory · Lopez Tech</title>
 <style>
-  :root {
-    --navy:      #0f1f3d;
-    --navy-mid:  #162847;
-    --accent:    #1a6fc4;
-    --accent-hi: #2b8ef0;
-    --gold:      #d48000;
-    --gold-lt:   #f0a500;
-    --success:   #16a34a;
-    --warn:      #d97706;
-    --danger:    #dc2626;
-    --purple:    #7c3aed;
-    --bg:        #eef1f5;
-    --surface:   #ffffff;
-    --card-bg:   #ffffff;
-    --card-bd:   #dde3ec;
-    --input-bg:  #f4f6f9;
-    --text:      #1a2540;
-    --text-dim:  #5a6a82;
-    --modal-bg:  rgba(10,20,40,.52);
-    --row-hover: #f0f4f9;
-  }
-  * { box-sizing:border-box; margin:0; padding:0; }
-  html,body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); }
-  ::-webkit-scrollbar { width:6px; height:6px; }
-  ::-webkit-scrollbar-track { background:var(--bg); }
-  ::-webkit-scrollbar-thumb { background:#c5cdd8; border-radius:3px; }
+:root{
+--sky:#38BDF8;--sky2:#0EA5E9;--sky3:#0284C7;--skybg:#E0F2FE;--skybg2:#F0F9FF;
+--bg:#F6F9FC;--surface:#FFFFFF;--surface2:#F8FAFC;
+--text:#0F172A;--text2:#475569;--text3:#94A3B8;--border:#E2E8F0;--border2:#CBD5E1;
+--green:#16A34A;--greenbg:#DCFCE7;--amber:#D97706;--amberbg:#FEF3C7;--red:#DC2626;--redbg:#FEE2E2;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+.app{max-width:1180px;margin:0 auto;padding:22px 20px 60px}
+a{color:inherit;text-decoration:none}
 
-  /* ── LOGIN ── */
-  #loginScreen {
-    position:fixed; inset:0; z-index:9999;
-    display:flex; align-items:center; justify-content:center;
-    background:linear-gradient(135deg,#0f1f3d 0%,#1a3a6e 55%,#0d2a58 100%);
-    overflow:hidden;
-  }
-  #loginScreen::before {
-    content:''; position:absolute; inset:0;
-    background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,.03) 40px),
-               repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,.03) 40px);
-  }
-  .login-card {
-    position:relative; z-index:1; background:#fff; border-radius:20px;
-    padding:40px 44px 44px; width:360px;
-    box-shadow:0 40px 80px rgba(0,0,0,.45),0 0 0 1px rgba(0,0,0,.06);
-    animation:loginDrop .45s cubic-bezier(.22,1,.36,1) both;
-  }
-  @keyframes loginDrop { from{opacity:0;transform:translateY(-24px) scale(.97)} to{opacity:1;transform:none} }
-  .login-logo { display:flex; align-items:center; gap:12px; margin-bottom:24px; justify-content:center; }
-  .login-badge {
-    width:52px; height:52px; border-radius:12px;
-    background:linear-gradient(135deg,var(--accent) 0%,#0a4a8c 100%);
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Rajdhani',sans-serif; font-weight:700; font-size:20px;
-    color:#fff; letter-spacing:1px; box-shadow:0 4px 20px rgba(26,111,196,.35);
-  }
-  .login-brand { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:22px; line-height:1.1; color:var(--navy); }
-  .login-brand small { font-family:'DM Sans',sans-serif; font-weight:400; font-size:11px; color:var(--text-dim); display:block; letter-spacing:1.5px; text-transform:uppercase; }
-  .login-title { text-align:center; margin-bottom:28px; }
-  .login-title h2 { font-family:'Rajdhani',sans-serif; font-size:18px; font-weight:600; color:var(--text-dim); letter-spacing:1px; }
-  .field-group { margin-bottom:16px; }
-  .field-group label { display:block; font-size:11px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; color:var(--text-dim); margin-bottom:7px; }
-  .field-group input {
-    width:100%; padding:11px 14px; border-radius:10px;
-    background:var(--input-bg); border:1.5px solid var(--card-bd);
-    color:var(--text); font-size:15px; font-family:inherit; transition:border-color .2s,box-shadow .2s;
-  }
-  .field-group input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(26,111,196,.15); }
-  .field-group input::placeholder { color:#a0adb8; }
-  .remember-row { display:flex; align-items:center; gap:8px; margin-bottom:22px; }
-  .remember-row input[type=checkbox] { accent-color:var(--accent); width:15px; height:15px; cursor:pointer; }
-  .remember-row label { font-size:13px; color:var(--text-dim); cursor:pointer; }
-  .btn-login {
-    width:100%; padding:13px; background:linear-gradient(135deg,var(--accent) 0%,#0a4a8c 100%);
-    border:none; border-radius:10px; color:#fff; font-family:'Rajdhani',sans-serif;
-    font-size:17px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
-    cursor:pointer; transition:opacity .2s,transform .1s; box-shadow:0 4px 20px rgba(26,111,196,.35);
-  }
-  .btn-login:hover { opacity:.9; }
-  .btn-login:active { transform:scale(.98); }
-  .login-error {
-    margin-top:14px; padding:10px 14px;
-    background:rgba(220,38,38,.07); border:1px solid rgba(220,38,38,.25);
-    border-radius:8px; color:var(--danger); font-size:13px; text-align:center; display:none;
-  }
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:20px}
+.top h1{font-size:23px;font-weight:800;letter-spacing:-.02em;margin:0}
+.top .sub{font-size:12.5px;color:var(--text3);margin-top:2px}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);border-radius:11px;padding:9px 14px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn:hover{background:var(--surface2)}
+.btn svg{width:16px;height:16px}
+.btn.pri{background:linear-gradient(135deg,var(--sky2),var(--sky3));color:#fff;border:none;box-shadow:0 3px 12px rgba(14,165,233,.32)}
+.btn.pri:hover{filter:brightness(1.04)}
+.btn.big{padding:11px 16px;font-size:14px;font-weight:800}
+.btn.danger{background:var(--redbg);color:var(--red);border-color:transparent}
 
-  /* ── APP SHELL ── */
-  #app { display:none; flex-direction:column; height:100vh; overflow:hidden; }
-  #app.visible { display:flex; }
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+.stat b{font-size:23px;font-weight:800;display:block;line-height:1;color:var(--text)}
+.stat span{font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.stat.g b{color:var(--green)}
+.sold-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:18px}
+.ss{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px}
+.ss b{font-size:24px;font-weight:800;display:block;line-height:1;color:var(--text)}
+.ss span{font-size:11.5px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.ss.g b{color:var(--green)}
 
-  /* ── HEADER ── */
-  header {
-    background:linear-gradient(90deg,var(--navy) 0%,var(--navy-mid) 100%);
-    border-bottom:2px solid rgba(26,111,196,.4);
-    padding:0 24px; display:flex; align-items:center; gap:18px;
-    height:58px; flex-shrink:0; box-shadow:0 2px 16px rgba(0,0,0,.18); position:relative; z-index:100;
-  }
-  .h-logo { display:flex; align-items:center; gap:10px; text-decoration:none; flex-shrink:0; }
-  .h-badge {
-    width:36px; height:36px; border-radius:8px;
-    background:linear-gradient(135deg,var(--accent) 0%,#0a4a8c 100%);
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Rajdhani',sans-serif; font-weight:700; font-size:13px; color:#fff;
-  }
-  .h-name { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:17px; color:#fff; }
-  .h-name small { font-size:10px; font-weight:400; color:rgba(255,255,255,.5); display:block; letter-spacing:1px; }
-  nav { display:flex; gap:4px; margin-left:8px; }
-  nav a { padding:6px 14px; border-radius:8px; font-size:13px; font-weight:500; text-decoration:none; color:rgba(255,255,255,.6); transition:all .18s; }
-  nav a:hover { background:rgba(255,255,255,.1); color:#fff; }
-  nav a.active { background:var(--accent); color:#fff; }
-  .h-spacer { flex:1; }
-  .pill-synced {
-    display:flex; align-items:center; gap:6px;
-    background:rgba(22,163,74,.15); border:1px solid rgba(22,163,74,.4);
-    padding:4px 12px; border-radius:20px; font-size:12px; font-weight:500; color:#16a34a;
-  }
-  .pill-synced .dot { width:7px; height:7px; border-radius:50%; background:#16a34a; animation:blink 2s infinite; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-  .pill-synced.offline { background:rgba(220,38,38,.1); border-color:rgba(220,38,38,.35); color:var(--danger); }
-  .pill-synced.offline .dot { background:var(--danger); }
-  .btn-signout {
-    padding:7px 16px; border-radius:8px;
-    background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18);
-    color:rgba(255,255,255,.8); font-size:13px; font-weight:500; cursor:pointer; transition:all .18s;
-  }
-  .btn-signout:hover { background:rgba(220,38,38,.22); border-color:rgba(220,38,38,.4); color:#fca5a5; }
+/* controls */
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.pill{padding:8px 13px;border:1.5px solid var(--border);background:var(--surface);border-radius:20px;font-size:12.5px;font-weight:700;color:var(--text2);cursor:pointer}
+.pill:hover{border-color:var(--sky)}
+.pill.on{background:var(--sky2);color:#fff;border-color:var(--sky2)}
+.search{margin-left:auto;flex:1;min-width:170px;max-width:280px;height:40px;border:1.5px solid var(--border);border-radius:11px;padding:0 14px;font-size:13.5px;font-family:inherit;background:var(--surface)}
+.search:focus{outline:none;border-color:var(--sky2)}
 
-  /* ── MAIN ── */
-  main { flex:1; overflow-y:auto; padding:20px 24px 32px; }
+/* brand sections */
+.brand-sec{margin-bottom:22px}
+.brand-hd{display:flex;align-items:center;gap:9px;margin:0 2px 12px;cursor:pointer;user-select:none}
+.brand-hd .nm{font-size:13px;font-weight:800;color:var(--sky3);text-transform:uppercase;letter-spacing:.05em}
+.brand-hd .ct{background:var(--skybg);color:var(--sky3);border-radius:20px;padding:1px 9px;font-size:11px;font-weight:800}
+.brand-hd .chev{margin-left:2px;color:var(--text3);transition:transform .18s}
+.brand-hd.collapsed .chev{transform:rotate(-90deg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.sub-sec{margin-bottom:15px}
+.sub-hd{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--text2);margin:2px 2px 10px}
+.sub-ct{background:var(--surface2);color:var(--text3);border-radius:20px;padding:1px 8px;font-size:10.5px;font-weight:800}
 
-  /* ── STATS BAR ── */
-  .stats-bar { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px; }
-  .stat-card {
-    background:var(--card-bg); border:1.5px solid var(--card-bd);
-    border-radius:14px; padding:16px 18px; position:relative; overflow:hidden;
-    box-shadow:0 1px 6px rgba(0,0,0,.05); transition:transform .18s,box-shadow .18s;
-  }
-  .stat-card::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:14px 14px 0 0; }
-  .stat-card.s-total::after  { background:var(--accent); }
-  .stat-card.s-avail::after  { background:var(--success); }
-  .stat-card.s-recv::after   { background:var(--gold-lt); }
-  .stat-card.s-repair::after { background:var(--warn); }
-  .stat-card.s-sold::after   { background:var(--purple); }
-  .stat-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.1); }
-  .stat-label { font-size:11px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px; }
-  .stat-value { font-family:'Rajdhani',sans-serif; font-size:32px; font-weight:700; line-height:1; }
-  .stat-card.s-total .stat-value  { color:var(--accent); }
-  .stat-card.s-avail .stat-value  { color:var(--success); }
-  .stat-card.s-recv .stat-value   { color:var(--gold); }
-  .stat-card.s-repair .stat-value { color:var(--warn); }
-  .stat-card.s-sold .stat-value   { color:var(--purple); }
-  .stat-sub { font-size:12px; color:var(--text-dim); margin-top:4px; }
+/* card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:15px 16px;box-shadow:0 1px 2px rgba(15,23,42,.03)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:9px}
+.card .nm{font-size:15.5px;font-weight:800;line-height:1.2}
+.card .spec{font-size:12.5px;color:var(--text2);margin-top:3px}
+.st-sel{border:1.5px solid var(--border);border-radius:20px;padding:4px 8px;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;cursor:pointer;font-family:inherit;background:var(--surface);-webkit-appearance:none;appearance:none;text-align:center}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.tag{font-size:11px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px 8px;font-weight:600}
+.card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:2px;padding-top:12px;border-top:1px solid var(--surface2)}
+.price{font-size:18px;font-weight:800;color:var(--green)}
+.price small{font-size:11px;color:var(--text3);font-weight:600;margin-left:5px}
+.acts{display:flex;gap:7px}
+.icbtn{border:1.5px solid var(--border);background:var(--surface);border-radius:9px;padding:6px 11px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:inherit}
+.icbtn:hover{background:var(--surface2)}
+.icbtn.del{padding:6px 9px}
+.icbtn.del:hover{background:var(--redbg);color:var(--red);border-color:transparent}
+.icbtn svg{width:14px;height:14px}
 
-  /* ── RECEIVE SECTION ── */
-  #receiveSection {
-    background:var(--card-bg); border:1.5px solid var(--card-bd);
-    border-radius:14px; margin-bottom:18px; box-shadow:0 1px 6px rgba(0,0,0,.05); overflow:hidden;
-  }
-  .section-toggle { display:flex; align-items:center; justify-content:space-between; padding:15px 20px; cursor:pointer; user-select:none; transition:background .18s; }
-  .section-toggle:hover { background:var(--row-hover); }
-  .section-toggle h3 { font-family:'Rajdhani',sans-serif; font-size:17px; font-weight:700; }
-  .toggle-arrow { color:var(--text-dim); transition:transform .25s; font-size:13px; }
-  .toggle-arrow.open { transform:rotate(180deg); }
-  .receive-form { padding:0 20px 20px; display:none; }
-  .receive-form.open { display:block; }
+.empty{text-align:center;color:var(--text3);padding:60px 20px}
+.empty .ic{font-size:40px;margin-bottom:10px}
+.empty h3{margin:0 0 4px;color:var(--text2);font-size:16px}
+.empty p{margin:0;font-size:13px}
 
-  /* ── FORM FIELDS ── */
-  .form-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px 16px; margin-bottom:16px; }
-  .form-field label { display:block; font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px; }
-  .form-field input,.form-field select,.form-field textarea {
-    width:100%; padding:9px 12px; border-radius:8px;
-    background:var(--input-bg); border:1.5px solid var(--card-bd);
-    color:var(--text); font-size:14px; font-family:inherit; transition:border-color .2s;
-  }
-  .form-field input:focus,.form-field select:focus,.form-field textarea:focus {
-    outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(26,111,196,.1);
-  }
-  .form-field textarea { resize:vertical; min-height:68px; }
-  .parts-section { margin-bottom:16px; }
-  .parts-section h4 { font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); margin-bottom:10px; }
-  .parts-grid { display:flex; flex-wrap:wrap; gap:10px; }
-  .part-check { display:flex; align-items:center; gap:7px; cursor:pointer; }
-  .part-check input[type=checkbox] { accent-color:var(--success); width:15px; height:15px; }
-  .part-check span { font-size:13px; font-weight:500; }
-  .form-actions { display:flex; justify-content:flex-end; gap:10px; }
-  .btn-cancel {
-    padding:9px 18px; border-radius:9px; border:1.5px solid var(--card-bd);
-    background:transparent; color:var(--text-dim); cursor:pointer; font-family:inherit; font-size:14px; transition:all .18s;
-  }
-  .btn-cancel:hover { background:var(--row-hover); color:var(--text); }
-  .btn-primary {
-    padding:9px 20px; border-radius:9px; border:none;
-    background:linear-gradient(135deg,var(--accent) 0%,#0a4a8c 100%);
-    color:#fff; font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:700; letter-spacing:.5px;
-    cursor:pointer; transition:opacity .18s,transform .1s; box-shadow:0 3px 12px rgba(26,111,196,.3);
-  }
-  .btn-primary:hover { opacity:.9; }
-  .btn-primary:active { transform:scale(.97); }
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:18px;backdrop-filter:blur(2px)}
+.ov.open{display:flex}
+.modal{background:var(--surface);border-radius:18px;width:100%;max-width:560px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(15,23,42,.28);overflow:hidden}
+.modal.sm{max-width:440px}
+.m-hdr{display:flex;align-items:center;gap:10px;padding:18px 20px;border-bottom:1px solid var(--border)}
+.m-hdr h2{font-size:18px;font-weight:800;margin:0;flex:1}
+.m-hdr .mclose{background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1}
+.m-body{padding:18px 20px;overflow-y:auto}
+.m-foot{display:flex;gap:10px;padding:14px 20px;border-top:1px solid var(--border);background:var(--surface2)}
+.fld{margin-bottom:13px}
+.fld label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:5px}
+.fld input,.fld select,.fld textarea{width:100%;height:42px;border:1.5px solid var(--border);border-radius:10px;padding:0 12px;font-size:14px;font-family:inherit;background:var(--surface);color:var(--text)}
+.fld textarea{height:auto;min-height:66px;padding:10px 12px;resize:vertical;line-height:1.4}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--sky2)}
+.frow{display:flex;gap:10px}.frow>*{flex:1}
+.req{color:var(--red)}
 
-  /* ── TOOLBAR ── */
-  .toolbar { display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
-  .tabs {
-    display:flex; gap:3px; background:var(--card-bg);
-    border:1.5px solid var(--card-bd); padding:4px; border-radius:10px;
-    box-shadow:0 1px 4px rgba(0,0,0,.05);
-  }
-  .tab-btn {
-    padding:7px 15px; border-radius:7px; border:none; cursor:pointer;
-    background:transparent; color:var(--text-dim);
-    font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; transition:all .18s; white-space:nowrap;
-  }
-  .tab-btn.active { background:var(--accent); color:#fff; }
-  .tab-btn .badge {
-    display:inline-flex; align-items:center; justify-content:center;
-    border-radius:10px; font-size:11px; padding:1px 7px; margin-left:5px; font-weight:600;
-    background:rgba(0,0,0,.08);
-  }
-  .tab-btn.active .badge { background:rgba(255,255,255,.25); }
-  .tb-spacer { flex:1; min-width:0; }
-  .search-input {
-    padding:9px 14px; border-radius:9px;
-    background:var(--card-bg); border:1.5px solid var(--card-bd);
-    color:var(--text); font-size:13px; font-family:inherit; width:220px;
-    transition:border-color .2s; box-shadow:0 1px 4px rgba(0,0,0,.05);
-  }
-  .search-input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(26,111,196,.1); }
-  .search-input::placeholder { color:#a0adb8; }
-  select.filter-sel {
-    padding:9px 13px; border-radius:9px;
-    background:var(--card-bg); border:1.5px solid var(--card-bd);
-    color:var(--text); font-size:13px; font-family:inherit; cursor:pointer;
-    box-shadow:0 1px 4px rgba(0,0,0,.05);
-  }
-  select.filter-sel:focus { outline:none; border-color:var(--accent); }
+/* label */
+.lblwrap{display:flex;justify-content:center;padding:6px 0 4px}
+.lbl{width:2.7in;border:2px solid #000;border-radius:8px;padding:11px 13px;color:#000;background:#fff;font-family:-apple-system,Arial,sans-serif}
+.lbl-t{font-size:12.5px;font-weight:900;letter-spacing:.3px;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:8px;line-height:1.25}
+.lbl-rows>div{display:flex;font-size:10.5px;margin-bottom:4px;line-height:1.3}
+.lbl-rows b{width:78px;flex-shrink:0;font-weight:800;letter-spacing:.3px}
+.lbl-rows span{font-weight:800;flex:1;word-break:break-word}
+.lbl-price{margin-top:8px;background:#000;color:#fff;border-radius:6px;padding:6px 10px;font-size:17px;font-weight:900;text-align:center;letter-spacing:.5px}
 
-  /* ── PHONE GRID ── */
-  .phone-grid { display:block; } /* sections handle their own grids via .sub-grid */
-  .phone-card {
-    background:var(--card-bg); border:1.5px solid var(--card-bd);
-    border-radius:14px; overflow:hidden;
-    box-shadow:0 1px 6px rgba(0,0,0,.07);
-    transition:transform .18s,box-shadow .18s;
-    animation:cardIn .3s ease both;
-  }
-  @keyframes cardIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
-  .phone-card:hover { transform:translateY(-3px); box-shadow:0 10px 30px rgba(0,0,0,.12); }
-  .card-stripe { height:4px; }
-  .stripe-received  { background:var(--gold-lt); }
-  .stripe-available { background:var(--success); }
-  .stripe-inrepair  { background:var(--warn); }
-  .stripe-sold      { background:var(--purple); }
-  .card-body { padding:15px; }
-  .card-header-row { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
-  .card-model { font-family:'Rajdhani',sans-serif; font-size:17px; font-weight:700; line-height:1.2; }
-  .card-storage { font-size:12px; color:var(--text-dim); margin-top:2px; }
-  .status-pill { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; letter-spacing:.5px; white-space:nowrap; }
-  .pill-received  { background:rgba(240,165,0,.12); color:#b45309; border:1px solid rgba(240,165,0,.3); }
-  .pill-available { background:rgba(22,163,74,.1);  color:var(--success); border:1px solid rgba(22,163,74,.3); }
-  .pill-inrepair  { background:rgba(217,119,6,.1);  color:var(--warn); border:1px solid rgba(217,119,6,.3); }
-  .pill-sold      { background:rgba(124,58,237,.1); color:var(--purple); border:1px solid rgba(124,58,237,.3); }
-  .card-meta { display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; margin-bottom:10px; }
-  .meta-label { font-size:10px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-dim); font-weight:600; }
-  .meta-value { font-size:13px; font-weight:500; }
-  .card-imei { font-size:11px; color:var(--text-dim); margin-bottom:8px; font-family:monospace; background:var(--input-bg); padding:4px 8px; border-radius:5px; }
-  .parts-row { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px; }
-  .part-chip { padding:2px 8px; border-radius:5px; font-size:10px; font-weight:600; }
-  .part-replaced { background:rgba(217,119,6,.12); color:var(--warn); border:1px solid rgba(217,119,6,.3); }
-  .card-price-row { display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1.5px solid var(--card-bd); margin-bottom:10px; }
-  .price-cost { font-size:12px; color:var(--text-dim); }
-  .price-sell { font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; color:var(--accent); }
-  .card-actions { display:flex; gap:7px; align-items:center; }
-  .btn-sm { padding:6px 13px; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; border:none; transition:all .15s; font-family:inherit; }
-  .btn-edit { background:rgba(26,111,196,.1); color:var(--accent); border:1px solid rgba(26,111,196,.25); }
-  .btn-edit:hover { background:rgba(26,111,196,.2); }
-  .btn-print { background:rgba(217,119,6,.1); color:var(--warn); border:1px solid rgba(217,119,6,.25); }
-  .btn-print:hover { background:rgba(217,119,6,.2); }
-  .btn-delete { background:rgba(220,38,38,.1); color:var(--danger); border:1px solid rgba(220,38,38,.25); }
-  .btn-delete:hover { background:rgba(220,38,38,.22); }
-  select.status-sel {
-    padding:6px 10px; border-radius:7px; font-size:12px;
-    background:var(--input-bg); border:1.5px solid var(--card-bd);
-    color:var(--text); cursor:pointer; font-family:inherit; font-weight:500; flex:1;
-  }
-  select.status-sel:focus { outline:none; border-color:var(--accent); }
+/* toast */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:#fff;padding:11px 18px;border-radius:11px;font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:200}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{background:var(--red)}#toast.ok{background:var(--green)}
 
-  /* ── BRAND SECTIONS ── */
-  .brand-section { margin-bottom:20px; }
-  .brand-header {
-    display:flex; align-items:center; gap:10px;
-    padding:10px 16px; border-radius:12px;
-    background:var(--card-bg); border:1.5px solid var(--card-bd);
-    cursor:pointer; user-select:none;
-    box-shadow:0 1px 4px rgba(0,0,0,.05);
-    transition:background .15s;
-    margin-bottom:10px;
-  }
-  .brand-header:hover { background:var(--row-hover); }
-  .brand-icon { font-size:18px; }
-  .brand-name { font-family:'Rajdhani',sans-serif; font-size:17px; font-weight:700; flex:1; }
-  .brand-count {
-    font-size:11px; font-weight:600; padding:2px 10px;
-    border-radius:20px; background:var(--input-bg);
-    color:var(--text-dim); border:1px solid var(--card-bd);
-  }
-  .brand-chevron { color:var(--text-dim); font-size:12px; transition:transform .25s; }
-  .brand-chevron.open { transform:rotate(180deg); }
-  .brand-body { display:none; }
-  .brand-body.open { display:block; }
-
-  .sub-section { margin-bottom:14px; }
-  .sub-header {
-    display:flex; align-items:center; gap:8px;
-    padding:7px 14px; border-radius:9px;
-    background:var(--input-bg); border:1px solid var(--card-bd);
-    cursor:pointer; user-select:none;
-    margin-bottom:10px; transition:background .15s;
-  }
-  .sub-header:hover { background:#e8edf4; }
-  .sub-name { font-size:13px; font-weight:600; color:var(--text); flex:1; }
-  .sub-count { font-size:10px; font-weight:600; color:var(--text-dim); }
-  .sub-chevron { color:var(--text-dim); font-size:11px; transition:transform .22s; }
-  .sub-chevron.open { transform:rotate(180deg); }
-  .sub-body { display:none; }
-  .sub-body.open { display:block; }
-  .sub-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:14px; margin-bottom:4px; }
-
-  .empty-state { text-align:center; padding:80px 20px; color:var(--text-dim); }
-  .empty-state .icon { font-size:48px; margin-bottom:16px; }
-  .empty-state h3 { font-family:'Rajdhani',sans-serif; font-size:22px; margin-bottom:8px; color:var(--text); }
-
-  /* ── MODALS ── */
-  .modal-backdrop {
-    position:fixed; inset:0; z-index:1000;
-    background:var(--modal-bg); display:none; align-items:center; justify-content:center;
-    backdrop-filter:blur(3px);
-  }
-  .modal-backdrop.open { display:flex; }
-  .modal-box {
-    background:var(--surface); border:1.5px solid var(--card-bd);
-    border-radius:18px; width:680px; max-width:96vw; max-height:90vh; overflow-y:auto;
-    box-shadow:0 30px 70px rgba(0,0,0,.22); animation:modalIn .22s ease both;
-  }
-  @keyframes modalIn { from{opacity:0;transform:scale(.96)} to{opacity:1;transform:none} }
-  .modal-header {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:18px 24px; border-bottom:1.5px solid var(--card-bd);
-    position:sticky; top:0; background:var(--surface); border-radius:18px 18px 0 0; z-index:1;
-  }
-  .modal-header h2 { font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; }
-  .btn-close {
-    width:30px; height:30px; border-radius:8px; border:none; background:var(--input-bg);
-    color:var(--text-dim); font-size:16px; cursor:pointer; transition:all .15s;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .btn-close:hover { background:rgba(220,38,38,.1); color:var(--danger); }
-  .modal-body { padding:20px 24px; }
-  .modal-form-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px 16px; }
-  .modal-section-title {
-    font-size:11px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase;
-    color:var(--text-dim); border-bottom:1.5px solid var(--card-bd);
-    padding-bottom:7px; margin-bottom:12px; grid-column:1/-1; margin-top:8px;
-  }
-  .modal-footer {
-    display:flex; justify-content:flex-end; gap:10px;
-    padding:14px 24px; border-top:1.5px solid var(--card-bd);
-    position:sticky; bottom:0; background:var(--surface); border-radius:0 0 18px 18px;
-  }
-
-  /* ── TOAST ── */
-  #toast {
-    position:fixed; bottom:28px; right:28px; z-index:9000;
-    padding:12px 20px; border-radius:10px; font-size:14px; font-weight:500;
-    pointer-events:none; transform:translateY(20px); opacity:0; transition:all .3s;
-    max-width:320px; box-shadow:0 8px 30px rgba(0,0,0,.15);
-  }
-  #toast.show { transform:none; opacity:1; }
-  #toast.ok  { background:#f0fdf4; border:1.5px solid rgba(22,163,74,.3); color:var(--success); }
-  #toast.err { background:#fef2f2; border:1.5px solid rgba(220,38,38,.3); color:var(--danger); }
-
-  /* ════════════════════════════════════════════
-     LABEL — Brother QL-820NWB
-     Settings: 2.4" wide × 1.50" length, Landscape,
-     Monochrome, 300×300 dpi, Cut Every 1
-  ════════════════════════════════════════════ */
-  #labelModal .modal-box { width:520px; }
-  #labelPreviewWrap {
-    background:#ccc; border-radius:8px; padding:14px;
-    display:flex; justify-content:center; align-items:center;
-    margin-bottom:18px;
-  }
-  /* Screen preview: 2.4"×1.5" landscape at 96dpi → 230×144. Scale ×1.6 → 368×230 */
-  #labelPreview {
-    background:#fff; color:#000;
-    width:368px; height:230px;
-    font-family:'Barlow',Arial,sans-serif;
-    padding:15px 14px 8px 14px;
-    position:relative;
-    border:1px solid #999;
-    box-sizing:border-box;
-    overflow:hidden;
-  }
-  #labelPreview .lbl-title {
-    font-family:'Barlow',Arial,sans-serif;
-    font-size:12.5pt; font-weight:900; text-align:center; text-transform:uppercase;
-    border-bottom:2pt solid #000; padding-bottom:3px; margin-bottom:6px;
-    line-height:1.12; letter-spacing:0;
-  }
-  #labelPreview .lbl-info { margin-bottom:0; }
-  #labelPreview .lbl-row {
-    display:flex; gap:7px; font-size:11pt; line-height:1.16; margin-bottom:3px;
-    align-items:center; font-family:'Barlow',Arial,sans-serif;
-  }
-  #labelPreview .lbl-row .lico {
-    width:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
-  }
-  #labelPreview .lbl-row .lk {
-    font-size:8.5pt; font-weight:900; text-transform:uppercase; width:112px; flex-shrink:0; letter-spacing:0; white-space:nowrap;
-  }
-  #labelPreview .lbl-row .lv { flex:1; font-size:11pt; font-weight:900; word-break:break-word; }
-  #labelPreview .lbl-price-box {
-    position:absolute; bottom:24px;
-    left:50%; transform:translateX(-50%);
-    display:inline-block; border-bottom:4pt solid #000;
-    padding:0 3px 3px;
-    font-family:'Barlow',Arial,sans-serif;
-    font-size:20pt; font-weight:900; white-space:nowrap; letter-spacing:-.5px; line-height:1;
-  }
-
-  /* PRINT — exact dimensions for Brother QL-820NWB landscape */
-  @media print {
-    body * { visibility:hidden !important; }
-    #printLabelWrap, #printLabelWrap * { visibility:visible !important; }
-    #printLabelWrap {
-      position:fixed !important; left:0; top:0;
-      width:2.4in; height:1.5in;
-      margin:0; padding:0; display:block !important;
-    }
-    #printLabelWrap .plbl {
-      width:2.4in; height:1.5in;
-      font-family:'Barlow',Arial,sans-serif;
-      padding:0.12in 0.1in 0.08in 0.1in;
-      position:relative; box-sizing:border-box; overflow:hidden;
-      background:#fff; color:#000;
-    }
-    #printLabelWrap .plbl .lbl-title {
-      font-family:'Barlow',Arial,sans-serif;
-      font-size:8.5pt; font-weight:900; text-align:center; text-transform:uppercase;
-      border-bottom:1.5pt solid #000; padding-bottom:1.5pt; margin-bottom:3pt;
-      line-height:1.12; letter-spacing:-.1px;
-    }
-    #printLabelWrap .plbl .lbl-row {
-      display:flex; gap:3.5pt; font-size:7pt; line-height:1.16; margin-bottom:1.5pt;
-      align-items:center; font-family:'Barlow',Arial,sans-serif;
-    }
-    #printLabelWrap .plbl .lbl-row .lico {
-      width:9pt; flex-shrink:0; display:flex; align-items:center; justify-content:center;
-    }
-    #printLabelWrap .plbl .lbl-row .lk { font-size:5.5pt; font-weight:900; text-transform:uppercase; width:0.78in; flex-shrink:0; white-space:nowrap; letter-spacing:0; }
-    #printLabelWrap .plbl .lbl-row .lv { font-size:7pt; font-weight:900; flex:1; word-break:break-word; }
-    #printLabelWrap .plbl .lbl-price-box {
-      position:absolute; bottom:0.16in;
-      left:50%; transform:translateX(-50%);
-      display:inline-block; border-bottom:3pt solid #000;
-      padding:0 2pt 1.5pt;
-      font-family:'Barlow',Arial,sans-serif;
-      font-size:13pt; font-weight:900; white-space:nowrap; line-height:1;
-    }
-    @page { size:2.4in 1.5in landscape; margin:0; }
-  }
-
-  /* ── RESPONSIVE ── */
-  @media(max-width:900px) {
-    .stats-bar { grid-template-columns:repeat(3,1fr); }
-    .form-grid,.modal-form-grid { grid-template-columns:1fr 1fr; }
-    nav { display:none; }
-  }
-  @media(max-width:600px) {
-    header { padding:0 14px; }
-    main { padding:14px; }
-    .stats-bar { grid-template-columns:1fr 1fr; }
-    .form-grid,.modal-form-grid { grid-template-columns:1fr; }
-    .tabs { overflow-x:auto; }
-  }
-  /* ─── RECORD SALE MODAL ─────────────────────────────────────── */
-  .sale-device-card {
-    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 100%);
-    border-radius:14px; padding:16px 18px; margin-bottom:20px; color:#fff;
-  }
-  .sale-device-card .sd-model { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:20px; letter-spacing:.3px; }
-  .sale-device-card .sd-sub { font-size:13px; color:rgba(255,255,255,.65); margin-top:2px; }
-  .sale-device-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:14px; }
-  .sale-device-grid .sd-item .sd-lbl { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,.5); margin-bottom:3px; }
-  .sale-device-grid .sd-item .sd-val { font-size:13px; font-weight:600; color:#fff; }
-  .sale-listed { display:inline-block; margin-top:12px; font-size:12px; color:rgba(255,255,255,.7); }
-  .sale-listed b { color:var(--gold-lt); }
-
-  .pay-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; }
-  .pay-chip {
-    display:flex; align-items:center; justify-content:center; gap:6px;
-    padding:13px 10px; border-radius:11px; border:1.5px solid var(--card-bd);
-    background:var(--input-bg); color:var(--text-dim); cursor:pointer;
-    font-family:inherit; font-size:14px; font-weight:600; transition:all .15s; user-select:none;
-  }
-  .pay-chip:hover { border-color:var(--accent); color:var(--text); }
-  .pay-chip.sel { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 3px 10px rgba(26,111,196,.3); }
-  .pay-chip .pc-ico { font-size:16px; }
-
-  .grand-total-wrap { position:relative; }
-  .grand-total-wrap .gt-dollar { position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:24px; font-weight:700; color:var(--success); pointer-events:none; }
-  #sale_total {
-    width:100%; padding:14px 14px 14px 38px; border-radius:12px;
-    border:2px solid var(--card-bd); background:var(--input-bg);
-    color:var(--text); font-size:26px; font-weight:700; font-family:'Rajdhani',sans-serif;
-  }
-  #sale_total:focus { outline:none; border-color:var(--success); box-shadow:0 0 0 3px rgba(22,163,74,.15); }
-  .btn-confirm-sale {
-    padding:11px 22px; border-radius:9px; border:none;
-    background:linear-gradient(135deg,var(--success) 0%,#0f7a37 100%);
-    color:#fff; cursor:pointer; font-family:inherit; font-size:14px; font-weight:600; transition:filter .15s;
-  }
-  .btn-confirm-sale:hover { filter:brightness(1.07); }
-
-  /* sale info shown on a sold card */
-  .sold-info-row { display:flex; align-items:center; justify-content:space-between; margin-top:10px; padding-top:10px; border-top:1px dashed var(--card-bd); }
-  .sold-info-row .si-amt { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:17px; color:var(--success); }
-  .pay-badge { font-size:11px; font-weight:600; padding:3px 9px; border-radius:14px; background:rgba(124,58,237,.1); color:var(--purple); border:1px solid rgba(124,58,237,.3); }
-  /* ─── VIEW TOGGLE + INVENTORY TABLE ─────────────────────────── */
-  .view-toggle { display:inline-flex; border:1.5px solid var(--card-bd); border-radius:9px; overflow:hidden; background:var(--card-bg); }
-  .view-toggle button { border:none; background:transparent; padding:7px 13px; font-size:13px; color:var(--text-dim); cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; transition:all .15s; }
-  .view-toggle button.active { background:var(--accent); color:#fff; }
-  .inv-table-wrap { overflow-x:auto; border:1px solid var(--card-bd); border-radius:10px; background:var(--card-bg); margin-bottom:4px; }
-  .inv-table { width:100%; border-collapse:collapse; }
-  .inv-table th { font-size:10.5px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-dim); text-align:left; padding:10px 12px; border-bottom:1.5px solid var(--card-bd); font-weight:600; white-space:nowrap; background:var(--input-bg); }
-  .inv-table td { font-size:13px; color:var(--text); padding:9px 12px; border-bottom:1px solid var(--card-bd); vertical-align:middle; white-space:nowrap; }
-  .inv-table tr:last-child td { border-bottom:none; }
-  .inv-table tbody tr:hover td { background:var(--row-hover); }
-  .it-model { font-weight:600; }
-  .it-sub { font-size:11px; color:var(--text-dim); margin-top:1px; }
-  .it-actions { display:flex; gap:6px; align-items:center; }
-  .inv-table select.status-sel { min-width:118px; margin:0; }
+@media (max-width:640px){
+  .stats{grid-template-columns:1fr 1fr}
+  .top h1{font-size:20px}
+  .grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
-
-<!-- ══════ LOGIN ══════ -->
-<div id="loginScreen">
-  <div class="login-card">
-    <div class="login-logo">
-      <div class="login-badge">LTR</div>
-      <div class="login-brand">Lopez Tech Repairs<small>Phone Inventory System</small></div>
+<div class="app">
+  <div class="top">
+    <div>
+      <h1>Phone Inventory</h1>
+      <div class="sub">What's in stock and up for sale</div>
     </div>
-    <div class="login-title"><h2>Sign In to Continue</h2></div>
-    <div class="field-group">
-      <label for="loginUser">Username</label>
-      <input type="text" id="loginUser" placeholder="Enter username" autocomplete="username">
-    </div>
-    <div class="field-group">
-      <label for="loginPin">PIN</label>
-      <input type="password" id="loginPin" placeholder="••••" maxlength="6" autocomplete="current-password"
-             onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <div class="remember-row">
-      <input type="checkbox" id="rememberMe">
-      <label for="rememberMe">Remember me on this device</label>
-    </div>
-    <button class="btn-login" onclick="doLogin()">Sign In</button>
-    <div class="login-error" id="loginError">Incorrect username or PIN. Please try again.</div>
+    <button class="btn pri big" onclick="openForm(null)"><svg fill="none" stroke="currentColor" stroke-width="2.6" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Phone</button>
   </div>
-</div>
 
-<!-- ══════ APP ══════ -->
-<div id="app">
-  <header>
-    <a class="h-logo" href="#">
-      <div class="h-badge">LTR</div>
-      <div class="h-name">Lopez Tech Repairs<small>PHONE INVENTORY</small></div>
-    </a>
-    <nav>
-      <a href="index.html">Repairs</a>
-      <a href="parts-inventory.html">Parts</a>
-      <a href="phone-inventory.html" class="active">Phones</a>
-    </nav>
-    <div class="h-spacer"></div>
-    <div class="pill-synced" id="syncPill">
-      <div class="dot"></div><span id="syncLabel">Synced</span>
-    </div>
-    <button class="btn-signout" onclick="doSignOut()">Sign Out</button>
-  </header>
-
-  <main>
-    <div class="stats-bar">
-      <div class="stat-card s-total">
-        <div class="stat-label">Total Phones</div>
-        <div class="stat-value" id="statTotal">0</div>
-        <div class="stat-sub">All inventory</div>
-      </div>
-      <div class="stat-card s-avail">
-        <div class="stat-label">Available</div>
-        <div class="stat-value" id="statAvail">0</div>
-        <div class="stat-sub">Ready to sell</div>
-      </div>
-      <div class="stat-card s-recv">
-        <div class="stat-label">Received</div>
-        <div class="stat-value" id="statRecv">0</div>
-        <div class="stat-sub">Pending processing</div>
-      </div>
-      <div class="stat-card s-repair">
-        <div class="stat-label">In Repair</div>
-        <div class="stat-value" id="statRepair">0</div>
-        <div class="stat-sub">Being worked on</div>
-      </div>
-      <div class="stat-card s-sold">
-        <div class="stat-label">Total Value</div>
-        <div class="stat-value" id="statValue">$0</div>
-        <div class="stat-sub" id="statSoldCount">0 sold</div>
-      </div>
-    </div>
-
-    <!-- RECEIVE FORM -->
-    <div id="receiveSection" style="display:none">
-      <div class="section-toggle" onclick="toggleReceive()">
-        <h3>📥 Receive Phone</h3>
-        <span class="toggle-arrow" id="receiveArrow">▼</span>
-      </div>
-      <div class="receive-form" id="receiveForm">
-        <div class="form-grid">
-          <div class="form-field"><label>Model *</label><input type="text" id="rf_model" placeholder="e.g. iPhone 14 Pro"></div>
-          <div class="form-field"><label>Storage *</label>
-            <select id="rf_storage"><option value="">Select…</option><option>16GB</option><option>32GB</option><option>64GB</option><option>128GB</option><option>256GB</option><option>512GB</option><option>1TB</option></select>
-          </div>
-          <div class="form-field"><label>Color</label><input type="text" id="rf_color" placeholder="e.g. Space Black"></div>
-          <div class="form-field"><label>Carrier</label>
-            <select id="rf_carrier"><option value="">Select…</option><option>Unlocked</option><option>AT&T</option><option>T-Mobile</option><option>Verizon</option><option>Cricket</option><option>Boost</option><option>Metro PCS</option><option>Sprint</option><option>Other</option></select>
-          </div>
-          <div class="form-field"><label>Location *</label>
-            <select id="rf_location"><option value="">Select…</option><option>Crosby</option><option>Dayton</option></select>
-          </div>
-          <div class="form-field"><label>IMEI</label><input type="text" id="rf_imei" placeholder="15-digit IMEI"></div>
-          <div class="form-field"><label>Battery %</label><input type="number" id="rf_batt" placeholder="e.g. 89" min="0" max="100"></div>
-          <div class="form-field"><label>Charging Cycles</label><input type="number" id="rf_cycle" placeholder="e.g. 142" min="0"></div>
-          <div class="form-field"><label>Grade</label>
-            <select id="rf_grade"><option value="">Select…</option><option>A</option><option>B</option><option>C</option></select>
-          </div>
-          <div class="form-field"><label>Cost ($)</label><input type="number" id="rf_cost" placeholder="0.00" step="0.01" min="0"></div>
-          <div class="form-field"><label>Selling Price ($)</label><input type="number" id="rf_price" placeholder="0.00" step="0.01" min="0"></div>
-          <div class="form-field"><label>Notes</label><input type="text" id="rf_notes" placeholder="Optional notes"></div>
-        </div>
-        <div class="parts-section">
-          <h4>Replaced / Repaired Parts — check any part that was replaced or repaired on this device</h4>
-          <div class="parts-grid" id="receivePartsGrid"></div>
-        </div>
-        <div class="form-actions">
-          <button class="btn-cancel" onclick="resetReceiveForm()">Reset</button>
-          <button class="btn-primary" onclick="submitReceive()">+ Add to Inventory</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TOOLBAR -->
-    <div class="toolbar">
-      <div class="tabs">
-        <button class="tab-btn active" onclick="setTab('all',this)">All <span class="badge" id="cnt_all">0</span></button>
-        <button class="tab-btn" onclick="setTab('available',this)">Available <span class="badge" id="cnt_available">0</span></button>
-        <button class="tab-btn" onclick="setTab('received',this)">Received <span class="badge" id="cnt_received">0</span></button>
-        <button class="tab-btn" onclick="setTab('inrepair',this)">In Repair <span class="badge" id="cnt_inrepair">0</span></button>
-      </div>
-      <div class="tb-spacer"></div>
-      <div class="view-toggle">
-        <button id="vt-cards" class="active" onclick="setView('cards')">▦ Cards</button>
-        <button id="vt-table" onclick="setView('table')">☰ Table</button>
-      </div>
-      <input class="search-input" type="text" id="searchBox" placeholder="🔍  Search phones…" oninput="renderCards()">
-      <select class="filter-sel" id="filterLocation" onchange="renderCards()">
-        <option value="">All Locations</option><option>Crosby</option><option>Dayton</option>
-      </select>
-      <select class="filter-sel" id="filterCarrier" onchange="renderCards()">
-        <option value="">All Carriers</option><option>Unlocked</option><option>AT&T</option><option>T-Mobile</option><option>Verizon</option><option>Cricket</option><option>Boost</option><option>Metro PCS</option><option>Sprint</option><option>Other</option>
-      </select>
-    </div>
-
-    <div class="phone-grid" id="phoneGrid"></div>
-
-    <!-- ── SOLD PHONES SECTION ── -->
-    <div id="soldSection" style="margin-top:24px;border:1.5px solid #d48000;border-radius:16px;overflow:hidden;display:none;">
-      <div onclick="toggleSoldSection()"
-           style="display:flex;align-items:center;gap:12px;padding:14px 20px;background:linear-gradient(90deg,rgba(212,128,0,.08),transparent);cursor:pointer;user-select:none;">
-        <span style="font-size:18px;">💰</span>
-        <div style="flex:1;">
-          <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;letter-spacing:.5px;color:#d48000;">SOLD PHONES</div>
-          <div style="font-size:12px;color:var(--text-dim);margin-top:1px;">
-            <span id="sold-count-lbl">0 devices sold</span>
-            &nbsp;·&nbsp; Total sold: <span id="sold-revenue-lbl" style="color:var(--success);font-weight:600;">$0.00</span>
-            &nbsp;·&nbsp; Earnings: <span id="sold-profit-lbl" style="color:var(--accent);font-weight:600;">$0.00</span>
-          </div>
-        </div>
-        <span id="sold-section-arrow" style="font-size:12px;color:var(--text-dim);transition:transform .2s;">▼</span>
-      </div>
-      <div id="soldSectionBody" style="display:none;border-top:1px solid rgba(212,128,0,.25);">
-        <div style="padding:10px 16px 16px;">
-          <div class="phone-grid" id="soldGrid"></div>
-        </div>
-      </div>
-    </div>
-  </main>
-</div>
-
-<!-- EDIT MODAL -->
-<div class="modal-backdrop" id="editModal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h2>Edit Phone</h2>
-      <button class="btn-close" onclick="closeEdit()">✕</button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="em_id">
-      <div class="modal-form-grid">
-        <div class="modal-section-title">Device Info</div>
-        <div class="form-field"><label>Model</label><input type="text" id="em_model"></div>
-        <div class="form-field"><label>Storage</label>
-          <select id="em_storage"><option>16GB</option><option>32GB</option><option>64GB</option><option>128GB</option><option>256GB</option><option>512GB</option><option>1TB</option></select>
-        </div>
-        <div class="form-field"><label>Color</label><input type="text" id="em_color"></div>
-        <div class="form-field"><label>Carrier</label>
-          <select id="em_carrier"><option>Unlocked</option><option>AT&T</option><option>T-Mobile</option><option>Verizon</option><option>Cricket</option><option>Boost</option><option>Metro PCS</option><option>Sprint</option><option>Other</option></select>
-        </div>
-        <div class="form-field"><label>Location</label>
-          <select id="em_location"><option>Crosby</option><option>Dayton</option></select>
-        </div>
-        <div class="form-field"><label>Status</label>
-          <select id="em_status"><option value="received">Received</option><option value="available">Available</option><option value="inrepair">In Repair</option><option value="sold">Sold</option></select>
-        </div>
-        <div class="form-field"><label>IMEI</label><input type="text" id="em_imei"></div>
-        <div class="form-field"><label>Battery %</label><input type="number" id="em_batt" min="0" max="100"></div>
-        <div class="form-field"><label>Charging Cycles</label><input type="number" id="em_cycle" min="0"></div>
-        <div class="form-field"><label>Grade</label>
-          <select id="em_grade"><option>A</option><option>B</option><option>C</option></select>
-        </div>
-        <div class="form-field"><label>Cost ($)</label><input type="number" id="em_cost" step="0.01" min="0"></div>
-        <div class="form-field"><label>Selling Price ($)</label><input type="number" id="em_price" step="0.01" min="0"></div>
-        <div class="form-field"><label>Notes</label><input type="text" id="em_notes"></div>
-
-        <div class="modal-section-title">Replaced / Repaired Parts</div>
-        <div class="form-field" style="grid-column:1/-1">
-          <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;">Check any part that was replaced or repaired on this device</div>
-          <div class="parts-grid" id="editPartsGrid"></div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeEdit()">Cancel</button>
-      <button class="btn-primary" onclick="saveEdit()">Save Changes</button>
-    </div>
+  <div class="stats">
+    <div class="stat"><b id="st-stock">0</b><span>In stock</span></div>
+    <div class="stat g"><b id="st-sale">0</b><span>For sale</span></div>
+    <div class="stat"><b id="st-recv">0</b><span>Received</span></div>
+    <div class="stat g"><b id="st-value">$0</b><span>Value</span></div>
   </div>
-</div>
 
-<!-- ─── RECORD SALE MODAL ─────────────────────────────────────── -->
-<div class="modal-backdrop" id="saleModal">
-  <div class="modal-box" style="max-width:520px;">
-    <div class="modal-header">
-      <h2>Record Sale</h2>
-      <button class="btn-close" onclick="cancelSale()">✕</button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="sale_id">
-      <!-- device summary -->
-      <div class="sale-device-card">
-        <div class="sd-model" id="sale_model">—</div>
-        <div class="sd-sub" id="sale_sub">—</div>
-        <div class="sale-device-grid">
-          <div class="sd-item"><div class="sd-lbl">Unlock</div><div class="sd-val" id="sale_carrier">—</div></div>
-          <div class="sd-item"><div class="sd-lbl">Grade</div><div class="sd-val" id="sale_grade">—</div></div>
-          <div class="sd-item"><div class="sd-lbl">Battery</div><div class="sd-val" id="sale_batt">—</div></div>
-        </div>
-        <div class="sd-item" style="margin-top:12px;"><div class="sd-lbl">IMEI</div><div class="sd-val" id="sale_imei" style="font-size:12px;">—</div></div>
-        <span class="sale-listed">Listed at <b id="sale_listed">$0.00</b> · Cost <b id="sale_cost" style="color:rgba(255,255,255,.85)">$0.00</b></span>
-      </div>
-
-      <!-- payment method -->
-      <div class="form-field" style="margin-bottom:20px;">
-        <label>Payment Method</label>
-        <div class="pay-grid" id="payGrid">
-          <div class="pay-chip" data-pay="Cash"   onclick="selectPay(this)"><span class="pc-ico">💵</span>Cash</div>
-          <div class="pay-chip" data-pay="Card"   onclick="selectPay(this)"><span class="pc-ico">💳</span>Card</div>
-          <div class="pay-chip" data-pay="Zelle"  onclick="selectPay(this)"><span class="pc-ico">⚡</span>Zelle</div>
-          <div class="pay-chip" data-pay="CashApp" onclick="selectPay(this)"><span class="pc-ico">📲</span>CashApp</div>
-          <div class="pay-chip" data-pay="Acima"  onclick="selectPay(this)"><span class="pc-ico">📄</span>Acima</div>
-          <div class="pay-chip" data-pay="Check"  onclick="selectPay(this)"><span class="pc-ico">🧾</span>Check</div>
-        </div>
-      </div>
-
-      <!-- grand total -->
-      <div class="form-field" style="margin-bottom:16px;">
-        <label>Grand Total (what they paid)</label>
-        <div class="grand-total-wrap">
-          <span class="gt-dollar">$</span>
-          <input type="number" id="sale_total" step="0.01" min="0" placeholder="0.00">
-        </div>
-      </div>
-
-      <!-- date + note -->
-      <div class="modal-form-grid" style="grid-template-columns:1fr 1fr;gap:14px;">
-        <div class="form-field"><label>Sale Date</label><input type="date" id="sale_date"></div>
-        <div class="form-field"><label>Note (optional)</label><input type="text" id="sale_note" placeholder="e.g. trade-in, warranty"></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="cancelSale()">Cancel</button>
-      <button class="btn-confirm-sale" onclick="confirmSale()">✓ Confirm Sale</button>
-    </div>
+  <div class="controls">
+    <div class="pill on" data-f="all" onclick="setFilter('all')">All</div>
+    <div class="pill" data-f="available" onclick="setFilter('available')">For sale</div>
+    <div class="pill" data-f="received" onclick="setFilter('received')">Received</div>
+    <div class="pill" data-f="sold" onclick="setFilter('sold')">Sold</div>
+    <input class="search" id="search" placeholder="🔍  Search model, IMEI, color…" oninput="render()"/>
   </div>
+
+  <div id="inv"></div>
 </div>
 
-<!-- DELETE CONFIRM MODAL -->
-<div class="modal-backdrop" id="deleteModal">
-  <div class="modal-box" style="width:420px;">
-    <div class="modal-header">
-      <h2>🗑 Delete Phone</h2>
-      <button class="btn-close" onclick="closeDelete()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div style="text-align:center;padding:10px 0 20px;">
-        <div style="font-size:36px;margin-bottom:14px;">⚠️</div>
-        <div id="deletePhoneName" style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:10px;"></div>
-        <p style="font-size:14px;color:var(--text-dim);line-height:1.6;">
-          This will <strong style="color:var(--danger);">permanently delete</strong> this phone from Firebase.<br>
-          This action <strong>cannot be undone.</strong>
-        </p>
-      </div>
-      <input type="hidden" id="deletePhoneId">
-    </div>
-    <div class="modal-footer" style="justify-content:space-between;">
-      <button class="btn-cancel" onclick="closeDelete()">Cancel</button>
-      <button class="btn-sm btn-delete" style="padding:9px 22px;font-size:14px;" onclick="executeDelete()">Yes, Delete Permanently</button>
-    </div>
+<!-- ADD / EDIT MODAL -->
+<div class="ov" id="ov-form"><div class="modal"><div class="m-hdr"><h2 id="form-title">Add Phone</h2><button class="mclose" onclick="closeForm()">&times;</button></div>
+<div class="m-body">
+  <div class="fld"><label>Model <span class="req">*</span></label><input id="f-model" placeholder="e.g. iPhone 13, Galaxy S21, Moto G Power"/></div>
+  <div class="frow">
+    <div class="fld"><label>Storage</label><input id="f-storage" list="dl-storage" placeholder="128GB"/><datalist id="dl-storage"><option>32GB</option><option>64GB</option><option>128GB</option><option>256GB</option><option>512GB</option><option>1TB</option></datalist></div>
+    <div class="fld"><label>Color</label><input id="f-color" placeholder="Midnight"/></div>
   </div>
+  <div class="frow">
+    <div class="fld"><label>Carrier / Unlock</label><input id="f-carrier" list="dl-carrier" placeholder="Unlocked"/><datalist id="dl-carrier"><option>Unlocked</option><option>AT&amp;T</option><option>T-Mobile</option><option>Verizon</option><option>Metro</option><option>Cricket</option></datalist></div>
+    <div class="fld"><label>Location</label><select id="f-location"><option value="">— Select —</option><option>Dayton</option><option>Crosby</option></select></div>
+  </div>
+  <div class="fld"><label>IMEI / SN</label><input id="f-imei" placeholder="Optional"/></div>
+  <div class="frow">
+    <div class="fld"><label>Battery %</label><input id="f-batt" type="number" min="0" max="100" placeholder="0"/></div>
+    <div class="fld"><label>Cycle count</label><input id="f-cycle" type="number" min="0" placeholder="0"/></div>
+    <div class="fld"><label>Grade</label><input id="f-grade" list="dl-grade" placeholder="A"/><datalist id="dl-grade"><option>A</option><option>B</option><option>C</option><option>D</option></datalist></div>
+  </div>
+  <div class="frow">
+    <div class="fld"><label>Cost ($)</label><input id="f-cost" type="number" min="0" step="0.01" placeholder="0.00"/></div>
+    <div class="fld"><label>Price ($)</label><input id="f-price" type="number" min="0" step="0.01" placeholder="0.00"/></div>
+    <div class="fld"><label>Status</label><select id="f-status"><option value="received">Received</option><option value="available">For sale</option><option value="sold">Sold</option></select></div>
+  </div>
+  <div class="fld"><label>Notes</label><textarea id="f-notes" placeholder="Condition, blemishes, anything worth noting…"></textarea></div>
 </div>
+<div class="m-foot"><button class="btn danger" id="f-del" onclick="removePhone(editId,true)" style="display:none">Delete</button><button class="btn" onclick="closeForm()" style="margin-left:auto">Cancel</button><button class="btn pri" onclick="saveForm()">Save Phone</button></div>
+</div></div>
 
 <!-- LABEL MODAL -->
-<div class="modal-backdrop" id="labelModal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h2>🖨 Print Label</h2>
-      <button class="btn-close" onclick="document.getElementById('labelModal').classList.remove('open')">✕</button>
-    </div>
-    <div class="modal-body">
-      <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;">
-        Brother QL-820NWB &nbsp;·&nbsp; 2.4" × 1.50" &nbsp;·&nbsp; Landscape &nbsp;·&nbsp; Monochrome &nbsp;·&nbsp; 300 dpi
-      </p>
-      <div id="labelPreviewWrap">
-        <div id="labelPreview"></div>
-      </div>
-      <div style="display:flex;gap:10px;justify-content:flex-end">
-        <button class="btn-cancel" onclick="document.getElementById('labelModal').classList.remove('open')">Cancel</button>
-        <button class="btn-primary" onclick="window.print()">🖨 Print Label</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- HIDDEN PRINT TARGET -->
-<div id="printLabelWrap" style="display:none">
-  <div class="plbl" id="printLabelContent"></div>
-</div>
+<div class="ov" id="ov-label"><div class="modal sm"><div class="m-hdr"><h2>Phone Label</h2><button class="mclose" onclick="closeLabel()">&times;</button></div>
+<div class="m-body"><div class="lblwrap"><div class="lbl" id="lbl-preview"></div></div></div>
+<div class="m-foot"><button class="btn" onclick="closeLabel()">Close</button><button class="btn pri" onclick="printLabel()" style="margin-left:auto"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>Print label</button></div>
+</div></div>
 
 <div id="toast"></div>
 
 <script>
-// ─── CONFIG ───────────────────────────────────────────────────────────────
-var FB_URL    = 'https://lopez-tech-repairs-82c87-default-rtdb.firebaseio.com';
-var FB_KEY    = 'vy7bsIpXGsJtyTO175pQiDJ8lgYbdLWJG4R9SZLm';
-var PART_KEYS = ['Screen','Back Glass','Battery','Charging Port','Rear Camera','Front Camera','Motherboard'];
-var USERS = {
-  'saul':             { pin:'7679', role:'admin' },
-  'lopeztechrepairs': { pin:'7679', role:'admin' },
-  'david':            { pin:'7910', role:'view'  },
-  'juan':             { pin:'0329', role:'view'  }
-};
-
-// ─── STATE ────────────────────────────────────────────────────────────────
-var currentUser = null;
-var currentRole = null;
-var phonesData  = {};
-var currentTab  = 'all';
-var pollTimer   = null;
-
-// ─── BOOT ─────────────────────────────────────────────────────────────────
-window.onload = function() {
-  buildPartChecks('receivePartsGrid');
-  buildPartChecks('editPartsGrid');
-  var saved = null;
-  try { saved = JSON.parse(localStorage.getItem('ltr_session')); } catch(e) {}
-  if (saved && saved.user && saved.role) {
-    currentUser = saved.user;
-    currentRole = saved.role;
-    startApp();
-  }
-};
-
-// ─── LOGIN / LOGOUT ───────────────────────────────────────────────────────
-function doLogin() {
-  var uRaw = (document.getElementById('loginUser').value||'').trim().toLowerCase();
-  var pin  = (document.getElementById('loginPin').value||'').trim();
-  var err  = document.getElementById('loginError');
-  err.style.display = 'none';
-  if (!USERS[uRaw] || USERS[uRaw].pin !== pin) { err.style.display='block'; return; }
-  currentUser = uRaw;
-  currentRole = USERS[uRaw].role;
-  if (document.getElementById('rememberMe').checked) {
-    localStorage.setItem('ltr_session', JSON.stringify({ user:currentUser, role:currentRole }));
-  }
-  startApp();
+/* ══════ FIREBASE (same project as the repair dashboard) ══════ */
+const FB={apiKey:"AIzaSyAKeb68narBC-QxnHrw5v346xiCR2Q_Oxo",authDomain:"lopez-tech-repairs-82c87.firebaseapp.com",databaseURL:"https://lopez-tech-repairs-82c87-default-rtdb.firebaseio.com",projectId:"lopez-tech-repairs-82c87"};
+let authToken='',refreshTok='',authTmr=null;
+function fbBase(){return FB.databaseURL.replace(/\/$/,'');}
+function fbUrlFor(p){return fbBase()+'/'+p+'.json'+(authToken?'?auth='+encodeURIComponent(authToken):'');}
+async function ensureAuth(){
+  try{
+    const r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({returnSecureToken:true})});
+    const d=await r.json();
+    if(d&&d.idToken){authToken=d.idToken;refreshTok=d.refreshToken||'';scheduleRefresh(d.expiresIn);}
+  }catch(e){/* anon disabled or offline: run tokenless (works on public rules) */}
 }
-
-function doSignOut() {
-  localStorage.removeItem('ltr_session');
-  clearInterval(pollTimer);
-  currentUser=null; currentRole=null; phonesData={};
-  document.getElementById('app').classList.remove('visible');
-  document.getElementById('app').style.display='none';
-  document.getElementById('loginScreen').style.display='flex';
-  document.getElementById('loginPin').value='';
+function scheduleRefresh(exp){const ms=Math.max(60000,((parseInt(exp||3600)||3600)-300)*1000);clearTimeout(authTmr);authTmr=setTimeout(refreshAuth,ms);}
+async function refreshAuth(){
+  if(!refreshTok)return ensureAuth();
+  try{
+    const r=await fetch('https://securetoken.googleapis.com/v1/token?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(refreshTok)});
+    const d=await r.json();
+    if(d&&d.id_token){authToken=d.id_token;refreshTok=d.refresh_token||refreshTok;scheduleRefresh(d.expires_in);}
+  }catch(e){}
 }
-
-// ─── START APP ────────────────────────────────────────────────────────────
-function startApp() {
-  document.getElementById('loginScreen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  document.getElementById('app').classList.add('visible');
-  if (currentRole==='admin') document.getElementById('receiveSection').style.display='block';
-  fetchPhones();
-  pollTimer = setInterval(fetchPhones, 7000);
+async function fbFetch(path,opts,retry){
+  const res=await fetch(fbUrlFor(path),opts);
+  if((res.status===401||res.status===403)&&!retry){await ensureAuth();return fbFetch(path,opts,true);}
+  return res;
 }
+async function fbGet(path){const r=await fbFetch(path);if(!r.ok)throw new Error('read '+r.status);return r.json();}
+async function fbPut(path,obj){const r=await fbFetch(path,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});if(!r.ok)throw new Error('write '+r.status);return r;}
+async function fbPost(path,obj){const r=await fbFetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});if(!r.ok)throw new Error('post '+r.status);return r.json();}
+async function fbDel(path){try{await fbFetch(path,{method:'DELETE'});}catch(e){}}
 
-// ─── FIREBASE ─────────────────────────────────────────────────────────────
-function fbUrl(path) { return FB_URL + path + '.json?auth=' + FB_KEY; }
+/* ══════ DATA ══════ */
+const BRAND_ORDER=['Apple','Samsung','Motorola','Google','OnePlus','Other'];
+const STATUSES={received:{label:'Received',color:'#0369A1',bg:'#E0F2FE'},available:{label:'For sale',color:'#15803D',bg:'#DCFCE7'},sold:{label:'Sold',color:'#475569',bg:'#F1F5F9'}};
+let phones={};           // id -> phone
+let filter='all';
+let editId=null;
+const collapsed={};      // brand -> true if collapsed
 
-function fetchPhones() {
-  fetch(fbUrl('/phones'))
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      phonesData = data||{};
-      updateSync(true); updateStats(); updateTabCounts(); renderCards();
-    })
-    .catch(function(){ updateSync(false); });
-}
-
-function savePhone(id, payload) {
-  return fetch(fbUrl('/phones/'+id), {
-    method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
-  }).then(function(r){ return r.json(); });
-}
-
-function addPhone(payload) {
-  return fetch(fbUrl('/phones'), {
-    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
-  }).then(function(r){ return r.json(); });
-}
-
-// ─── SYNC PILL ────────────────────────────────────────────────────────────
-function updateSync(ok) {
-  var pill=document.getElementById('syncPill'), label=document.getElementById('syncLabel');
-  if (ok) {
-    pill.className='pill-synced';
-    var n=new Date();
-    label.textContent='Synced '+n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  } else { pill.className='pill-synced offline'; label.textContent='Offline'; }
-}
-
-// ─── STATS ────────────────────────────────────────────────────────────────
-function updateStats() {
-  var phones=Object.values(phonesData);
-  var avail=phones.filter(function(p){return p.status==='available';}).length;
-  var recv=phones.filter(function(p){return p.status==='received';}).length;
-  var repair=phones.filter(function(p){return p.status==='inrepair';}).length;
-  var sold=phones.filter(function(p){return p.status==='sold';}).length;
-  var value=phones.filter(function(p){return p.status!=='sold';}).reduce(function(s,p){return s+(parseFloat(p.price)||0);},0);
-  document.getElementById('statTotal').textContent=phones.length;
-  document.getElementById('statAvail').textContent=avail;
-  document.getElementById('statRecv').textContent=recv;
-  document.getElementById('statRepair').textContent=repair;
-  document.getElementById('statValue').textContent='$'+value.toFixed(0);
-  document.getElementById('statSoldCount').textContent=sold+' sold';
-}
-
-// ─── TABS ─────────────────────────────────────────────────────────────────
-function updateTabCounts() {
-  var phones=Object.values(phonesData);
-  document.getElementById('cnt_all').textContent=phones.length;
-  document.getElementById('cnt_available').textContent=phones.filter(function(p){return p.status==='available';}).length;
-  document.getElementById('cnt_received').textContent=phones.filter(function(p){return p.status==='received';}).length;
-  document.getElementById('cnt_inrepair').textContent=phones.filter(function(p){return p.status==='inrepair';}).length;
-  // cnt_sold removed — sold now has dedicated section
-}
-
-function setTab(tab,btn) {
-  currentTab=tab;
-  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-  renderCards();
-}
-
-// ─── CARDS ────────────────────────────────────────────────────────────────
-// ─── BRAND / CATEGORY DETECTION ──────────────────────────
-function getBrand(model) {
-  var m = (model||'').toLowerCase();
-  if (m.includes('iphone')||m.includes('ipad')||m.includes('macbook')||m.startsWith('apple')||(m.includes('watch')&&!m.includes('samsung'))) return 'Apple';
-  if (m.includes('samsung')) return 'Samsung';
-  if (m.includes('motorola')||m.startsWith('moto ')) return 'Motorola';
-  if (m.includes('google')||m.includes('pixel')) return 'Google';
-  if (m.includes('oneplus')||m.includes('one plus')) return 'OnePlus';
+function getBrand(model){
+  const m=(model||'').toLowerCase();
+  if(m.includes('iphone')||m.includes('ipad')||m.includes('macbook')||m.startsWith('apple')||(m.includes('watch')&&!m.includes('samsung')))return 'Apple';
+  if(m.includes('samsung')||m.includes('galaxy'))return 'Samsung';
+  if(m.includes('motorola')||m.startsWith('moto '))return 'Motorola';
+  if(m.includes('google')||m.includes('pixel'))return 'Google';
+  if(m.includes('oneplus')||m.includes('one plus'))return 'OnePlus';
   return 'Other';
 }
-
-function getAppleSub(model) {
-  var m = (model||'').toLowerCase();
-  if (m.includes('iphone'))  return 'iPhone';
-  if (m.includes('ipad'))    return 'iPad';
-  if (m.includes('watch'))   return 'Apple Watch';
-  if (m.includes('macbook')) return 'MacBook';
-  return 'Other Apple';
-}
-
-function getSamsungSub(model) {
-  var m = (model||'').toLowerCase();
-  if (m.includes('note'))                          return 'Note Series';
-  if (m.includes('fold')||m.includes('flip'))      return 'Fold / Flip';
-  if (m.includes('tab'))                           return 'Tablet';
-  // S series: "samsung s" followed by digit
-  if (/samsung\s+s\d/i.test(model))               return 'S Series';
-  // A series: "samsung a" followed by digit
-  if (/samsung\s+a\d/i.test(model))               return 'A Series';
-  return 'Other Samsung';
-}
-
-var collapsedBrands = {};   // brand → true = collapsed
-var collapsedSubs   = {};   // brand+sub → true = collapsed
-
-function toggleBrand(brand) {
-  collapsedBrands[brand] = !collapsedBrands[brand];
-  var body = document.getElementById('brand-body-'+slugify(brand));
-  var chev = document.getElementById('brand-chev-'+slugify(brand));
-  if (body) body.classList.toggle('open', !collapsedBrands[brand]);
-  if (chev) chev.classList.toggle('open', !collapsedBrands[brand]);
-}
-
-function toggleSub(brand, sub) {
-  var key = brand+'__'+sub;
-  collapsedSubs[key] = !collapsedSubs[key];
-  var body = document.getElementById('sub-body-'+slugify(brand+sub));
-  var chev = document.getElementById('sub-chev-'+slugify(brand+sub));
-  if (body) body.classList.toggle('open', !collapsedSubs[key]);
-  if (chev) chev.classList.toggle('open', !collapsedSubs[key]);
-}
-
-function slugify(s) { return (s||'').replace(/[^a-z0-9]/gi,'').toLowerCase(); }
-
-var BRAND_ORDER = ['Apple','Samsung','Motorola','Google','OnePlus','Other'];
-var BRAND_ICONS = { Apple:'🍎', Samsung:'📱', Motorola:'📡', Google:'🔍', OnePlus:'🔴', Other:'📦' };
-var APPLE_SUB_ORDER   = ['iPhone','iPad','Apple Watch','MacBook','Other Apple'];
-var SAMSUNG_SUB_ORDER = ['S Series','A Series','Note Series','Fold / Flip','Tablet','Other Samsung'];
-
-function renderCards() {
-  var grid    = document.getElementById('phoneGrid');
-  var search  = (document.getElementById('searchBox').value||'').toLowerCase();
-  var locFil  = document.getElementById('filterLocation').value;
-  var carFil  = document.getElementById('filterCarrier').value;
-
-  var entries = Object.entries(phonesData);
-  // Always exclude sold from main inventory grid
-  entries = entries.filter(function(e){ return e[1].status !== 'sold'; });
-  if (currentTab !== 'all') entries = entries.filter(function(e){ return e[1].status===currentTab; });
-  if (search) entries = entries.filter(function(e){
-    var p=e[1];
-    return (p.model||'').toLowerCase().includes(search)
-        ||(p.imei||'').toLowerCase().includes(search)
-        ||(p.color||'').toLowerCase().includes(search)
-        ||(p.carrier||'').toLowerCase().includes(search);
-  });
-  if (locFil) entries = entries.filter(function(e){ return e[1].location===locFil; });
-  if (carFil) entries = entries.filter(function(e){ return e[1].carrier===carFil; });
-
-  renderSoldSection();
-
-  if (!entries.length) {
-    grid.innerHTML='<div class="empty-state"><div class="icon">📱</div><h3>No phones found</h3><p>Adjust your filters or receive a new phone.</p></div>';
-    return;
+function subGroup(brand,model){
+  const m=(model||'').toLowerCase();
+  if(brand==='Apple'){
+    if(m.includes('watch'))return 'Apple Watch';
+    if(m.includes('ipad'))return 'iPad';
+    if(m.includes('macbook'))return 'MacBook';
+    if(m.includes('airpod'))return 'AirPods';
+    if(m.includes('iphone')){const t=m.match(/iphone\s*(1[0-9]|[4-9]|se|xs|xr|x)/);if(t){const g=t[1];return 'iPhone '+(/^\d+$/.test(g)?g:g.toUpperCase());}return 'iPhone';}
+    return 'Other Apple';
   }
+  if(brand==='Samsung'){
+    if(m.match(/galaxy\s*z/)||m.includes('z fold')||m.includes('z flip'))return 'Galaxy Z';
+    if(m.includes('note'))return 'Galaxy Note';
+    if(m.includes('tab'))return 'Galaxy Tab';
+    if(m.includes('watch'))return 'Galaxy Watch';
+    if(/galaxy\s*s/.test(m))return 'Galaxy S';
+    if(/galaxy\s*a/.test(m))return 'Galaxy A';
+    return 'Galaxy';
+  }
+  if(brand==='Motorola'){
+    if(m.includes('razr'))return 'Razr';
+    if(m.includes('edge'))return 'Moto Edge';
+    if(/moto\s*g/.test(m))return 'Moto G';
+    if(/moto\s*e/.test(m))return 'Moto E';
+    return 'Motorola';
+  }
+  if(brand==='Google'){const p=m.match(/pixel\s*(\d+)/);return p?'Pixel '+p[1]:'Pixel';}
+  if(brand==='OnePlus')return 'OnePlus';
+  const first=(model||'').trim().split(/\s+/)[0];return first||'Other';
+}
+function numOf(l){const m=l.match(/(\d+)/);return m?parseInt(m[1]):null;}
+function subSort(a,b){const na=numOf(a),nb=numOf(b);if(na!==null&&nb!==null)return nb-na;if(na!==null)return -1;if(nb!==null)return 1;return a.localeCompare(b);}
+// map any legacy status (e.g. inrepair) into our 3 buckets
+function bucket(p){const s=(p&&p.status)||'received';if(s==='sold')return 'sold';if(s==='available')return 'available';return 'received';}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function money(n){const v=parseFloat(n)||0;return '$'+v.toLocaleString('en-US',{minimumFractionDigits:v%1?2:0,maximumFractionDigits:2});}
+function last4(s){s=(s||'').replace(/\s/g,'');return s?'…'+s.slice(-4):'';}
 
-  entries.sort(function(a,b){ return (parseFloat(a[1].price)||0)-(parseFloat(b[1].price)||0); });
+/* ══════ LOAD ══════ */
+async function load(){
+  try{const d=await fbGet('phones');phones=d&&typeof d==='object'?d:{};}
+  catch(e){phones={};toast('Could not load inventory','err');}
+  render();
+}
 
-  // Group by brand
-  var byBrand = {};
-  BRAND_ORDER.forEach(function(b){ byBrand[b]=[]; });
-  entries.forEach(function(e){
-    var brand = getBrand(e[1].model);
-    if (!byBrand[brand]) byBrand[brand]=[];
-    byBrand[brand].push(e);
-  });
-
-  var html = '';
-  BRAND_ORDER.forEach(function(brand) {
-    var phones = byBrand[brand];
-    if (!phones || !phones.length) return;
-    var slug = slugify(brand);
-    var isOpen = collapsedBrands[brand] === undefined ? false : !collapsedBrands[brand];
-
-    html += '<div class="brand-section">';
-    html += '<div class="brand-header" onclick="toggleBrand(\''+brand+'\')">'
-          + '<span class="brand-icon">'+(BRAND_ICONS[brand]||'📱')+'</span>'
-          + '<span class="brand-name">'+brand+'</span>'
-          + '<span class="brand-count">'+phones.length+' device'+(phones.length!==1?'s':'')+'</span>'
-          + '<span class="brand-chevron'+(isOpen?' open':'')+'" id="brand-chev-'+slug+'">▼</span>'
-          + '</div>';
-    html += '<div class="brand-body'+(isOpen?' open':'')+'" id="brand-body-'+slug+'">';
-
-    if (brand === 'Apple') {
-      // Sub-sections for Apple
-      var bySub = {};
-      APPLE_SUB_ORDER.forEach(function(s){ bySub[s]=[]; });
-      phones.forEach(function(e){
-        var sub = getAppleSub(e[1].model);
-        if (!bySub[sub]) bySub[sub]=[];
-        bySub[sub].push(e);
-      });
-      APPLE_SUB_ORDER.forEach(function(sub){
-        var subs = bySub[sub];
-        if (!subs||!subs.length) return;
-        var skey = slugify(brand+sub);
-        var sOpen = collapsedSubs[brand+'__'+sub]===undefined?false:!collapsedSubs[brand+'__'+sub];
-        html += '<div class="sub-section">';
-        html += '<div class="sub-header" onclick="toggleSub(\''+brand+'\',\''+sub+'\')">'
-              + '<span class="sub-name">'+sub+'</span>'
-              + '<span class="sub-count">'+subs.length+'</span>'
-              + '<span class="sub-chevron'+(sOpen?' open':'')+'" id="sub-chev-'+skey+'">▼</span>'
-              + '</div>';
-        html += '<div class="sub-body'+(sOpen?' open':'')+'" id="sub-body-'+skey+'">'
-              + buildGroupBody(subs)
-              + '</div></div>';
-      });
-
-    } else if (brand === 'Samsung') {
-      // Sub-sections for Samsung
-      var bySub = {};
-      SAMSUNG_SUB_ORDER.forEach(function(s){ bySub[s]=[]; });
-      phones.forEach(function(e){
-        var sub = getSamsungSub(e[1].model);
-        if (!bySub[sub]) bySub[sub]=[];
-        bySub[sub].push(e);
-      });
-      SAMSUNG_SUB_ORDER.forEach(function(sub){
-        var subs = bySub[sub];
-        if (!subs||!subs.length) return;
-        var skey = slugify(brand+sub);
-        var sOpen = collapsedSubs[brand+'__'+sub]===undefined?false:!collapsedSubs[brand+'__'+sub];
-        html += '<div class="sub-section">';
-        html += '<div class="sub-header" onclick="toggleSub(\''+brand+'\',\''+sub+'\')">'
-              + '<span class="sub-name">'+sub+'</span>'
-              + '<span class="sub-count">'+subs.length+'</span>'
-              + '<span class="sub-chevron'+(sOpen?' open':'')+'" id="sub-chev-'+skey+'">▼</span>'
-              + '</div>';
-        html += '<div class="sub-body'+(sOpen?' open':'')+'" id="sub-body-'+skey+'">'
-              + buildGroupBody(subs)
-              + '</div></div>';
-      });
-
-    } else {
-      // Flat grid for Motorola, Google, OnePlus, Other
-      html += buildGroupBody(phones);
+/* ══════ RENDER ══════ */
+function matches(p){
+  const b=bucket(p);
+  if(filter==='sold'){if(b!=='sold')return false;}
+  else if(b==='sold')return false;
+  else if(filter!=='all'&&b!==filter)return false;
+  const q=(document.getElementById('search').value||'').trim().toLowerCase();
+  if(!q)return true;
+  return [p.model,p.color,p.storage,p.imei,p.carrier,p.grade,p.location].some(v=>(v||'').toString().toLowerCase().includes(q));
+}
+function render(){
+  updateStats();
+  const entries=Object.entries(phones).filter(e=>matches(e[1]));
+  const wrap=document.getElementById('inv');
+  let head='';
+  if(filter==='sold'){
+    const sold=Object.values(phones).filter(p=>bucket(p)==='sold');
+    const rev=sold.reduce((s,p)=>s+(parseFloat(p.soldPrice||p.price)||0),0);
+    const made=sold.reduce((s,p)=>s+((parseFloat(p.soldPrice||p.price)||0)-(parseFloat(p.cost)||0)),0);
+    head='<div class="sold-summary"><div class="ss"><b>'+sold.length+'</b><span>Phones sold</span></div><div class="ss"><b>'+money(rev)+'</b><span>Total sold</span></div><div class="ss g"><b>'+money(made)+'</b><span>Total made</span></div></div>';
+  }
+  if(!entries.length){const msg=filter==='sold'?'No phones marked sold yet.':(Object.keys(phones).length?'Try a different filter or search.':'Add your first phone with the button up top.');wrap.innerHTML=head+'<div class="empty"><div class="ic">📱</div><h3>No phones found</h3><p>'+msg+'</p></div>';return;}
+  // group by brand
+  const byBrand={};BRAND_ORDER.forEach(b=>byBrand[b]=[]);
+  entries.forEach(e=>{const b=getBrand(e[1].model);(byBrand[b]=byBrand[b]||[]).push(e);});
+  let html='';
+  BRAND_ORDER.forEach(brand=>{
+    const list=byBrand[brand];if(!list||!list.length)return;
+    // newest first within a brand
+    list.sort((a,b)=>(b[1].created||0)-(a[1].created||0));
+    const col=collapsed[brand]!==false;
+    let body='';
+    if(!col){
+      const subs={};
+      list.forEach(e=>{const sg=subGroup(brand,e[1].model);(subs[sg]=subs[sg]||[]).push(e);});
+      body=Object.keys(subs).sort(subSort).map(sn=>{
+        const arr=subs[sn].sort((a,b)=>(b[1].created||0)-(a[1].created||0));
+        return '<div class="sub-sec"><div class="sub-hd">'+esc(sn)+'<span class="sub-ct">'+arr.length+'</span></div><div class="grid">'+arr.map(e=>cardHtml(e[0],e[1])).join('')+'</div></div>';
+      }).join('');
     }
-
-    html += '</div></div>'; // close brand-body + brand-section
-  });
-
-  grid.innerHTML = html;
-}
-
-// ─── VIEW MODE (cards / table) ────────────────────────────────────────────
-var viewMode = 'cards';
-function setView(v) {
-  viewMode = v;
-  var c=document.getElementById('vt-cards'), t=document.getElementById('vt-table');
-  if (c) c.classList.toggle('active', v==='cards');
-  if (t) t.classList.toggle('active', v==='table');
-  renderCards();
-}
-
-// Renders a group of phones as either a card grid or a table, per viewMode.
-// Brand/sub-section grouping is identical in both views.
-function buildGroupBody(entries) {
-  if (viewMode === 'table') {
-    return '<div class="inv-table-wrap"><table class="inv-table">'
-      + '<thead><tr>'
-      + '<th>Device</th><th>Unlock</th><th>Battery</th><th>Grade</th><th>Cost</th><th>Price</th><th>Status</th><th>Location</th>'
-      + (currentRole==='admin' ? '<th>Actions</th>' : '')
-      + '</tr></thead><tbody>'
-      + entries.map(function(e){ return buildRow(e[0], e[1]); }).join('')
-      + '</tbody></table></div>';
-  }
-  return '<div class="sub-grid">' + entries.map(function(e){ return buildCard(e[0], e[1]); }).join('') + '</div>';
-}
-
-function buildRow(id, p) {
-  var lblMap={received:'Received',available:'Available',inrepair:'In Repair',sold:'Sold'};
-  var sLabel=lblMap[p.status]||p.status;
-  var pc='pill-'+(p.status||'received');
-  var isSold = p.status==='sold';
-  var statusCell;
-  if (currentRole==='admin') {
-    statusCell = '<select class="status-sel" onchange="changeStatus(\''+id+'\',this.value)">'
-      + '<option value="received"'+(p.status==='received'?' selected':'')+'>Received</option>'
-      + '<option value="available"'+(p.status==='available'?' selected':'')+'>Available</option>'
-      + '<option value="inrepair"'+(p.status==='inrepair'?' selected':'')+'>In Repair</option>'
-      + '<option value="sold"'+(isSold?' selected':'')+'>Sold</option>'
-      + '</select>';
-  } else {
-    statusCell = '<span class="status-pill '+pc+'">'+sLabel+'</span>';
-  }
-  var priceCell;
-  if (isSold) {
-    var amt=(p.soldPrice!=null?parseFloat(p.soldPrice):parseFloat(p.price))||0;
-    priceCell = '<span style="color:var(--success);font-weight:600;">$'+amt.toFixed(2)+'</span>'+(p.payMethod?'<div class="it-sub">'+p.payMethod+'</div>':'');
-  } else {
-    priceCell = '$'+(parseFloat(p.price)||0).toFixed(2);
-  }
-  var actionsCell='';
-  if (currentRole==='admin') {
-    actionsCell = '<td><div class="it-actions">'
-      + '<button class="btn-sm btn-edit" onclick="openEdit(\''+id+'\')">Edit</button>'
-      + '<button class="btn-sm btn-delete" onclick="confirmDelete(\''+id+'\')">🗑</button>'
-      + '<button class="btn-sm btn-print" onclick="openLabel(\''+id+'\')">🖨</button>'
-      + '</div></td>';
-  }
-  return '<tr>'
-    + '<td><div class="it-model">'+(p.model||'Unknown')+'</div><div class="it-sub">'+([p.storage,p.color].filter(Boolean).join(' · ')||'—')+(p.imei?' · '+p.imei:'')+'</div></td>'
-    + '<td>'+(p.carrier||'—')+'</td>'
-    + '<td>'+(p.batt||'?')+'%'+(p.cycle?'<div class="it-sub">CC '+p.cycle+'</div>':'')+'</td>'
-    + '<td>'+(p.grade||'—')+'</td>'
-    + '<td>$'+(parseFloat(p.cost)||0).toFixed(2)+'</td>'
-    + '<td>'+priceCell+'</td>'
-    + '<td>'+statusCell+'</td>'
-    + '<td>'+(p.location||'—')+'</td>'
-    + actionsCell
-    + '</tr>';
-}
-
-function buildCard(id,p) {
-  var lblMap={received:'Received',available:'Available',inrepair:'In Repair',sold:'Sold'};
-  var sLabel=lblMap[p.status]||p.status;
-  var sc='stripe-'+(p.status||'received');
-  var pc='pill-'+(p.status||'received');
-  // Show only REPLACED parts (checked = true = was replaced/repaired)
-  var partsHtml='';
-  if (p.parts&&typeof p.parts==='object') {
-    var replaced=Object.entries(p.parts).filter(function(pe){return pe[1]===true;});
-    if (replaced.length) {
-      partsHtml='<div class="parts-row">'
-        +replaced.map(function(pe){
-          return '<span class="part-chip part-replaced">🔧 '+pe[0]+'</span>';
-        }).join('')
+    html+='<div class="brand-sec">'
+      +'<div class="brand-hd'+(col?' collapsed':'')+'" onclick="toggleBrand(\''+brand+'\')"><span class="nm">'+brand+'</span><span class="ct">'+list.length+'</span><span class="chev"><svg fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M6 9l6 6 6-6"/></svg></span></div>'
+      +(col?'':body)
       +'</div>';
-    }
-  }
-  var actions='';
-  if (currentRole==='admin') {
-    actions+='<button class="btn-sm btn-edit" onclick="openEdit(\''+id+'\')">Edit</button>';
-    actions+='<select class="status-sel" onchange="changeStatus(\''+id+'\',this.value)">'
-            +'<option value="" disabled selected>Change Status</option>'
-            +'<option value="received">Received</option><option value="available">Available</option>'
-            +'<option value="inrepair">In Repair</option><option value="sold">Sold</option>'
-            +'</select>';
-    actions+='<button class="btn-sm btn-delete" onclick="confirmDelete(\''+id+'\')">🗑</button>';
-  }
-  actions+='<button class="btn-sm btn-print" onclick="openLabel(\''+id+'\')">🖨 Label</button>';
-  var soldInfoHtml='';
-  if (p.status==='sold') {
-    var amt = (p.soldPrice!=null ? parseFloat(p.soldPrice) : parseFloat(p.price))||0;
-    soldInfoHtml='<div class="sold-info-row">'
-      +'<span class="si-amt">Sold: $'+amt.toFixed(2)+'</span>'
-      +(p.payMethod ? '<span class="pay-badge">'+p.payMethod+'</span>' : '')
-      +'</div>';
-  }
-  return '<div class="phone-card">'
-    +'<div class="card-stripe '+sc+'"></div>'
-    +'<div class="card-body">'
-      +'<div class="card-header-row">'
-        +'<div><div class="card-model">'+(p.model||'Unknown')+'</div>'
-        +'<div class="card-storage">'+(p.storage||'')+' · '+(p.color||'')+'</div></div>'
-        +'<span class="status-pill '+pc+'">'+sLabel+'</span>'
-      +'</div>'
-      +'<div class="card-meta">'
-        +'<div class="meta-item"><div class="meta-label">Carrier</div><div class="meta-value">'+(p.carrier||'—')+'</div></div>'
-        +'<div class="meta-item"><div class="meta-label">Location</div><div class="meta-value">'+(p.location||'—')+'</div></div>'
-        +'<div class="meta-item"><div class="meta-label">Battery</div><div class="meta-value">'+(p.batt||'?')+'%'+(p.cycle?' · CC '+p.cycle:'')+'</div></div>'
-        +'<div class="meta-item"><div class="meta-label">Grade</div><div class="meta-value">'+(p.grade||'—')+'</div></div>'
-      +'</div>'
-      +'<div class="card-imei">IMEI: '+(p.imei||'—')+'</div>'
-      +partsHtml
-      +'<div class="card-price-row">'
-        +'<span class="price-cost">Cost: $'+(parseFloat(p.cost)||0).toFixed(2)+'</span>'
-        +'<span class="price-sell">$'+(parseFloat(p.price)||0).toFixed(2)+'</span>'
-      +'</div>'
-      +soldInfoHtml
-      +'<div class="card-actions">'+actions+'</div>'
-    +'</div>'
-  +'</div>';
-}
-
-// ─── SOLD SECTION ─────────────────────────────────────────────────────────
-function renderSoldSection() {
-  var soldEntries = Object.entries(phonesData).filter(function(e){ return e[1].status==='sold'; });
-  var section = document.getElementById('soldSection');
-  var grid = document.getElementById('soldGrid');
-  if (!section || !grid) return;
-
-  // Update labels
-  var totalRevenue = soldEntries.reduce(function(s,e){ return s+((e[1].soldPrice!=null?parseFloat(e[1].soldPrice):parseFloat(e[1].price))||0); }, 0);
-  var totalCost    = soldEntries.reduce(function(s,e){ return s+(parseFloat(e[1].cost)||0); }, 0);
-  var profit       = totalRevenue - totalCost;
-  document.getElementById('sold-count-lbl').textContent   = soldEntries.length+' device'+(soldEntries.length!==1?'s':'')+' sold';
-  document.getElementById('sold-revenue-lbl').textContent = '$'+totalRevenue.toFixed(2);
-  document.getElementById('sold-profit-lbl').textContent  = '$'+profit.toFixed(2);
-
-  // Show/hide section
-  section.style.display = soldEntries.length ? 'block' : 'none';
-  if (!soldEntries.length) return;
-
-  // Sort newest sold first (by soldDate if available, otherwise by model)
-  soldEntries.sort(function(a,b){
-    var da = a[1].soldDate ? new Date(a[1].soldDate) : new Date(0);
-    var db = b[1].soldDate ? new Date(b[1].soldDate) : new Date(0);
-    return db - da;
   });
+  wrap.innerHTML=head+html;
+}
+function cardHtml(id,p){
+  const b=bucket(p);const st=STATUSES[b];
+  const spec=[p.storage,p.color,p.carrier].filter(Boolean).join(' · ')||'—';
+  const tags=[];
+  if(p.batt)tags.push('Battery '+p.batt+'%');
+  if(p.grade)tags.push('Grade '+p.grade);
+  if(p.imei)tags.push('IMEI '+last4(p.imei));
+  if(p.location)tags.push('📍 '+p.location);
+  const opts=Object.keys(STATUSES).map(k=>'<option value="'+k+'"'+(k===b?' selected':'')+'>'+STATUSES[k].label+'</option>').join('');
+  return '<div class="card">'
+    +'<div class="card-top"><div><div class="nm">'+esc(p.model||'Unknown model')+'</div><div class="spec">'+esc(spec)+'</div></div>'
+    +'<select class="st-sel" style="color:'+st.color+';background:'+st.bg+';border-color:'+st.bg+'" onchange="changeStatus(\''+id+'\',this.value)" onclick="event.stopPropagation()">'+opts+'</select></div>'
+    +(tags.length?'<div class="meta">'+tags.map(t=>'<span class="tag">'+esc(t)+'</span>').join('')+'</div>':'<div style="height:6px"></div>')
+    +'<div class="card-foot"><div class="price">'+money(p.price)+(p.cost?'<small>cost '+money(p.cost)+'</small>':'')+'</div>'
+    +'<div class="acts"><button class="icbtn" onclick="openForm(\''+id+'\')">Edit</button>'
+    +'<button class="icbtn" onclick="openLabel(\''+id+'\')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>Label</button>'
+    +'<button class="icbtn del" title="Delete from stock" onclick="removePhone(\''+id+'\')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button></div></div>'
+    +'</div>';
+}
+function toggleBrand(b){collapsed[b]=(collapsed[b]===false);render();}
+function updateStats(){
+  const all=Object.values(phones);
+  const notSold=all.filter(p=>bucket(p)!=='sold');
+  set('st-stock',notSold.length);
+  set('st-sale',all.filter(p=>bucket(p)==='available').length);
+  set('st-recv',all.filter(p=>bucket(p)==='received').length);
+  set('st-value',money(notSold.reduce((s,p)=>s+(parseFloat(p.price)||0),0)));
+}
+function set(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+function setFilter(f){filter=f;document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('on',p.dataset.f===f));render();}
 
-  // Build sold devices in the current view (cards or table)
-  grid.innerHTML = buildGroupBody(soldEntries);
+/* ══════ STATUS QUICK-CHANGE ══════ */
+async function changeStatus(id,status){
+  const p=phones[id];if(!p)return;
+  if(status==='sold'&&bucket(p)!=='sold'){
+    const v=prompt('Sold for how much? ($)',(p.soldPrice||p.price||0));
+    if(v===null){render();return;}
+    p.soldPrice=parseFloat(v)||0;
+  }
+  p.status=status;
+  render();
+  try{await fbPut('phones/'+id,p);}catch(e){toast('Save failed','err');}
 }
 
-function toggleSoldSection() {
-  var body  = document.getElementById('soldSectionBody');
-  var arrow = document.getElementById('sold-section-arrow');
-  var open  = body.style.display === 'block';
-  body.style.display  = open ? 'none' : 'block';
-  arrow.style.transform = open ? '' : 'rotate(180deg)';
+/* ══════ ADD / EDIT ══════ */
+function openForm(id){
+  editId=id;
+  const p=id?phones[id]:null;
+  document.getElementById('form-title').textContent=id?'Edit Phone':'Add Phone';
+  document.getElementById('f-del').style.display=id?'inline-flex':'none';
+  const g=(f,v)=>document.getElementById(f).value=v==null?'':v;
+  g('f-model',p&&p.model);g('f-storage',p&&p.storage);g('f-color',p&&p.color);g('f-carrier',p&&p.carrier);
+  g('f-location',p&&p.location);g('f-imei',p&&p.imei);g('f-batt',p&&p.batt);g('f-cycle',p&&p.cycle);g('f-grade',p&&p.grade);
+  g('f-cost',p&&p.cost);g('f-price',p&&p.price);g('f-notes',p&&p.notes);
+  document.getElementById('f-status').value=p?bucket(p):'received';
+  document.getElementById('ov-form').classList.add('open');
 }
+function closeForm(){document.getElementById('ov-form').classList.remove('open');editId=null;}
+async function saveForm(){
+  const model=(document.getElementById('f-model').value||'').trim();
+  if(!model){toast('Model is required','err');return;}
+  const base=editId?Object.assign({},phones[editId]):{created:Date.now()};
+  const payload=Object.assign(base,{
+    model:model,
+    storage:(document.getElementById('f-storage').value||'').trim(),
+    color:(document.getElementById('f-color').value||'').trim(),
+    carrier:(document.getElementById('f-carrier').value||'').trim(),
+    location:document.getElementById('f-location').value,
+    imei:(document.getElementById('f-imei').value||'').trim(),
+    batt:parseInt(document.getElementById('f-batt').value)||0,
+    cycle:parseInt(document.getElementById('f-cycle').value)||0,
+    grade:(document.getElementById('f-grade').value||'').trim(),
+    cost:parseFloat(document.getElementById('f-cost').value)||0,
+    price:parseFloat(document.getElementById('f-price').value)||0,
+    status:document.getElementById('f-status').value,
 
-// ─── STATUS CHANGE ────────────────────────────────────────────────────────
-function changeStatus(id,newStatus) {
-  if (!newStatus) return;
-  // Selling a device opens the Record Sale window instead of committing right away
-  if (newStatus==='sold') { openSaleModal(id); return; }
-  var payload={status:newStatus};
-  savePhone(id,payload).then(function(){
-    phonesData[id]=Object.assign({},phonesData[id],payload);
-    updateStats(); updateTabCounts(); renderCards();
-    showToast('Status updated → '+newStatus,'ok');
-  }).catch(function(){ showToast('Failed to update status','err'); });
-}
-
-// ─── RECORD SALE ──────────────────────────────────────────────────────────
-var pendingPay = '';
-function openSaleModal(id) {
-  var p = phonesData[id]; if (!p) return;
-  pendingPay = '';
-  document.getElementById('sale_id').value = id;
-  document.getElementById('sale_model').textContent = p.model || 'Unknown';
-  document.getElementById('sale_sub').textContent   = [p.storage, p.color].filter(Boolean).join(' · ') || '—';
-  document.getElementById('sale_carrier').textContent = p.carrier || '—';
-  document.getElementById('sale_grade').textContent   = p.grade ? ('Grade '+p.grade) : '—';
-  document.getElementById('sale_batt').textContent    = (p.batt ? p.batt+'%' : '—') + (p.cycle ? ' · CC '+p.cycle : '');
-  document.getElementById('sale_imei').textContent    = p.imei || '—';
-  document.getElementById('sale_listed').textContent  = '$'+(parseFloat(p.price)||0).toFixed(2);
-  document.getElementById('sale_cost').textContent    = '$'+(parseFloat(p.cost)||0).toFixed(2);
-  // prefill grand total with the listed price as a starting point
-  document.getElementById('sale_total').value = (parseFloat(p.price)||0) ? (parseFloat(p.price)).toFixed(2) : '';
-  document.getElementById('sale_note').value = '';
-  document.getElementById('sale_date').value = new Date().toISOString().slice(0,10);
-  document.querySelectorAll('#payGrid .pay-chip').forEach(function(c){ c.classList.remove('sel'); });
-  document.getElementById('saleModal').classList.add('open');
-  setTimeout(function(){ document.getElementById('sale_total').focus(); document.getElementById('sale_total').select(); }, 60);
-}
-
-function selectPay(el) {
-  document.querySelectorAll('#payGrid .pay-chip').forEach(function(c){ c.classList.remove('sel'); });
-  el.classList.add('sel');
-  pendingPay = el.getAttribute('data-pay');
-}
-
-function confirmSale() {
-  var id = document.getElementById('sale_id').value; if (!id) return;
-  var total = parseFloat(document.getElementById('sale_total').value);
-  if (isNaN(total) || total < 0) { showToast('Enter the grand total','err'); document.getElementById('sale_total').focus(); return; }
-  if (!pendingPay) { showToast('Select a payment method','err'); return; }
-  var payload = {
-    status: 'sold',
-    soldDate: new Date(document.getElementById('sale_date').value || new Date()).toISOString(),
-    soldPrice: total,
-    payMethod: pendingPay,
-    saleNote: (document.getElementById('sale_note').value||'').trim()
-  };
-  savePhone(id, payload).then(function(){
-    phonesData[id] = Object.assign({}, phonesData[id], payload);
-    document.getElementById('saleModal').classList.remove('open');
-    updateStats(); updateTabCounts(); renderCards();
-    showToast('Sale recorded — $'+total.toFixed(2)+' · '+pendingPay, 'ok');
-  }).catch(function(){ showToast('Failed to record sale','err'); });
-}
-
-function cancelSale() {
-  document.getElementById('saleModal').classList.remove('open');
-  // re-render so the status dropdown snaps back to the device's real status
-  renderCards();
-}
-
-// ─── RECEIVE FORM ─────────────────────────────────────────────────────────
-function toggleReceive() {
-  var form=document.getElementById('receiveForm'),arrow=document.getElementById('receiveArrow');
-  var open=form.classList.toggle('open');
-  arrow.classList.toggle('open',open);
-}
-
-function buildPartChecks(cid) {
-  document.getElementById(cid).innerHTML=PART_KEYS.map(function(k){
-    return '<label class="part-check"><input type="checkbox" data-part="'+k+'"><span>'+k+'</span></label>';
-  }).join('');
-}
-
-function getPartValues(cid) {
-  var obj={};
-  document.querySelectorAll('#'+cid+' [data-part]').forEach(function(cb){ obj[cb.dataset.part]=cb.checked; });
-  return obj;
-}
-
-function submitReceive() {
-  var model=(document.getElementById('rf_model').value||'').trim();
-  var location=document.getElementById('rf_location').value;
-  if (!model)    { showToast('Model is required','err'); return; }
-  if (!location) { showToast('Location is required','err'); return; }
-  var payload={
-    model:model, storage:document.getElementById('rf_storage').value,
-    color:(document.getElementById('rf_color').value||'').trim(),
-    carrier:document.getElementById('rf_carrier').value, location:location,
-    imei:(document.getElementById('rf_imei').value||'').trim(),
-    batt:parseInt(document.getElementById('rf_batt').value)||0,
-    cycle:parseInt(document.getElementById('rf_cycle').value)||0,
-    grade:document.getElementById('rf_grade').value,
-    cost:parseFloat(document.getElementById('rf_cost').value)||0,
-    price:parseFloat(document.getElementById('rf_price').value)||0,
-    notes:(document.getElementById('rf_notes').value||'').trim(),
-    status:'received', parts:getPartValues('receivePartsGrid'), created:Date.now()
-  };
-  addPhone(payload).then(function(res){
-    phonesData[res.name]=payload;
-    updateStats(); updateTabCounts(); renderCards();
-    showToast('Phone added to inventory!','ok'); resetReceiveForm();
-  }).catch(function(){ showToast('Failed to add phone','err'); });
-}
-
-function resetReceiveForm() {
-  ['rf_model','rf_storage','rf_color','rf_carrier','rf_location','rf_imei','rf_batt','rf_cycle','rf_grade','rf_cost','rf_price','rf_notes']
-    .forEach(function(id){document.getElementById(id).value='';});
-  document.querySelectorAll('#receivePartsGrid [data-part]').forEach(function(cb){cb.checked=true;});
-}
-
-// ─── EDIT MODAL ───────────────────────────────────────────────────────────
-function openEdit(id) {
-  var p=phonesData[id]; if (!p) return;
-  document.getElementById('em_id').value=id;
-  document.getElementById('em_model').value=p.model||'';
-  setVal('em_storage',p.storage);
-  document.getElementById('em_color').value=p.color||'';
-  setVal('em_carrier',p.carrier); setVal('em_location',p.location); setVal('em_status',p.status);
-  document.getElementById('em_imei').value=p.imei||'';
-  document.getElementById('em_batt').value=p.batt||'';
-  document.getElementById('em_cycle').value=p.cycle||'';
-  setVal('em_grade',p.grade);
-  document.getElementById('em_cost').value=p.cost||'';
-  document.getElementById('em_price').value=p.price||'';
-  document.getElementById('em_notes').value=p.notes||'';
-  // parts: checked = was replaced (true)
-  var parts=p.parts||{};
-  document.querySelectorAll('#editPartsGrid [data-part]').forEach(function(cb){
-    cb.checked = parts[cb.dataset.part]===true;
   });
-  document.getElementById('editModal').classList.add('open');
+  try{
+    if(editId){phones[editId]=payload;await fbPut('phones/'+editId,payload);}
+    else{const res=await fbPost('phones',payload);phones[res.name]=payload;}
+    closeForm();render();toast(editId?'Saved ✓':'Phone added ✓','ok');
+  }catch(e){toast('Save failed','err');}
+}
+async function removePhone(id,fromModal){
+  if(!id||!phones[id])return;
+  if(!confirm('Delete this phone from inventory? This cannot be undone.'))return;
+  delete phones[id];
+  if(fromModal)closeForm();
+  render();
+  await fbDel('phones/'+id);toast('Phone deleted','ok');
 }
 
-function closeEdit() { document.getElementById('editModal').classList.remove('open'); }
+/* ══════ LABEL ══════ */
+function labelInner(p){
+  const title=[p.model,p.color,p.storage].filter(Boolean).join(' · ').toUpperCase();
+  const rows=[
+    ['IMEI/SN',p.imei||'—'],
+    ['CARRIER',(p.carrier||'—').toUpperCase()],
+    ['BATTERY',(p.batt?p.batt+'%':'—')+(p.cycle?' · CC '+p.cycle:'')],
 
-function saveEdit() {
-  var id=document.getElementById('em_id').value; if (!id) return;
-  var payload={
-    model:(document.getElementById('em_model').value||'').trim(),
-    storage:document.getElementById('em_storage').value,
-    color:(document.getElementById('em_color').value||'').trim(),
-    carrier:document.getElementById('em_carrier').value,
-    location:document.getElementById('em_location').value,
-    status:document.getElementById('em_status').value,
-    imei:(document.getElementById('em_imei').value||'').trim(),
-    batt:parseInt(document.getElementById('em_batt').value)||0,
-    cycle:parseInt(document.getElementById('em_cycle').value)||0,
-    grade:document.getElementById('em_grade').value,
-    cost:parseFloat(document.getElementById('em_cost').value)||0,
-    price:parseFloat(document.getElementById('em_price').value)||0,
-    notes:(document.getElementById('em_notes').value||'').trim(),
-    parts:getPartValues('editPartsGrid')
-  };
-  savePhone(id,payload).then(function(){
-    phonesData[id]=Object.assign({},phonesData[id],payload);
-    updateStats(); updateTabCounts(); renderCards(); closeEdit();
-    showToast('Phone updated!','ok');
-  }).catch(function(){ showToast('Failed to save changes','err'); });
+  ];
+  return '<div class="lbl-t">'+esc(title||'PHONE')+'</div><div class="lbl-rows">'
+    +rows.map(r=>'<div><b>'+esc(r[0])+'</b><span>'+esc(r[1])+'</span></div>').join('')
+    +'</div><div class="lbl-price">'+money(p.price)+'</div>';
+}
+let labelId=null;
+function openLabel(id){const p=phones[id];if(!p)return;labelId=id;document.getElementById('lbl-preview').innerHTML=labelInner(p);document.getElementById('ov-label').classList.add('open');}
+function closeLabel(){document.getElementById('ov-label').classList.remove('open');}
+function printLabel(){
+  const p=phones[labelId];if(!p)return;
+  const css='@page{size:2.9in auto;margin:5mm}body{margin:0;font-family:-apple-system,Arial,sans-serif}'
+    +'.lbl{width:2.7in;border:2px solid #000;border-radius:8px;padding:11px 13px;color:#000}'
+    +'.lbl-t{font-size:12.5px;font-weight:900;letter-spacing:.3px;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:8px;line-height:1.25}'
+    +'.lbl-rows>div{display:flex;font-size:10.5px;margin-bottom:4px}.lbl-rows b{width:78px;flex-shrink:0;font-weight:800}.lbl-rows span{font-weight:800;flex:1;word-break:break-word}'
+    +'.lbl-price{margin-top:8px;background:#000;color:#fff;border-radius:6px;padding:6px 10px;font-size:17px;font-weight:900;text-align:center}';
+  doPrint('<div class="lbl">'+labelInner(p)+'</div>',css);
+}
+function doPrint(html,css){
+  const f=document.createElement('iframe');
+  f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+  document.body.appendChild(f);
+  const d=f.contentWindow.document;
+  d.open();d.write('<html><head><meta charset="utf-8"><style>'+css+'</style></head><body>'+html+'</body></html>');d.close();
+  f.contentWindow.focus();
+  setTimeout(function(){try{f.contentWindow.print();}catch(e){}setTimeout(function(){f.remove();},600);},250);
 }
 
-function setVal(id,val) {
-  var el=document.getElementById(id);
-  if (!el||val===undefined||val===null) return;
-  for (var i=0;i<el.options.length;i++) {
-    if (el.options[i].value===val||el.options[i].text===val) { el.selectedIndex=i; return; }
-  }
-}
+/* ══════ MISC ══════ */
+let toastTmr=null;
+function toast(msg,kind){const t=document.getElementById('toast');t.textContent=msg;t.className='show'+(kind?' '+kind:'');clearTimeout(toastTmr);toastTmr=setTimeout(()=>t.className='',2600);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.ov.open').forEach(o=>o.classList.remove('open'));}});
 
-// ─── LABEL ────────────────────────────────────────────────────────────────
-// SVG icons for label (monochrome-friendly)
-var ICONS = {
-  imei: '<svg width="12" height="11" viewBox="0 0 12 11" fill="#000" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="1.3" height="11"/><rect x="2.2" y="0" width="0.9" height="11"/><rect x="4" y="0" width="1.9" height="11"/><rect x="6.8" y="0" width="0.9" height="11"/><rect x="8.6" y="0" width="0.9" height="11"/><rect x="10.4" y="0" width="1.3" height="11"/></svg>',
-  carrier: '<svg width="11" height="11" viewBox="0 0 11 11" fill="#000" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="7" width="2" height="4" rx=".3"/><rect x="3" y="4.5" width="2" height="6.5" rx=".3"/><rect x="6" y="2" width="2" height="9" rx=".3"/><rect x="9" y="0" width="2" height="11" rx=".3"/></svg>',
-  battery: '<svg width="14" height="9" viewBox="0 0 14 9" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="1" width="11" height="7" rx="1.5" stroke="#000" stroke-width="1.5" fill="none"/><rect x="11" y="3" width="3" height="3" rx=".8" fill="#000"/><rect x="1.5" y="2.5" width="7.5" height="4" rx=".5" fill="#000"/></svg>',
-  grade: '<svg width="12" height="11" viewBox="0 0 24 23" fill="#000" xmlns="http://www.w3.org/2000/svg"><path d="M12 1l3.09 6.26L22 8.27l-5 4.87 1.18 6.88L12 16.77l-6.18 3.25L7 13.14 2 8.27l6.91-1.01z"/></svg>',
-  repair: '<svg width="11" height="11" viewBox="0 0 24 24" fill="#000" xmlns="http://www.w3.org/2000/svg"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>'
-};
-
-function openLabel(id) {
-  var p=phonesData[id]; if (!p) return;
-
-  // Title: MODEL  COLOR  STORAGE
-  var title=[p.model,p.color,p.storage].filter(Boolean).join('  ').toUpperCase();
-
-  // Repair History: parts where value===true (was replaced/repaired)
-  var replacedParts=[];
-  if (p.parts&&typeof p.parts==='object') {
-    Object.entries(p.parts).forEach(function(pe){ if(pe[1]===true) replacedParts.push(pe[0]); });
-  }
-  var repairVal = replacedParts.length ? replacedParts.join(', ') : 'NONE';
-
-  var priceVal = '$'+(parseFloat(p.price)||0).toFixed(2);
-
-  function row(iconHtml,k,v) {
-    return '<div class="lbl-row">'
-      +'<span class="lico">'+iconHtml+'</span>'
-      +'<span class="lk">'+eh(k)+'</span>'
-      +'<span class="lv">'+eh(v)+'</span>'
-      +'</div>';
-  }
-
-  var inner=
-    '<div class="lbl-title">'+eh(title)+'</div>'
-   +'<div class="lbl-info">'
-     +row(ICONS.imei,    'IMEI / SN:',      p.imei||'—')
-     +row(ICONS.carrier, 'CARRIER STATUS:',  (p.carrier||'—').toUpperCase())
-     +row(ICONS.battery, 'BATTERY HEALTH:',  (p.batt?p.batt+'%':'—') + (p.cycle ? '   CC: '+p.cycle : ''))
-     +row(ICONS.grade,   'GRADE:',           p.grade||'—')
-     +row(ICONS.repair,  'REPAIR HISTORY:',  repairVal)
-   +'</div>'
-   +'<div class="lbl-price-box">'+eh(priceVal)+'</div>';
-
-  document.getElementById('labelPreview').innerHTML=inner;
-  document.getElementById('printLabelContent').innerHTML=inner;
-  document.getElementById('labelModal').classList.add('open');
-}
-
-function eh(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-// ─── DELETE ───────────────────────────────────────────────────────────────
-function confirmDelete(id) {
-  var p = phonesData[id]; if (!p) return;
-  var label = [p.model, p.color, p.storage].filter(Boolean).join(' · ');
-  document.getElementById('deletePhoneId').value = id;
-  document.getElementById('deletePhoneName').textContent = label || 'Unknown Phone';
-  document.getElementById('deleteModal').classList.add('open');
-}
-
-function closeDelete() {
-  document.getElementById('deleteModal').classList.remove('open');
-  document.getElementById('deletePhoneId').value = '';
-}
-
-function executeDelete() {
-  var id = document.getElementById('deletePhoneId').value;
-  if (!id) return;
-  fetch(fbUrl('/phones/' + id), { method: 'DELETE' })
-    .then(function(r) {
-      if (!r.ok) throw new Error('Delete failed');
-      delete phonesData[id];
-      updateStats(); updateTabCounts(); renderCards();
-      closeDelete();
-      showToast('Phone deleted permanently', 'ok');
-    })
-    .catch(function() { showToast('Failed to delete phone', 'err'); });
-}
-
-// ─── TOAST ────────────────────────────────────────────────────────────────
-var _tt=null;
-function showToast(msg,type) {
-  var t=document.getElementById('toast');
-  t.textContent=msg; t.className='show '+(type||'ok');
-  clearTimeout(_tt); _tt=setTimeout(function(){t.className='';},3200);
-}
-
-// ─── BACKDROP CLOSE ───────────────────────────────────────────────────────
-document.addEventListener('click',function(e){
-  if (e.target.id==='editModal')   closeEdit();
-  if (e.target.id==='saleModal')   cancelSale();
-  if (e.target.id==='deleteModal') closeDelete();
-  if (e.target.id==='labelModal')  document.getElementById('labelModal').classList.remove('open');
-});
+/* ══════ BOOT ══════ */
+(async function(){await ensureAuth();await load();})();
 </script>
 </body>
 </html>
