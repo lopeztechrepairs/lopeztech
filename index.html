@@ -798,7 +798,7 @@ function cardHtml(r){
   </div>`;
 }
 function renderBoard(){
-  const list=filteredActive();
+  const list=filteredActive().filter(r=>!isPastDue(r));
   const board=document.getElementById('board');
   board.innerHTML=STATUSES.map(s=>{
     const items=list.filter(r=>r.Status===s.id);
