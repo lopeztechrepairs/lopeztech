@@ -756,7 +756,7 @@ function statusDef(id){return STATUSES.find(s=>s.id===id)||{id,short:id,color:'#
 /* ══ STATUS / PAST-DUE HELPERS ══ */
 function isActive(r){return !r.deleted && r.Status!==COMPLETED;}
 function readyAnchor(r){return r.ReadyDate||r.LastStatusChange||r.DropoffDate;}
-function isPastDue(r){return isActive(r)&&r.Status==='Ready for Pickup'&&daysSince(readyAnchor(r))>=settings.pastDueDays;}
+function isPastDue(r){return isActive(r)&&(r.Status==='Past Due'||(r.Status==='Ready for Pickup'&&daysSince(readyAnchor(r))>=settings.pastDueDays));}
 function pastDueSoon(r){return isActive(r)&&r.Status==='Ready for Pickup'&&daysSince(readyAnchor(r))>=settings.pastDueDays-1&&!isPastDue(r);}
 function ageColor(r){
   if(r.Status===COMPLETED)return null;
