@@ -142,6 +142,15 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 #ov-nw .modal{max-width:500px}
 .pastdue-badge{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:20px;background:var(--amberbg);color:var(--amber);display:inline-flex;align-items:center;gap:3px;}
 .pastdue-badge.over{background:var(--redbg);color:var(--red);}
+.pb-sep{display:flex;align-items:center;text-align:center;color:var(--text3);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin:16px 0 12px}
+.pb-sep::before,.pb-sep::after{content:'';flex:1;height:1px;background:var(--border)}
+.pb-sep span{padding:0 12px}
+.pb-acc{display:flex;flex-wrap:wrap;gap:8px}
+.pb-chip{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border:1.5px solid var(--border);border-radius:22px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;background:#fff}
+.pb-chip:hover{border-color:var(--sky2)}
+.pb-chip.on{border-color:var(--sky);background:var(--skybg);color:var(--sky3)}
+.pb-chip .ck{width:16px;height:16px;border-radius:5px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}
+.pb-chip.on .ck{background:var(--sky);border-color:var(--sky);color:#fff}
 .col-body::-webkit-scrollbar,.nav::-webkit-scrollbar,.board-scroll::-webkit-scrollbar{height:8px;width:8px;}
 .col-body::-webkit-scrollbar-thumb,.board-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:8px;}
 
@@ -434,13 +443,15 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 <div class="m-foot"><button class="btn" onclick="closeCustEdit()">Cancel</button><button class="btn pri" onclick="saveCustEdit()">Save customer</button></div>
 </div></div>
 
-<div class="ov" id="ov-labelprompt"><div class="modal sm">
-<div style="padding:36px 26px 20px;text-align:center">
-  <div style="width:58px;height:58px;border-radius:50%;background:var(--greenbg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><svg width="30" height="30" fill="none" stroke="var(--green)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
-  <div style="font-size:20px;font-weight:800;color:var(--text)">Repair created</div>
-  <div style="font-size:14px;color:var(--sky3);margin-top:8px">Print a label for this device?</div>
+<div class="ov" id="ov-print"><div class="modal sm"><div class="m-hdr"><h2 id="pb-title">Print</h2><button class="mclose" onclick="closePrintBox()">&times;</button></div>
+<div class="m-body">
+  <button class="btn pri" style="width:100%;justify-content:center;padding:12px 14px" onclick="pbPrintLabel()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>Print device label</button>
+  <div class="pb-sep"><span>Drop-off form</span></div>
+  <div class="nw-lbl" style="margin:0 0 9px">Items left with the device</div>
+  <div class="pb-acc" id="pb-acc"></div>
+  <div class="fld" style="margin:13px 0 0"><label>Other item (optional)</label><input id="pb-other" placeholder="Type anything extra"/></div>
 </div>
-<div class="m-foot" style="justify-content:center"><button class="btn" onclick="closeLabelPrompt()">Not now</button><button class="btn pri" onclick="printPromptLabel()">Print label</button></div>
+<div class="m-foot"><button class="btn" onclick="closePrintBox()">Close</button><button class="btn pri" onclick="pbPrintDropoff()" style="margin-left:auto;background:linear-gradient(135deg,var(--green) 0%,#15803d 100%);box-shadow:0 2px 8px rgba(22,163,74,.35)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>Print drop-off form</button></div>
 </div></div>
 
 <div class="ov" id="ov-nw"><div class="modal sm"><div class="m-hdr"><div class="m-hdr-txt"><h2>New Repair</h2><p>Step <span id="nw-num">1</span> of 4</p></div><button class="mclose" onclick="closeWizard()">&times;</button></div>
@@ -551,7 +562,7 @@ input,select,textarea{font-family:inherit;font-size:14px;}
     </div>
   </div>
 </div>
-<div class="m-foot"><button class="btn" title="Print label" onclick="printLabel()" style="padding:0 13px;margin-right:auto"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg></button><button class="btn pri" id="rm-complete" onclick="completeFromEdit()">Complete</button><button class="btn pri" id="rm-save" onclick="saveRepair()" style="background:linear-gradient(135deg,var(--green) 0%,#15803d 100%);box-shadow:0 2px 8px rgba(22,163,74,.35)">Save Repair</button></div>
+<div class="m-foot"><button class="btn" title="Print label / drop-off form" onclick="openPrintBox(editId,false)" style="padding:0 13px;margin-right:auto"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg></button><button class="btn pri" id="rm-complete" onclick="completeFromEdit()">Complete</button><button class="btn pri" id="rm-save" onclick="saveRepair()" style="background:linear-gradient(135deg,var(--green) 0%,#15803d 100%);box-shadow:0 2px 8px rgba(22,163,74,.35)">Save Repair</button></div>
 </div></div>
 
 <!-- COMPLETE MODAL -->
@@ -985,7 +996,7 @@ function nwCreate(){
   logAct(r,'Ticket created');
   fbSave(r);
   document.getElementById('ov-nw').classList.remove('open');
-  showLabelPrompt(r.ID);
+  openPrintBox(r.ID,true);
 }
 
 /* ══ BOOT ══ */
@@ -1302,13 +1313,51 @@ async function saveRepair(){
   }
   await fbSave(r);
   closeRepair();
-  if(isNew){showLabelPrompt(r.ID);}
+  if(isNew){openPrintBox(r.ID,true);}
   else{toast('Saved ✓');}
 }
-let labelPromptId=null;
-function showLabelPrompt(id){labelPromptId=id;document.getElementById('ov-labelprompt').classList.add('open');}
-function closeLabelPrompt(){document.getElementById('ov-labelprompt').classList.remove('open');toast('Repair created ✓');}
-function printPromptLabel(){const r=repairs.find(x=>x.ID===labelPromptId);document.getElementById('ov-labelprompt').classList.remove('open');if(r)printLabelObj(r);}
+const STORES={Dayton:{addr:'112 Cook St, Dayton, TX 77535',phone:'(832) 872-1887'},Crosby:{addr:'6115 FM 2100, Crosby, TX 77532',phone:'(346) 417-6309'}};
+const ACCESSORIES=['Case','Cable','SIM card','Memory card'];
+let printBoxId=null,pbSel=[];
+function openPrintBox(id,isNew){
+  const r=repairs.find(x=>x.ID===id);if(!r)return;
+  printBoxId=id;
+  pbSel=Array.isArray(r.Accessories)?r.Accessories.slice():[];
+  document.getElementById('pb-title').textContent=isNew?'Repair created \u2713':'Print';
+  document.getElementById('pb-other').value=r.AccessoriesOther||'';
+  renderPbAcc();
+  document.getElementById('ov-print').classList.add('open');
+}
+function renderPbAcc(){
+  document.getElementById('pb-acc').innerHTML=ACCESSORIES.map(a=>{const on=pbSel.includes(a);return `<div class="pb-chip ${on?'on':''}" onclick="pbToggleAcc('${esc(a)}')"><span class="ck">${on?'\u2713':''}</span>${esc(a)}</div>`;}).join('');
+}
+function pbToggleAcc(a){const i=pbSel.indexOf(a);if(i>=0)pbSel.splice(i,1);else pbSel.push(a);renderPbAcc();}
+function closePrintBox(){document.getElementById('ov-print').classList.remove('open');}
+function pbPrintLabel(){const r=repairs.find(x=>x.ID===printBoxId);if(r)printLabelObj(r);}
+function pbPrintDropoff(){
+  const r=repairs.find(x=>x.ID===printBoxId);if(!r)return;
+  const other=(document.getElementById('pb-other').value||'').trim();
+  r.Accessories=pbSel.slice();r.AccessoriesOther=other;
+  fbSave(r);
+  doPrint(dropoffFormHtml(r,pbSel,other),DROPOFF_CSS);
+  closePrintBox();
+}
+function dropoffFormHtml(r,sel,other){
+  const s=STORES[r.Location]||STORES.Dayton;
+  const who=r.CreatedBy||r.AssignedTo||'\u2014';
+  const acc=ACCESSORIES.map(a=>`<div class="a"><span class="bx">${sel.includes(a)?'\u2713':''}</span>${esc(a)}</div>`).join('');
+  const otherRow=other?`<div class="ol"><span class="bx">\u2713</span><b>Other:</b>&nbsp;${esc(other)}</div>`:`<div class="ol"><span class="bx"></span><b>Other:</b>&nbsp;<span class="ln"></span></div>`;
+  return `<div class="sheet"><div class="hd"><div><h1>LOPEZ TECH REPAIRS</h1><div class="addr">${esc(s.addr)}<br>${esc(s.phone)}</div></div><div class="tag">DEVICE<br>DROP-OFF</div></div>`
+    +`<div class="meta"><span><b>Ticket:</b> ${esc(r.ID)}</span><span><b>Date:</b> ${fmtDate(r.DropoffDate||Date.now())}</span></div>`
+    +`<div class="rows"><div class="r"><span class="k">Customer</span><span class="v">${esc(r.CustomerName||'')}</span></div>`
+    +`<div class="r"><span class="k">Phone</span><span class="v">${fmtPhoneDisp(r.Phone1)}</span></div>`
+    +`<div class="r"><span class="k">Device</span><span class="v">${esc(r.RepairName||r.Device||'')}</span></div>`
+    +`<div class="r"><span class="k">Checked in by</span><span class="v">${esc(who)}</span></div></div>`
+    +`<div class="sec-t">ITEMS LEFT WITH THE DEVICE</div><div class="acc">${acc}</div>${otherRow}`
+    +`<div class="terms">By signing below, I confirm the items checked above were left with my device and I authorize Lopez Tech Repairs to perform the requested repair. Lopez Tech Repairs is not responsible for any data loss that may occur during service. Devices not picked up within 30 days of being notified that the repair is complete may be considered abandoned.</div>`
+    +`<div class="sign"><div class="s1"><div class="sig-line"></div><div class="sig-lbl">Customer signature</div></div><div class="s2"><div class="sig-line"></div><div class="sig-lbl">Date</div></div></div></div>`;
+}
+const DROPOFF_CSS=`@page{size:5.5in 8.5in;margin:.35in}body{margin:0;font-family:-apple-system,Arial,sans-serif;color:#000}.sheet{width:100%}.hd{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #000;padding-bottom:9px}.hd h1{font-size:15px;font-weight:900;margin:0;letter-spacing:.3px}.hd .addr{font-size:9px;color:#333;margin-top:2px;line-height:1.4}.hd .tag{border:2px solid #000;border-radius:4px;padding:4px 7px;font-size:9px;font-weight:900;letter-spacing:.5px;text-align:center;white-space:nowrap}.meta{display:flex;justify-content:space-between;font-size:10px;margin:9px 0 2px}.rows{margin:9px 0}.rows .r{display:flex;font-size:11px;padding:4px 0;border-bottom:1px dotted #bbb}.rows .k{width:95px;font-weight:800;color:#333;text-transform:uppercase;font-size:9px;letter-spacing:.4px;padding-top:1px}.rows .v{flex:1;font-weight:700}.sec-t{font-size:10px;font-weight:900;letter-spacing:.6px;margin:13px 0 7px;padding-bottom:3px;border-bottom:1.5px solid #000}.acc{display:grid;grid-template-columns:1fr 1fr;gap:7px 16px}.acc .a{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600}.bx{width:13px;height:13px;border:1.5px solid #000;border-radius:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900}.ol{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;margin-top:9px}.ol .ln{flex:1;border-bottom:1.3px solid #000;height:13px}.terms{font-size:8.5px;color:#222;line-height:1.5;margin:14px 0 12px;border:1px solid #bbb;border-radius:5px;padding:8px 9px}.sign{display:flex;gap:18px;align-items:flex-end}.sign .s1{flex:1}.sign .s2{width:110px}.sig-line{border-bottom:1.5px solid #000;height:26px}.sig-lbl{font-size:9px;font-weight:800;color:#333;text-transform:uppercase;letter-spacing:.4px;margin-top:3px}`;
 function deleteRepair(){
   if(!editId)return;
   const r=repairs.find(x=>x.ID===editId);if(!r)return;
@@ -1682,7 +1731,7 @@ function saveInv(){settings.invUrl=document.getElementById('set-inv').value.trim
 document.addEventListener('keydown',function(e){
   if(e.key!=='Escape')return;
   if(document.getElementById('ov-nw').classList.contains('open')){closeWizard();return;}
-  if(document.getElementById('ov-labelprompt').classList.contains('open')){closeLabelPrompt();return;}
+  if(document.getElementById('ov-print').classList.contains('open')){closePrintBox();return;}
   if(document.getElementById('ov-custedit').classList.contains('open')){closeCustEdit();return;}
   if(document.getElementById('ov-complete').classList.contains('open')){closeComplete();return;}
   if(document.getElementById('ov-profile').classList.contains('open')){closeEl('ov-profile');return;}
