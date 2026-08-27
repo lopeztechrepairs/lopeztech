@@ -140,6 +140,7 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 .nw-more-chev{width:16px;height:16px;color:var(--text3);transition:transform .18s;flex-shrink:0}
 .nw-more.open .nw-more-chev{transform:rotate(180deg)}
 #ov-nw .modal{max-width:500px}
+#ov-print{z-index:300;backdrop-filter:none;}
 .pastdue-badge{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:20px;background:var(--amberbg);color:var(--amber);display:inline-flex;align-items:center;gap:3px;}
 .pastdue-badge.over{background:var(--redbg);color:var(--red);}
 .pb-sep{display:flex;align-items:center;text-align:center;color:var(--text3);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin:16px 0 12px}
@@ -445,8 +446,8 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 
 <div class="ov" id="ov-print"><div class="modal sm"><div class="m-hdr"><h2 id="pb-title">Print</h2><button class="mclose" onclick="closePrintBox()">&times;</button></div>
 <div class="m-body">
-  <button class="btn pri" style="width:100%;justify-content:center;padding:12px 14px" onclick="pbPrintLabel()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>Print device label</button>
-  <div class="pb-sep"><span>Drop-off form</span></div>
+  <button class="btn pri" id="pb-label-btn" style="width:100%;justify-content:center;padding:12px 14px" onclick="pbPrintLabel()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>Print device label</button>
+  <div class="pb-sep" id="pb-sep"><span>Drop-off form</span></div>
   <div class="nw-lbl" style="margin:0 0 9px">Items left with the device</div>
   <div class="pb-acc" id="pb-acc"></div>
   <div class="fld" style="margin:13px 0 0"><label>Other item (optional)</label><input id="pb-other" placeholder="Type anything extra"/></div>
@@ -562,7 +563,7 @@ input,select,textarea{font-family:inherit;font-size:14px;}
     </div>
   </div>
 </div>
-<div class="m-foot"><button class="btn" title="Print label / drop-off form" onclick="openPrintBox(editId,false)" style="padding:0 13px;margin-right:auto"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg></button><button class="btn pri" id="rm-complete" onclick="completeFromEdit()">Complete</button><button class="btn pri" id="rm-save" onclick="saveRepair()" style="background:linear-gradient(135deg,var(--green) 0%,#15803d 100%);box-shadow:0 2px 8px rgba(22,163,74,.35)">Save Repair</button></div>
+<div class="m-foot"><button class="btn" onclick="printLabel()" style="padding:0 12px;gap:6px;font-weight:800"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>LABEL</button><button class="btn" onclick="openPrintBox(editId,false)" style="padding:0 12px;gap:6px;font-weight:800;margin-right:auto"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg>D.O.F</button><button class="btn pri" id="rm-complete" onclick="completeFromEdit()">Complete</button><button class="btn pri" id="rm-save" onclick="saveRepair()" style="background:linear-gradient(135deg,var(--green) 0%,#15803d 100%);box-shadow:0 2px 8px rgba(22,163,74,.35)">Save Repair</button></div>
 </div></div>
 
 <!-- COMPLETE MODAL -->
@@ -1323,7 +1324,9 @@ function openPrintBox(id,isNew){
   const r=repairs.find(x=>x.ID===id);if(!r)return;
   printBoxId=id;
   pbSel=Array.isArray(r.Accessories)?r.Accessories.slice():[];
-  document.getElementById('pb-title').textContent=isNew?'Repair created \u2713':'Print';
+  document.getElementById('pb-title').textContent=isNew?'Repair created \u2713':'Drop-off form';
+  document.getElementById('pb-label-btn').style.display=isNew?'inline-flex':'none';
+  document.getElementById('pb-sep').style.display=isNew?'flex':'none';
   document.getElementById('pb-other').value=r.AccessoriesOther||'';
   renderPbAcc();
   document.getElementById('ov-print').classList.add('open');
