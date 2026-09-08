@@ -165,6 +165,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .settings-sub{font-size:11px;color:var(--text3);margin-top:1px;}
 .settings-input{background:var(--bg);border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;color:var(--text);outline:none;width:100px;text-align:right;}
 .settings-input:focus{border-color:var(--navy);}
+.settings-emp{display:flex;align-items:center;gap:10px;min-width:0;}
+.emp-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.role-input{text-align:left;width:120px;}
+.edit-btn-danger{color:var(--red);border-color:#f1c0c0;}
+.edit-btn-danger:hover{color:var(--red2);border-color:var(--red);background:var(--redbg);}
+.add-emp-row{display:flex;gap:10px;align-items:flex-end;}
+.add-emp-row .form-field{margin:0;}
 
 /* Modals */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;}
@@ -346,6 +353,10 @@ button,.emp-card,.loc-chip,.admin-tab,.edit-btn,.paystub-btn,.hdr-btn{
   /* ── Settings rows ── */
   .settings-row{flex-direction:column;align-items:flex-start;gap:8px;padding:10px 0;}
   .settings-input{width:100% !important;text-align:left;}
+  .emp-actions .settings-input{width:80px !important;text-align:right;font-size:16px;}
+  .emp-actions .role-input{width:130px !important;text-align:left;}
+  .add-emp-row{flex-direction:column;align-items:stretch;}
+  #add-emp-btn{width:100%;padding:12px;}
 
   /* ── Modals — bottom sheet style on mobile ── */
   .modal-overlay{
@@ -428,28 +439,8 @@ button,.emp-card,.loc-chip,.admin-tab,.edit-btn,.paystub-btn,.hdr-btn{
       <div class="card-body">
         <!-- Step 1: Employee selection -->
         <div id="step-select">
-          <div class="emp-grid">
-            <div class="emp-card" data-emp="David Thompson" onclick="selectEmployee(this)">
-              <div class="emp-av" style="background:#d4edda;color:#27500A;">DT</div>
-              <div class="emp-name">David Thompson</div>
-              <div class="emp-role">Technician</div>
-            </div>
-            <div class="emp-card" data-emp="Juan Reynoso" onclick="selectEmployee(this)">
-              <div class="emp-av" style="background:#fde8c0;color:#633806;">JR</div>
-              <div class="emp-name">Juan Reynoso</div>
-              <div class="emp-role">Technician</div>
-            </div>
-            <div class="emp-card" data-emp="Noemy Olvera" onclick="selectEmployee(this)">
-              <div class="emp-av" style="background:#e8e6ff;color:#3C3489;">NO</div>
-              <div class="emp-name">Noemy Olvera</div>
-              <div class="emp-role">Front Desk</div>
-            </div>
-            <div class="emp-card" data-emp="admin" onclick="selectEmployee(this)">
-              <div class="emp-av" style="background:#1a3550;color:#fff;">SL</div>
-              <div class="emp-name">Admin</div>
-              <div class="emp-role">Owner</div>
-            </div>
-          </div>
+          <!-- Cards are rendered by renderLoginGrid() from the employee profiles in Firebase -->
+          <div class="emp-grid" id="emp-grid"></div>
         </div>
         <!-- Step 2: PIN entry -->
         <div id="step-pin" style="display:none;">
@@ -508,7 +499,7 @@ button,.emp-card,.loc-chip,.admin-tab,.edit-btn,.paystub-btn,.hdr-btn{
     <div class="clock-emp-info">
       <div class="clock-emp-av" id="clock-av" style="background:#d4edda;color:#27500A;">DT</div>
       <div>
-        <div class="clock-emp-name" id="clock-name">David Thompson</div>
+        <div class="clock-emp-name" id="clock-name"></div>
         <div class="clock-status-badge status-out" id="clock-status">Clocked Out</div>
       </div>
     </div>
@@ -694,11 +685,15 @@ let currentEmp=null; // logged in employee
 let pinBuffer='';
 let pinMode='enter'; // 'enter' | 'setup'
 let entries=lsLoad(LS_TC,[]); // all time entries
-let empProfiles={
-  'David Thompson':{rate:14,pin:null},
-  'Juan Reynoso':{rate:10,pin:null},
-  'Noemy Olvera':{rate:10,pin:null},
-}; // employee profiles — Firebase only, never cached to localStorage
+// Employee profiles — Firebase is the source of truth, never cached to localStorage.
+// Shape: {rate, pin, role, color, active, added, removedAt}
+let empProfiles={};
+// Seed used ONLY when the database has no profiles and no time entries (brand-new install).
+const SEED_PROFILES={
+  'David Thompson':{rate:14,pin:null,role:'Technician',color:0,active:true},
+  'Juan Reynoso':{rate:10,pin:null,role:'Technician',color:1,active:true},
+  'Noemy Olvera':{rate:10,pin:null,role:'Front Desk',color:2,active:true},
+};
 let selectedLoc='Dayton';
 let sessionStart=null;
 let sessionInterval=null;
@@ -710,6 +705,86 @@ let paystubTarget=null;
 // Admin PIN
 const ADMIN_PIN='7679';
 
+// ── EMPLOYEE HELPERS ──
+const AV_PALETTE=[
+  'background:#d4edda;color:#27500A',
+  'background:#fde8c0;color:#633806',
+  'background:#e8e6ff;color:#3C3489',
+  'background:#d0ebff;color:#1b4b7a',
+  'background:#ffe3e3;color:#7a1f1f',
+  'background:#fff3bf;color:#6b4a00',
+  'background:#d3f9d8;color:#1f5a2e',
+  'background:#f3d9fa;color:#5f2a6b',
+];
+// Colors/roles for profiles created before these fields existed
+const LEGACY_COLORS={'David Thompson':0,'Juan Reynoso':1,'Noemy Olvera':2};
+const LEGACY_ROLES={'David Thompson':'Technician','Juan Reynoso':'Technician','Noemy Olvera':'Front Desk'};
+// Firebase keys can't contain these characters
+const BAD_KEY_CHARS=/[.#$\[\]\/]/;
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+// Safe way to pass a name into an inline onclick="..." handler
+function jsArg(s){return esc(JSON.stringify(String(s)));}
+function isActive(emp){const p=empProfiles[emp];return!!p&&typeof p==='object'&&p.active!==false;}
+function activeEmps(){return Object.keys(empProfiles).filter(isActive).sort((a,b)=>a.localeCompare(b));}
+function removedEmps(){return Object.keys(empProfiles).filter(e=>empProfiles[e]&&empProfiles[e].active===false).sort((a,b)=>a.localeCompare(b));}
+// Active employees plus anyone removed who still has entries in this week (history stays visible)
+function empsForWeek(week){
+  const list=activeEmps();
+  entries.forEach(e=>{
+    if(e.emp&&e.date>=week.start&&e.date<=week.end&&!e.deleted&&!list.includes(e.emp))list.push(e.emp);
+  });
+  return list;
+}
+function empRole(emp){const p=empProfiles[emp]||{};return p.role||LEGACY_ROLES[emp]||'';}
+function initials(emp){
+  const w=String(emp).trim().split(/\s+/).filter(Boolean);
+  if(!w.length)return'?';
+  return(w.length===1?w[0].slice(0,2):w[0][0]+w[w.length-1][0]).toUpperCase();
+}
+function hashIdx(s){let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return h%AV_PALETTE.length;}
+function colorIdx(emp){
+  const p=empProfiles[emp]||{};
+  if(typeof p.color==='number')return p.color%AV_PALETTE.length;
+  if(emp in LEGACY_COLORS)return LEGACY_COLORS[emp];
+  return hashIdx(emp);
+}
+function avStyle(emp){return AV_PALETTE[colorIdx(emp)];}
+function nextColor(){
+  const used=Object.keys(empProfiles).map(colorIdx);
+  for(let i=0;i<AV_PALETTE.length;i++)if(!used.includes(i))return i;
+  return Object.keys(empProfiles).length%AV_PALETTE.length;
+}
+
+// ── LOGIN GRID (built from profiles, not hardcoded) ──
+let lastGridKey='';
+function renderLoginGrid(disabled,note){
+  const grid=document.getElementById('emp-grid');if(!grid)return;
+  const emps=activeEmps();
+  lastGridKey=emps.join('|');
+  const cards=[];
+  if(note)cards.push(`<div style="grid-column:1/-1;text-align:center;font-size:12px;color:var(--text3);padding:10px 6px;">${esc(note)}</div>`);
+  emps.forEach(emp=>cards.push(`<div class="emp-card" data-emp="${esc(emp)}" onclick="selectEmployee(this)">
+      <div class="emp-av" style="${avStyle(emp)}">${initials(emp)}</div>
+      <div class="emp-name">${esc(emp)}</div>
+      <div class="emp-role">${esc(empRole(emp))}</div>
+    </div>`));
+  cards.push(`<div class="emp-card" data-emp="admin" onclick="selectEmployee(this)">
+      <div class="emp-av" style="background:#1a3550;color:#fff;">SL</div>
+      <div class="emp-name">Admin</div>
+      <div class="emp-role">Owner</div>
+    </div>`);
+  grid.innerHTML=cards.join('');
+  if(disabled)grid.querySelectorAll('.emp-card').forEach(c=>{c.style.pointerEvents='none';c.style.opacity='.5';});
+}
+// After a background sync: redraw the login grid only if it's on screen, nobody is mid-PIN, and the roster changed
+function refreshLoginGridIfIdle(){
+  const loginActive=document.getElementById('view-login')?.classList.contains('active');
+  const onSelect=document.getElementById('step-select')?.style.display!=='none';
+  if(!loginActive||!onSelect||currentEmp)return;
+  if(activeEmps().join('|')!==lastGridKey)renderLoginGrid(false);
+}
+
 // ── INIT ──
 setInterval(updateClocks,1000);
 updateClocks();
@@ -717,14 +792,15 @@ initApp();
 
 async function initApp(){
   document.getElementById('login-sub').textContent='Loading...';
-  document.querySelectorAll('.emp-card').forEach(c=>{c.style.pointerEvents='none';c.style.opacity='.5';});
+  renderLoginGrid(true);
   const ok=await loadFromCloud();
   if(!ok){
     document.getElementById('login-sub').textContent='Connection failed — check internet and reload the page';
+    renderLoginGrid(true,'Employee names load from the database. Could not connect, so the list is empty. Reload to try again.');
     return;
   }
-  document.querySelectorAll('.emp-card').forEach(c=>{c.style.pointerEvents='';c.style.opacity='';});
   await cleanupSensitiveData();
+  renderLoginGrid(false);
   document.getElementById('login-sub').textContent='Who are you clocking in as?';
 }
 
@@ -765,6 +841,7 @@ function updateClocks(){
 function showView(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+id)?.classList.add('active');
+  if(id==='login')renderLoginGrid(false);
   if(id==='clock')renderClockView();
   if(id==='timecard')renderTimecard();
   if(id==='admin'){adminTab('overview',document.querySelector('.admin-tab'));}
@@ -772,9 +849,14 @@ function showView(id){
 
 // ── LOGIN FLOW ──
 function selectEmployee(card){
+  const emp=card.dataset.emp;
+  if(emp!=='admin'&&!isActive(emp)){
+    toast('That account has been removed');
+    renderLoginGrid(false);
+    return;
+  }
   document.querySelectorAll('.emp-card').forEach(c=>c.classList.remove('selected'));
   card.classList.add('selected');
-  const emp=card.dataset.emp;
   document.getElementById('login-title').textContent=emp==='admin'?'Admin Access':emp;
   document.getElementById('login-sub').textContent='Enter your PIN';
   document.getElementById('step-select').style.display='none';
@@ -833,6 +915,12 @@ function checkPin(){
     }
     return;
   }
+  if(!isActive(currentEmp)){
+    toast('That account has been removed');
+    backToSelect();
+    renderLoginGrid(false);
+    return;
+  }
   const profile=empProfiles[currentEmp];
   if(pinBuffer===profile?.pin){
     showView('clock');
@@ -874,10 +962,8 @@ function renderClockView(){
   if(!currentEmp)return;
   const profile=empProfiles[currentEmp];
   // Avatar
-  const ini=currentEmp.split(' ').map(w=>w[0]).join('');
-  const avColors={'David Thompson':'#d4edda;color:#27500A','Juan Reynoso':'#fde8c0;color:#633806','Noemy Olvera':'#e8e6ff;color:#3C3489'};
   const av=document.getElementById('clock-av');
-  if(av){av.textContent=ini;av.style.cssText=`background:${avColors[currentEmp]||'#e8eaf0;color:#111'};width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;`;}
+  if(av){av.textContent=initials(currentEmp);av.style.cssText=`${avStyle(currentEmp)};width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;`;}
   document.getElementById('clock-name').textContent=currentEmp;
   renderClockButtons();
   renderTodaySummary();
@@ -1075,21 +1161,24 @@ function adminTab(tab,el){
 
 function renderAdminOverview(){
   const week=getWeekRange(adminWeekOffset);
-  const emps=['David Thompson','Juan Reynoso','Noemy Olvera'];
+  const emps=empsForWeek(week);
   let totalPayout=0;
   let cardHtml='';
+  if(!emps.length){
+    cardHtml=`<div class="summary-card" style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:12px;">No employees yet. Add them in Settings.</div>`;
+  }
   emps.forEach(emp=>{
     const empEntries=entries.filter(e=>e.emp===emp&&e.date>=week.start&&e.date<=week.end&&!e.flagged&&e.clockOut);
     const rate=empProfiles[emp]?.rate||10;
     const hrs=empEntries.reduce((s,e)=>s+calcPaidHrs(e),0);
     const pay=hrs*rate;
     totalPayout+=pay;
-    const status=getEmpCurrentStatus(emp);
-    cardHtml+=`<div class="summary-card">
+    const status=isActive(emp)?getEmpCurrentStatus(emp):{label:'Removed',cls:'status-out'};
+    cardHtml+=`<div class="summary-card"${isActive(emp)?'':' style="opacity:.7;"'}>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
         <div class="clock-status-badge ${status.cls}" style="font-size:10px;">${status.label}</div>
       </div>
-      <div style="font-size:13px;font-weight:700;margin-bottom:4px;">${emp.split(' ')[0]}</div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px;">${esc(emp.split(' ')[0])}</div>
       <div class="summary-val">${fmtHrs(hrs)}</div>
       <div class="summary-lbl">$${pay.toFixed(2)} this week</div>
     </div>`;
@@ -1122,7 +1211,7 @@ function getEmpCurrentStatus(emp){
 
 function renderAdminTimecards(){
   const week=getWeekRange(adminWeekOffset);
-  const emps=['David Thompson','Juan Reynoso','Noemy Olvera'];
+  const emps=empsForWeek(week);
   const isCurrentWeek=adminWeekOffset===0;
   let html=`<div class="week-picker" style="margin-bottom:16px;">
     <button class="week-nav" onclick="adminWeekOffset--;adminTab('timecards')">‹</button>
@@ -1141,8 +1230,6 @@ function renderAdminTimecards(){
     ).sort((a,b)=>a.clockIn-b.clockIn);
 
     const rate=empProfiles[emp]?.rate||10;
-    const ini=emp.split(' ').map(w=>w[0]).join('');
-    const avColors={'David Thompson':'background:#d4edda;color:#27500A','Juan Reynoso':'background:#fde8c0;color:#633806','Noemy Olvera':'background:#e8e6ff;color:#3C3489'};
     let totalHrs=0;
     empEntries.filter(e=>e.clockOut).forEach(e=>totalHrs+=calcPaidHrs(e));
     const pay=totalHrs*rate;
@@ -1174,8 +1261,8 @@ function renderAdminTimecards(){
     html+=`<div class="emp-section">
       <div class="emp-section-hdr">
         <div class="emp-section-left">
-          <div class="emp-section-av" style="${avColors[emp]}">${ini}</div>
-          <div class="emp-section-name">${emp}</div>
+          <div class="emp-section-av" style="${avStyle(emp)}">${initials(emp)}</div>
+          <div class="emp-section-name">${esc(emp)}${isActive(emp)?'':' <span class="flag-badge" style="background:var(--bg);color:var(--text3);border-color:var(--border2);">Removed</span>'}</div>
         </div>
         <div class="emp-section-stats">
           <div class="emp-stat"><div class="emp-stat-val">${fmtHrs(totalHrs)}</div><div class="emp-stat-lbl">Paid hrs</div></div>
@@ -1190,8 +1277,8 @@ function renderAdminTimecards(){
       </div>
       <div class="pay-footer">
         <div>
-          <div class="pay-footer-detail">$${rate}/hr · ${emp.split(' ')[0]}</div>
-          <button class="paystub-btn" onclick="openPaystub('${emp}',${adminWeekOffset})" style="margin-top:6px;">📄 Generate Paystub</button>
+          <div class="pay-footer-detail">$${rate}/hr · ${esc(emp.split(' ')[0])}</div>
+          <button class="paystub-btn" onclick="openPaystub(${jsArg(emp)},${adminWeekOffset})" style="margin-top:6px;">📄 Generate Paystub</button>
         </div>
         <div class="pay-footer-amount">$${pay.toFixed(2)}</div>
       </div>
@@ -1216,7 +1303,7 @@ function renderAdminFlags(){
     html+=`<div class="emp-section" style="margin-bottom:10px;">
       <div style="padding:12px 16px;background:var(--redbg);">
         <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div><strong>${e.emp}</strong> · ${e.date} · ${e.location}</div>
+          <div><strong>${esc(e.emp)}</strong> · ${e.date} · ${esc(e.location)}</div>
           <span class="flag-badge">⚑ Flagged</span>
         </div>
         <div style="font-size:11px;color:var(--red);margin-top:4px;">${e.flagReason||'Needs review'}</div>
@@ -1239,26 +1326,74 @@ function dismissFlag(id){
 }
 
 function renderAdminSettings(){
-  const emps=['David Thompson','Juan Reynoso','Noemy Olvera'];
-  let empRows=emps.map(emp=>{
+  const active=activeEmps();
+  const removed=removedEmps();
+
+  let empRows=active.map(emp=>{
     const p=empProfiles[emp]||{};
     return`<div class="settings-row">
-      <div><div class="settings-label">${emp}</div><div class="settings-sub">PIN ${p.pin?'set':'not set'}</div></div>
-      <div style="display:flex;align-items:center;gap:8px;">
+      <div class="settings-emp">
+        <div class="emp-section-av" style="${avStyle(emp)}">${initials(emp)}</div>
+        <div><div class="settings-label">${esc(emp)}</div><div class="settings-sub">PIN ${p.pin?'set':'not set'}</div></div>
+      </div>
+      <div class="emp-actions">
         <span style="font-size:12px;color:var(--text3);">$</span>
         <input class="settings-input" type="number" value="${p.rate||10}" min="1" step="0.5"
-          onchange="updateRate('${emp}',this.value)" style="width:70px;"/>
+          onchange="updateRate(${jsArg(emp)},this.value)" style="width:70px;"/>
         <span style="font-size:11px;color:var(--text3);">/hr</span>
-        <button class="edit-btn" onclick="resetPin('${emp}')">Reset PIN</button>
+        <input class="settings-input role-input" type="text" value="${esc(empRole(emp))}" placeholder="Role"
+          onchange="updateRole(${jsArg(emp)},this.value)"/>
+        <button class="edit-btn" onclick="resetPin(${jsArg(emp)})">Reset PIN</button>
+        <button class="edit-btn edit-btn-danger" onclick="removeEmployee(${jsArg(emp)})">Remove</button>
       </div>
     </div>`;
   }).join('');
+  if(!empRows)empRows=`<div style="font-size:12px;color:var(--text3);padding:6px 0;">No employees yet. Add one below.</div>`;
+
+  let removedSection='';
+  if(removed.length){
+    const rows=removed.map(emp=>{
+      const hasRecords=entries.some(e=>e.emp===emp);
+      return`<div class="settings-row">
+        <div><div class="settings-label" style="color:var(--text3);">${esc(emp)}</div>
+          <div class="settings-sub">${hasRecords?'Has time records, kept for history':'No time records'}</div></div>
+        <div class="emp-actions">
+          <button class="edit-btn" onclick="restoreEmployee(${jsArg(emp)})">Restore</button>
+          ${hasRecords?'':`<button class="edit-btn edit-btn-danger" onclick="deleteEmployee(${jsArg(emp)})">Delete permanently</button>`}
+        </div>
+      </div>`;
+    }).join('');
+    removedSection=`<div class="settings-section">
+      <div class="settings-title">Removed Employees</div>
+      ${rows}
+    </div>`;
+  }
 
   document.getElementById('admin-content').innerHTML=`
     <div class="settings-section">
-      <div class="settings-title">Employee Pay Rates</div>
+      <div class="settings-title">Employees</div>
       ${empRows}
     </div>
+    <div class="settings-section">
+      <div class="settings-title">Add Employee</div>
+      <div class="add-emp-row">
+        <div class="form-field" style="flex:2;">
+          <label class="form-label">Full name</label>
+          <input class="form-input" id="add-emp-name" type="text" placeholder="First Last" autocomplete="off"/>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Role</label>
+          <input class="form-input" id="add-emp-role" type="text" placeholder="Technician" autocomplete="off"/>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Rate ($/hr)</label>
+          <input class="form-input" id="add-emp-rate" type="number" min="1" step="0.5" placeholder="10"/>
+        </div>
+        <button class="btn btn-primary" id="add-emp-btn" type="button" onclick="addEmployee()" style="white-space:nowrap;">+ Add</button>
+      </div>
+      <div class="settings-sub" style="margin-top:10px;">They create their own 4-digit PIN the first time they pick their name on the clock screen.</div>
+    </div>
+    ${removedSection}
     <div class="settings-section">
       <div class="settings-title">Firebase Connection</div>
       <div class="settings-row">
@@ -1274,10 +1409,103 @@ function renderAdminSettings(){
 }
 
 function updateRate(emp,val){
+  const rate=parseFloat(val);
+  if(!(rate>0)){toast('Enter a valid hourly rate');renderAdminSettings();return;}
   const prev=empProfiles[emp];
-  empProfiles[emp]={...empProfiles[emp],rate:parseFloat(val)||10};
+  empProfiles[emp]={...empProfiles[emp],rate};
   saveEmpToCloud().then(()=>{
     toast('Rate updated for '+emp.split(' ')[0]);
+  }).catch(()=>{
+    empProfiles[emp]=prev;
+    renderAdminSettings();
+    toast('Could not save — check your connection');
+  });
+}
+
+function updateRole(emp,val){
+  const prev=empProfiles[emp];
+  empProfiles[emp]={...empProfiles[emp],role:String(val||'').trim()};
+  saveEmpToCloud().then(()=>{
+    toast('Role updated for '+emp.split(' ')[0]);
+  }).catch(()=>{
+    empProfiles[emp]=prev;
+    renderAdminSettings();
+    toast('Could not save — check your connection');
+  });
+}
+
+function addEmployee(){
+  const nameEl=document.getElementById('add-emp-name');
+  const name=(nameEl?.value||'').trim().replace(/\s+/g,' ');
+  const role=(document.getElementById('add-emp-role')?.value||'').trim();
+  const rate=parseFloat(document.getElementById('add-emp-rate')?.value||'');
+  if(!name){toast('Enter the employee\'s name');nameEl?.focus();return;}
+  if(name.toLowerCase()==='admin'){toast('That name is reserved');return;}
+  if(BAD_KEY_CHARS.test(name)){toast('Name can\'t contain . # $ [ ] or /');return;}
+  if(!(rate>0)){toast('Enter an hourly rate');document.getElementById('add-emp-rate')?.focus();return;}
+  // Same name (any casing) already on file?
+  const clash=Object.keys(empProfiles).find(k=>k.toLowerCase()===name.toLowerCase());
+  if(clash){
+    if(isActive(clash)){toast(clash+' is already on the list');return;}
+    if(confirm(clash+' was removed earlier. Restore them with their history instead of creating a duplicate?'))restoreEmployee(clash);
+    return;
+  }
+  empProfiles[name]={rate,role,pin:null,active:true,color:nextColor(),added:new Date().toISOString()};
+  saveEmpToCloud().then(()=>{
+    toast(name.split(' ')[0]+' added');
+    renderAdminSettings();
+  }).catch(()=>{
+    delete empProfiles[name];
+    renderAdminSettings();
+    toast('Could not save — check your connection');
+  });
+}
+
+function removeEmployee(emp){
+  const open=entries.find(e=>e.emp===emp&&!e.clockOut&&!e.flagged&&!e.deleted);
+  let msg=`Remove ${emp}?\n\nThey won't be able to clock in anymore. Their time records and paystubs are kept.`;
+  if(open)msg+=`\n\nHeads up: they are currently clocked in. Their open session will be flagged so you can close it in the Flags tab.`;
+  if(!confirm(msg))return;
+  const prev=empProfiles[emp];
+  empProfiles[emp]={...prev,active:false,removedAt:new Date().toISOString()};
+  saveEmpToCloud().then(()=>{
+    if(open){
+      open.flagged=true;
+      open.flagReason='Employee removed while clocked in. Set a clock-out time or delete this entry.';
+      saveEntries();
+    }
+    toast(emp.split(' ')[0]+' removed');
+    renderAdminSettings();
+  }).catch(()=>{
+    empProfiles[emp]=prev;
+    renderAdminSettings();
+    toast('Could not save — check your connection');
+  });
+}
+
+function restoreEmployee(emp){
+  const prev=empProfiles[emp];
+  if(!prev)return;
+  const{removedAt,...rest}=prev;
+  empProfiles[emp]={...rest,active:true};
+  saveEmpToCloud().then(()=>{
+    toast(emp.split(' ')[0]+' restored');
+    renderAdminSettings();
+  }).catch(()=>{
+    empProfiles[emp]=prev;
+    renderAdminSettings();
+    toast('Could not save — check your connection');
+  });
+}
+
+function deleteEmployee(emp){
+  if(entries.some(e=>e.emp===emp)){toast(emp+' has time records, so they can only be removed, not deleted');return;}
+  if(!confirm(`Permanently delete ${emp}? This cannot be undone.`))return;
+  const prev=empProfiles[emp];
+  delete empProfiles[emp];
+  saveEmpToCloud().then(()=>{
+    toast(emp.split(' ')[0]+' deleted');
+    renderAdminSettings();
   }).catch(()=>{
     empProfiles[emp]=prev;
     renderAdminSettings();
@@ -1314,7 +1542,9 @@ function openEditModal(id){
   if(!e)return;
   document.getElementById('edit-date').value=e.date;
   const empSel=document.getElementById('edit-emp');
-  empSel.innerHTML=['David Thompson','Juan Reynoso','Noemy Olvera'].map(n=>`<option${n===e.emp?' selected':''}>${n}</option>`).join('');
+  const opts=activeEmps();
+  if(e.emp&&!opts.includes(e.emp))opts.push(e.emp);
+  empSel.innerHTML=opts.map(n=>`<option value="${esc(n)}"${n===e.emp?' selected':''}>${esc(n)}${isActive(n)?'':' (removed)'}</option>`).join('');
   document.getElementById('edit-in').value=e.clockIn?new Date(e.clockIn).toTimeString().slice(0,5):'';
   document.getElementById('edit-out').value=e.clockOut?new Date(e.clockOut).toTimeString().slice(0,5):'';
   document.getElementById('edit-lunch').value=e.lunchMinutes||0;
@@ -1350,10 +1580,12 @@ function openAddEntry(){
 }
 
 function openAddEntryForWeek(weekStart){
+  const emps=activeEmps();
+  if(!emps.length){toast('Add an employee in Settings first');return;}
   editingEntryId=null;
   document.getElementById('edit-date').value=weekStart;
   const empSel=document.getElementById('edit-emp');
-  empSel.innerHTML=['David Thompson','Juan Reynoso','Noemy Olvera'].map(n=>`<option>${n}</option>`).join('');
+  empSel.innerHTML=emps.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
   document.getElementById('edit-in').value='09:00';
   document.getElementById('edit-out').value='17:00';
   document.getElementById('edit-lunch').value=30;
@@ -1492,7 +1724,7 @@ function renderPaystub(){
       <div style="padding:16px 24px;display:flex;justify-content:space-between;border-bottom:1px solid var(--border);background:#fafaf8;">
         <div>
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;">Employee</div>
-          <div style="font-size:15px;font-weight:700;color:var(--text);">${emp}</div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);">${esc(emp)}</div>
           <div style="font-size:12px;color:var(--text3);">${addrInput||'Address on file'}</div>
           <div style="font-size:12px;color:var(--text3);">SSN: XXX-XX-${ssnInput||'XXXX'}</div>
         </div>
@@ -1612,9 +1844,12 @@ function saveEntries(){
 
 function saveEmpToCloud(){
   if(!hasCloud())return Promise.reject(new Error('no cloud configured'));
+  // Firebase deletes a node that becomes {}. Write a marker instead so an intentionally empty
+  // roster is distinguishable from a never-written one (which gets seeded on load).
+  const payload=Object.keys(empProfiles).length?empProfiles:{_empty:true};
   const put=()=>fetch(getFbUrl()+'/lopeztechrepairs/empProfiles.json?auth='+getFbKey(),{
     method:'PUT',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(empProfiles)
+    body:JSON.stringify(payload)
   }).then(r=>{if(!r.ok)throw new Error('save failed');return r;});
   return put().catch(()=>new Promise((resolve,reject)=>{
     setTimeout(()=>{put().then(resolve).catch(reject);},2000);
@@ -1625,17 +1860,28 @@ async function loadFromCloud(){
   if(!hasCloud())return true;
   try{
     const r1=await fetch(getFbUrl()+'/lopeztechrepairs/timeclock.json?auth='+getFbKey());
+    if(!r1.ok)throw new Error('entries fetch failed');
     const d1=await r1.json();
     if(Array.isArray(d1)&&d1.length){entries=d1;lsSave(LS_TC,entries);}
     const r2=await fetch(getFbUrl()+'/lopeztechrepairs/empProfiles.json?auth='+getFbKey());
+    if(!r2.ok)throw new Error('profiles fetch failed');
     const d2=await r2.json();
-    if(d2&&typeof d2==='object'){empProfiles={...empProfiles,...d2};}
+    if(d2&&typeof d2==='object'&&!Array.isArray(d2)){
+      // Firebase is the source of truth. Drop anything that isn't a profile object (also strips the _empty marker).
+      Object.keys(d2).forEach(k=>{if(!d2[k]||typeof d2[k]!=='object')delete d2[k];});
+      empProfiles=d2;
+    }else if(!Object.keys(empProfiles).length){
+      // No profiles node at all = never written. Seed the same three names the old version had hardcoded.
+      // (Deleting every employee on purpose leaves an {_empty:true} marker, so that case never lands here.)
+      empProfiles=JSON.parse(JSON.stringify(SEED_PROFILES));
+      await saveEmpToCloud().catch(()=>{});
+    }
     return true;
   }catch(e){return false;}
 }
 
-// Auto-sync every 60 seconds
-setInterval(()=>{if(hasCloud())loadFromCloud();},60000);
+// Auto-sync every 60 seconds (also picks up roster changes made from another device)
+setInterval(()=>{if(hasCloud())loadFromCloud().then(ok=>{if(ok)refreshLoginGridIfIdle();});},60000);
 </script>
 </body>
 </html>
