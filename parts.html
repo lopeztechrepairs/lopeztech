@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Parts">
+<meta name="theme-color" content="#f5f5f2">
+<title>Parts Orders</title>
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f5f5f2; --card:#fff; --ink:#1c1b19; --muted:#77736b; --line:#e3e0d9;
+  --part:#ca8a04; --partbg:#fff6cc; --acc:#1d4ed8; --accbg:#e0ecff;
+  --green:#1f7a3a; --greenbg:#e3f6e7; --red:#b42318; --redbg:#fde8e6;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+button,input{font:inherit;color:inherit}
+.wrap{max-width:820px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 12px calc(30px + env(safe-area-inset-bottom))}
+
+/* header */
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+h1{margin:0;font-size:24px}
+.sub{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);margin-top:4px}
+.dot{width:8px;height:8px;border-radius:50%;background:#bbb;display:inline-block;margin-right:5px}
+.dot.on{background:#22c55e}.dot.off{background:#ef4444}
+.who{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:3px 8px;cursor:pointer;font-weight:600;font-size:12px}
+.newbtn{background:var(--ink);color:#fff;border:0;border-radius:10px;padding:11px 16px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 8px rgba(0,0,0,.15)}
+
+.banner{margin-top:12px;background:var(--greenbg);border:1px solid #9fd8ac;border-radius:12px;padding:10px 12px;display:none;gap:10px;align-items:flex-start}
+.banner.show{display:flex}
+.banner .txt{flex:1;font-size:14px}
+.banner button{background:var(--green);border:0;color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:700;flex:none}
+
+/* table */
+.tablecard{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-top:16px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:10px 10px;border-bottom:1px solid var(--line);background:#fbfaf7;font-weight:700}
+td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:14px}
+tr:last-child td{border-bottom:0}
+tr.done td{background:#fbfbfa}
+tr.done .o-date{opacity:.6}
+.o-date{font-weight:700}
+.o-by{font-size:12px;color:var(--muted)}
+.o-prev{font-size:12px;color:var(--muted);max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cnt{display:inline-block;min-width:26px;text-align:center;font-weight:800;border-radius:6px;padding:2px 6px;font-size:13px}
+.cnt.p{background:var(--partbg);color:#854d0e}
+.cnt.a{background:var(--accbg);color:var(--acc)}
+.cnt.z{background:none;color:#c9c5bd}
+.status{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px;white-space:nowrap}
+.status.need{background:var(--redbg);color:var(--red)}
+.status.ord{background:var(--greenbg);color:var(--green)}
+.viewbtn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 12px;font-weight:700;cursor:pointer}
+.c{text-align:center}
+.empty{color:var(--muted);text-align:center;padding:30px 10px}
+.foot{display:flex;justify-content:flex-end;margin-top:8px}
+.link{background:none;border:0;color:#2563eb;font-size:13px;cursor:pointer;padding:0}
+@media (max-width:480px){
+  .hide-sm{display:none}
+  th,td{padding:10px 7px}
+  .o-prev{max-width:120px}
+}
+
+/* dialogs */
+dialog{border:0;padding:0;background:transparent;width:min(94vw,500px);max-height:92vh;max-height:92dvh;overflow:visible}
+button{touch-action:manipulation}
+/* phones: pin sheets near the top so the keyboard never covers the type box */
+@media (max-width:500px){
+  dialog{margin:calc(10px + env(safe-area-inset-top)) auto auto}
+  .sheet{max-height:calc(100dvh - 24px - env(safe-area-inset-top));padding:14px}
+}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.sheet{background:var(--card);border-radius:16px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-height:90vh;max-height:90dvh;overflow:auto;-webkit-overflow-scrolling:touch}
+.sheet h3{margin:0 0 12px;font-size:19px}
+.section{border-radius:10px;padding:10px 12px;margin-bottom:10px;border-left:5px solid}
+.section.p{background:var(--partbg);border-color:var(--part)}
+.section.a{background:var(--accbg);border-color:var(--acc)}
+.section h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.section.p h4{color:#854d0e}.section.a h4{color:var(--acc)}
+.section ul{margin:0;padding:0;list-style:none}
+.section li{display:flex;align-items:center;gap:8px;padding:5px 0;font-weight:600;border-top:1px solid rgba(0,0,0,.06)}
+.section li:first-child{border-top:0}
+.section li span{flex:1;min-width:0;word-wrap:break-word}
+.section li button{border:0;background:none;color:var(--red);font-size:18px;cursor:pointer;padding:0 4px}
+.section .none{font-size:13px;color:var(--muted);font-weight:500}
+.q{display:inline-block;min-width:26px;font-weight:800}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;border:2px solid var(--line);background:#fff;border-radius:9px;padding:9px 6px;font-weight:700;cursor:pointer;font-size:14px}
+.seg button.on{border-color:var(--ink);background:#f3f1ec}
+#catSeg button[data-cat="parts"].on{background:var(--partbg);border-color:var(--part)}
+#catSeg button[data-cat="accessories"].on{background:var(--accbg);border-color:var(--acc)}
+.adder{background:#faf9f6;border:1px dashed #cfcac0;border-radius:12px;padding:10px;display:grid;gap:8px;margin-top:6px}
+.adder input{width:100%;border:1px solid #d6d2ca;background:#fff;border-radius:9px;padding:10px 12px;outline:none}
+.adder input:focus{border-color:var(--ink)}
+.lbl{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:-4px}
+.row{display:flex;gap:8px;align-items:center}
+.qty{display:flex;align-items:center;background:#fff;border:1px solid #d6d2ca;border-radius:9px;overflow:hidden;flex:none}
+.qty button{border:0;background:none;width:40px;height:42px;font-size:20px;cursor:pointer}
+.qty span{min-width:28px;text-align:center;font-weight:800}
+.addrow{flex:1;border:0;border-radius:9px;background:#3a3834;color:#fff;font-weight:700;padding:11px;cursor:pointer}
+.meta{font-size:12px;color:var(--muted);margin:4px 0 4px}
+.stamp{display:inline-block;background:var(--green);color:#fff;font-weight:800;border-radius:6px;padding:6px 10px;margin-bottom:10px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btns button{border:0;border-radius:10px;padding:12px 14px;font-weight:700;cursor:pointer}
+.big{flex:1 1 100%;background:var(--green);color:#fff;font-size:17px}
+.dark{background:var(--ink);color:#fff;flex:1}
+.plain{background:#efede8;flex:1}
+.del{background:none;color:var(--red);flex:1}
+#whoList{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.p-box{border:2px solid var(--line);background:#fff;border-radius:10px;padding:14px 1px;font-weight:700;font-size:clamp(11px,3.1vw,13px);letter-spacing:-.01em;cursor:pointer;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.p-box.on{border-color:var(--ink);background:#f3f1ec}
+.toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top));transform:translateX(-50%);background:var(--ink);color:#fff;
+  padding:10px 16px;border-radius:10px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:10}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Parts Orders</h1>
+      <div class="sub">
+        <span><span class="dot" id="dot"></span><span id="sync">Connecting</span></span>
+        <button class="who" id="whoBtn">👤 <span id="whoName">?</span></button>
+      </div>
+    </div>
+    <button class="newbtn" id="newBtn">+ New Order</button>
+  </div>
+
+  <div class="banner" id="banner"><div class="txt" id="bannerTxt"></div><button id="bannerOk">Got it</button></div>
+
+  <div class="tablecard">
+    <table>
+      <thead><tr>
+        <th>Order</th>
+        <th class="c">Parts</th>
+        <th class="c">Acc.</th>
+        <th class="hide-sm">Status</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div class="foot"><button class="link" id="clearOld">Clear ordered lists older than a week</button></div>
+</div>
+
+<datalist id="models">
+  <option>iPhone SE (2nd gen)</option><option>iPhone SE (3rd gen)</option><option>iPhone 8</option><option>iPhone 8 Plus</option>
+  <option>iPhone X</option><option>iPhone XR</option><option>iPhone XS</option><option>iPhone XS Max</option>
+  <option>iPhone 11</option><option>iPhone 11 Pro</option><option>iPhone 11 Pro Max</option>
+  <option>iPhone 12 mini</option><option>iPhone 12</option><option>iPhone 12 Pro</option><option>iPhone 12 Pro Max</option>
+  <option>iPhone 13 mini</option><option>iPhone 13</option><option>iPhone 13 Pro</option><option>iPhone 13 Pro Max</option>
+  <option>iPhone 14</option><option>iPhone 14 Plus</option><option>iPhone 14 Pro</option><option>iPhone 14 Pro Max</option>
+  <option>iPhone 15</option><option>iPhone 15 Plus</option><option>iPhone 15 Pro</option><option>iPhone 15 Pro Max</option>
+  <option>iPhone 16e</option><option>iPhone 16</option><option>iPhone 16 Plus</option><option>iPhone 16 Pro</option><option>iPhone 16 Pro Max</option>
+  <option>iPhone 17</option><option>iPhone 17 Air</option><option>iPhone 17 Pro</option><option>iPhone 17 Pro Max</option>
+</datalist>
+
+<!-- new / edit order -->
+<dialog id="writeDlg">
+  <div class="sheet">
+    <h3 id="writeTitle">New Order</h3>
+    <div id="draft"></div>
+
+    <div class="adder">
+      <div class="lbl">Add to</div>
+      <div class="seg" id="catSeg">
+        <button data-cat="parts">Parts</button>
+        <button data-cat="accessories">Accessories</button>
+      </div>
+      <div class="lbl" id="itemLbl">Part</div>
+      <input id="oText" list="models" placeholder="e.g. iPhone 13 Pro, S23 Charge Port" autocomplete="off" autocapitalize="words">
+      <div id="gradeWrap" style="display:none;gap:8px">
+        <div class="lbl">Screen</div>
+        <div class="seg" id="gradeSeg">
+          <button data-grade="oled">OLED (Prem.)</button>
+          <button data-grade="lcd">LCD (Basic)</button>
+        </div>
+      </div>
+      <div class="lbl">Qty</div>
+      <div class="row">
+        <div class="qty"><button type="button" data-q="-1">−</button><span id="qty">1</span><button type="button" data-q="1">+</button></div>
+        <button class="addrow" id="addRow">+ Add to list</button>
+      </div>
+    </div>
+
+    <div class="btns">
+      <button class="plain" id="writeCancel">Cancel</button>
+      <button class="dark" id="writeSave">Post Order</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- view order -->
+<dialog id="viewDlg"><div class="sheet" id="viewSheet"></div></dialog>
+
+<!-- who -->
+<dialog id="whoDlg">
+  <div class="sheet">
+    <h3 style="margin:0 0 4px">Who's on this phone?</h3>
+    <div style="font-size:13px;color:#666;margin-bottom:12px">So everyone knows who posted or ordered.</div>
+    <div id="whoList"></div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Same Firebase as the repair tracker. Stored under its own node; repair data is untouched.
+const DB_URL = (safeGet('lt_fb_url') || 'https://lopez-tech-repairs-82c87-default-rtdb.firebaseio.com').replace(/\/+$/,'');
+const DB_KEY = safeGet('lt_fb_key') || '';
+const NODE = 'partsNotes';
+const PEOPLE = ['Saul','Dulce','David','Juan','Clarissa'];
+const GRADE = {oled:'OLED (Prem.)', lcd:'LCD (Basic)'};
+
+let notes = {};
+let me = safeGet('parts_me') || '';
+if(!PEOPLE.includes(me)) me = '';
+let seenAt = +(safeGet('parts_seen') || 0);
+let editingId = null, draft = [], cat = 'parts', grade = null, qty = 1;
+
+function safeGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function safeSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const url = p => DB_URL + '/' + p + '.json' + (DB_KEY ? '?auth=' + encodeURIComponent(DB_KEY) : '');
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const asArr = v => !v ? [] : Array.isArray(v) ? v.filter(Boolean) : Object.values(v).filter(Boolean);
+// every item carries its own section; older notes fall back to the note's type
+function itemsOf(n){
+  let a = asArr(n.items);
+  if(!a.length) a = String(n.text||'').split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({text:t, qty:1}));
+  return a.map(it => ({...it, cat: it.cat || n.type || 'parts'}));
+}
+const partsOf = n => itemsOf(n).filter(i => i.cat !== 'accessories');
+const accOf = n => itemsOf(n).filter(i => i.cat === 'accessories');
+const lineHTML = it => `<span class="q">${+it.qty||1}×</span> ${esc(it.text)}`;
+const lineTxt = it => `${+it.qty||1}× ${it.text}`;
+function when(ts){
+  if(!ts) return '';
+  const d = new Date(ts), now = new Date(), day = 86400000;
+  const start = new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+  const time = d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  if(ts >= start) return 'Today ' + time;
+  if(ts >= start - day) return 'Yesterday ' + time;
+  return d.toLocaleDateString([], {weekday:'short', month:'short', day:'numeric'});
+}
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2000); }
+function setSync(s){ $('#dot').className='dot '+(s||''); $('#sync').textContent = s==='on'?'Live':s==='off'?'Offline':'Connecting'; }
+
+async function req(method, path, body){
+  const r = await fetch(url(path), {method, headers:{'Content-Type':'application/json'}, body: body===undefined?undefined:JSON.stringify(body)});
+  if(!r.ok) throw new Error(r.status);
+  return r.json();
+}
+async function save(id, patch){
+  const prev = notes[id] ? {...notes[id]} : null;
+  notes[id] = {...(notes[id]||{}), ...patch, updatedAt:Date.now()};
+  render();
+  try{ await req('PATCH', NODE+'/'+id, notes[id]); }
+  catch(e){ if(prev) notes[id]=prev; else delete notes[id]; render(); toast('Did not save. Check signal.'); }
+}
+async function remove(id){
+  const prev = notes[id]; delete notes[id]; render();
+  try{ await req('DELETE', NODE+'/'+id); } catch(e){ notes[id]=prev; render(); toast('Did not delete. Check signal.'); }
+}
+
+// live sync via Firebase REST streaming, polling fallback
+function applyAt(obj, path, data, merge){
+  const parts = path.split('/').filter(Boolean);
+  if(!parts.length) return merge ? {...(obj||{}), ...(data||{})} : (data || {});
+  const root = {...(obj||{})}; let cur = root;
+  for(let i=0;i<parts.length-1;i++){ cur[parts[i]] = {...(cur[parts[i]]||{})}; cur = cur[parts[i]]; }
+  const k = parts[parts.length-1];
+  if(merge) cur[k] = {...(cur[k]||{}), ...data}; else if(data===null) delete cur[k]; else cur[k] = data;
+  return root;
+}
+function stream(path, onData){
+  let poll = null;
+  const startPoll = () => {
+    if(poll) return;
+    const tick = async () => { try{ onData('/', await req('GET', path), false); setSync('on'); }catch(e){ setSync('off'); } };
+    tick(); poll = setInterval(tick, 8000);
+  };
+  try{
+    const es = new EventSource(url(path));
+    es.addEventListener('put', e => { const m=JSON.parse(e.data); onData(m.path, m.data, false); setSync('on'); });
+    es.addEventListener('patch', e => { const m=JSON.parse(e.data); onData(m.path, m.data, true); setSync('on'); });
+    es.onopen = () => { setSync('on'); if(poll){ clearInterval(poll); poll=null; } };
+    es.onerror = () => { setSync('off'); startPoll(); };
+  }catch(e){ startPoll(); }
+}
+
+// ---------- main table ----------
+function render(){
+  const all = Object.values(notes).filter(n => n && n.id && itemsOf(n).length);
+  const open = all.filter(n => n.status !== 'ordered').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  const done = all.filter(n => n.status === 'ordered').sort((a,b)=>(b.orderedAt||0)-(a.orderedAt||0));
+  const list = [...open, ...done];
+  const cnt = (n, cls) => `<span class="cnt ${n?cls:'z'}">${n}</span>`;
+
+  $('#rows').innerHTML = list.length ? list.map(n => {
+    const isDone = n.status === 'ordered';
+    const p = partsOf(n).reduce((s,i)=>s+(+i.qty||1),0), a = accOf(n).reduce((s,i)=>s+(+i.qty||1),0);
+    const status = isDone ? `<span class="status ord">✓ Ordered · ${esc(n.orderedBy||'')}</span>` : `<span class="status need">Need to buy</span>`;
+    return `<tr class="${isDone?'done':''}">
+      <td><div class="o-date">${esc(when(n.createdAt))}</div>
+          <div class="o-by">by ${esc(n.by||'?')}${isDone?'<span class="hide-lg"></span>':''}</div>
+          <div class="o-prev">${esc(itemsOf(n).map(i=>i.text).join(', '))}</div></td>
+      <td class="c">${cnt(p,'p')}</td>
+      <td class="c">${cnt(a,'a')}</td>
+      <td class="hide-sm">${status}</td>
+      <td style="text-align:right"><button class="viewbtn" data-open="${esc(n.id)}">${isDone?'✓ View':'View'}</button></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="5" class="empty">No orders yet. Tap <b>+ New Order</b>.</td></tr>`;
+  $('#clearOld').hidden = !done.some(n => Date.now() - (n.orderedAt||0) > 7*86400000);
+
+  // banner: orders someone else placed since this phone last tapped "Got it"
+  const fresh = done.filter(n => (n.orderedAt||0) > seenAt && n.orderedBy !== me);
+  if(fresh.length && me){
+    const byWho = [...new Set(fresh.map(n=>n.orderedBy||'Someone'))].join(' & ');
+    const its = fresh.flatMap(n => itemsOf(n).map(lineTxt));
+    const txt = its.slice(0,4).map(esc).join(', ') + (its.length>4 ? ` +${its.length-4} more` : '');
+    $('#bannerTxt').innerHTML = `📦 <b>${esc(byWho)} ordered</b> ${txt}<br><span style="opacity:.7;font-size:12px">${esc(when(fresh[0].orderedAt))}</span>`;
+    $('#banner').classList.add('show');
+  } else $('#banner').classList.remove('show');
+}
+
+// two-section block used by both the editor and the viewer
+function sectionsHTML(items, removable){
+  const block = (title, cls, key) => {
+    const rows = items.map((it,i)=>({it,i})).filter(x => (x.it.cat==='accessories') === (key==='accessories'));
+    const body = rows.length
+      ? `<ul>${rows.map(x=>`<li><span>${lineHTML(x.it)}</span>${removable?`<button data-rmi="${x.i}" aria-label="Remove">✕</button>`:''}</li>`).join('')}</ul>`
+      : `<div class="none">None</div>`;
+    return `<div class="section ${cls}"><h4>${title}</h4>${body}</div>`;
+  };
+  return block('Parts','p','parts') + block('Accessories','a','accessories');
+}
+
+// ---------- new / edit order ----------
+const writeDlg = $('#writeDlg');
+function capLive(t){
+  return t
+    .replace(/(^|[\s(\/-])([a-z])/g, (m,a,b) => a + b.toUpperCase())
+    .replace(/(^|[^a-z])i(phone|pad|pod|mac|watch)(?![a-z])/gi, (m,pre,w) => pre + 'i' + w[0].toUpperCase() + w.slice(1).toLowerCase())
+    .replace(/\bairpods\b/gi,'AirPods').replace(/\boled\b/gi,'OLED').replace(/\blcd\b/gi,'LCD')
+    .replace(/(iphone )se(?![a-z])/gi,'$1SE').replace(/\busb-c\b/gi,'USB-C').replace(/\busb\b/gi,'USB');
+}
+const cap = t => capLive(t.replace(/\s+/g,' ').trim());
+// Screen grade shows only while the text is "iPhone <model>" (or "... Screen"); any other word hides it.
+const MODEL_WORD = /^(\d+e?|pro|max|plus|mini|air|se|x|xr|xs|\(?\d(st|nd|rd|th)|gen\)?|generation|screen|display|lcd|oled)$/i;
+const isIphone = () => {
+  if(cat !== 'parts') return false;
+  const words = $('#oText').value.trim().replace(/^(iphone)(\d)/i,'$1 $2').split(/\s+/);
+  if(!/^iphone$/i.test(words[0]||'')) return false;
+  const rest = words.slice(1).filter(Boolean);
+  if(!rest.length) return true;
+  // the word still being typed only has to be the start of a model word ("P" -> Pro)
+  const TOKENS = ['pro','max','plus','mini','air','se','xr','xs','gen','gen)','generation','screen','display','lcd','oled'];
+  const ok = (w,last) => MODEL_WORD.test(w) || (last && (/^\(/.test(w) || /^\d/.test(w) || TOKENS.some(t => t.startsWith(w.toLowerCase()))));
+  return !!grade && rest.every((w,i) => ok(w, i===rest.length-1));
+};
+function segOn(sel, attr, val){ document.querySelectorAll(sel+' button').forEach(b => b.classList.toggle('on', b.dataset[attr]===val)); }
+function syncComposer(){
+  segOn('#catSeg','cat',cat);
+  const isAcc = cat === 'accessories';
+  $('#itemLbl').textContent = isAcc ? 'Accessory' : 'Part';
+  $('#oText').placeholder = isAcc ? 'e.g. USB-C Cable, 20W Charger' : 'e.g. iPhone 13 Pro, S23 Charge Port';
+  if(isAcc) $('#oText').removeAttribute('list'); else $('#oText').setAttribute('list','models');
+  const show = isIphone();
+  if(!show) grade = null;
+  $('#gradeWrap').style.display = show ? 'grid' : 'none';
+  segOn('#gradeSeg','grade',grade);
+  $('#qty').textContent = qty;
+  $('#draft').innerHTML = sectionsHTML(draft, true);
+}
+function resetAdder(){ grade=null; qty=1; $('#oText').value=''; }
+function buildPending(){
+  let t = cap($('#oText').value);
+  if(!t) return null;
+  if(grade && isIphone()){
+    if(!/screen/i.test(t)) t += ' Screen';
+    t += ' ' + GRADE[grade];
+  }
+  return {text:t, qty, cat, grade: grade || null};
+}
+function openWrite(id){
+  if(!me){ openWho(); return; }
+  editingId = id || null;
+  const n = id ? notes[id] : null;
+  draft = n ? itemsOf(n).map(x=>({...x})) : [];
+  cat = 'parts'; resetAdder();
+  $('#writeTitle').textContent = n ? 'Edit Order' : 'New Order';
+  $('#writeSave').textContent = n ? 'Save' : 'Post Order';
+  syncComposer();
+  writeDlg.showModal();
+}
+$('#newBtn').onclick = () => openWrite();
+$('#catSeg').onclick = e => { const b=e.target.closest('[data-cat]'); if(b){ cat=b.dataset.cat; syncComposer(); $('#oText').focus(); } };
+$('#gradeSeg').onclick = e => { const b=e.target.closest('[data-grade]'); if(b){ grade = grade===b.dataset.grade ? null : b.dataset.grade; syncComposer(); } };
+$('#oText').addEventListener('input', () => {
+  const el = $('#oText'), v = el.value, c = capLive(v);
+  if(c !== v){ const a = el.selectionStart, b = el.selectionEnd; el.value = c; try{ el.setSelectionRange(a,b); }catch(e){} }
+  const was=$('#gradeWrap').style.display; if((isIphone()?'grid':'none')!==was) syncComposer();
+});
+$('#oText').addEventListener('blur', () => { const v=$('#oText').value; if(v.trim()) $('#oText').value = cap(v); });
+$('#oText').addEventListener('focus', () => setTimeout(() => $('#oText').scrollIntoView({block:'center', behavior:'smooth'}), 250));
+$('#oText').addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); $('#addRow').click(); } });
+document.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { qty=Math.max(1, qty + +b.dataset.q); $('#qty').textContent=qty; });
+$('#draft').onclick = e => { const b=e.target.closest('[data-rmi]'); if(b){ draft.splice(+b.dataset.rmi,1); syncComposer(); } };
+$('#addRow').onclick = () => {
+  const it = buildPending();
+  if(!it){ toast('Type the item first'); return; }
+  draft.push(it); resetAdder(); syncComposer(); $('#oText').focus();
+};
+$('#writeCancel').onclick = () => writeDlg.close();
+$('#writeSave').onclick = () => {
+  const pending = buildPending();
+  if(pending) draft.push(pending);
+  if(!draft.length){ toast('Add at least one item'); return; }
+  const items = draft.map(x=>({...x}));
+  const text = items.map(lineTxt).join('\n');
+  if(editingId) save(editingId, {items, text});
+  else { const id=newId(); save(id, {id, items, text, by:me, createdAt:Date.now(), status:'open'}); toast('Order posted'); }
+  writeDlg.close();
+};
+
+// ---------- view order ----------
+const viewDlg = $('#viewDlg');
+function openView(id){
+  const n = notes[id]; if(!n) return;
+  const isDone = n.status === 'ordered';
+  $('#viewSheet').innerHTML = `
+    <h3>Order · ${esc(when(n.createdAt))}</h3>
+    ${isDone ? `<div class="stamp">✓ ORDERED by ${esc(n.orderedBy||'?')} · ${esc(when(n.orderedAt))}</div>` : ''}
+    ${sectionsHTML(itemsOf(n), false)}
+    <div class="meta">Posted by ${esc(n.by||'?')}</div>
+    <div class="btns">
+      ${isDone ? `<button class="plain" data-act="undo">Not ordered</button>`
+               : `<button class="big" data-act="order">✓ Ordered</button><button class="plain" data-act="edit">Edit</button>`}
+      <button class="plain" data-act="close">Close</button>
+      <button class="del" data-act="del">Delete</button>
+    </div>`;
+  $('#viewSheet').onclick = e => {
+    const a = e.target.closest('[data-act]'); if(!a) return;
+    const act = a.dataset.act;
+    if(act==='order'){
+      if(!me){ viewDlg.close(); openWho(); return; }
+      save(id, {status:'ordered', orderedBy:me, orderedAt:Date.now()}); viewDlg.close(); toast('Marked ordered. Everyone will see it.');
+    }
+    if(act==='undo'){ save(id, {status:'open', orderedBy:null, orderedAt:null}); viewDlg.close(); }
+    if(act==='edit'){ viewDlg.close(); openWrite(id); }
+    if(act==='close') viewDlg.close();
+    if(act==='del' && confirm('Delete this order?')){ remove(id); viewDlg.close(); }
+  };
+  viewDlg.showModal();
+}
+document.addEventListener('click', e => { const o = e.target.closest('[data-open]'); if(o) openView(o.dataset.open); });
+
+$('#bannerOk').onclick = () => { seenAt = Date.now(); safeSet('parts_seen', String(seenAt)); render(); };
+$('#clearOld').onclick = () => {
+  const old = Object.values(notes).filter(n => n.status==='ordered' && Date.now()-(n.orderedAt||0) > 7*86400000);
+  if(old.length && confirm(`Delete ${old.length} ordered list${old.length>1?'s':''} older than a week?`)) old.forEach(n=>remove(n.id));
+};
+
+// ---------- who ----------
+const whoDlg = $('#whoDlg');
+function renderWho(){
+  $('#whoName').textContent = me || '?';
+  $('#whoList').innerHTML = PEOPLE.map(p => `<button class="p-box ${p===me?'on':''}" data-pick="${esc(p)}">${esc(p)}</button>`).join('');
+}
+function openWho(){ renderWho(); if(!whoDlg.open) whoDlg.showModal(); }
+$('#whoBtn').onclick = openWho;
+$('#whoList').onclick = e => {
+  const p = e.target.closest('[data-pick]'); if(!p) return;
+  const first = !me;
+  me = p.dataset.pick; safeSet('parts_me', me);
+  if(first && !seenAt){ seenAt = Date.now(); safeSet('parts_seen', String(seenAt)); } // don't spam old orders on first setup
+  renderWho(); render(); whoDlg.close();
+};
+[writeDlg, viewDlg, whoDlg].forEach(d => d.addEventListener('click', e => { if(e.target===d) d.close(); }));
+
+// ---------- boot ----------
+render(); renderWho();
+if(!me) openWho();
+stream(NODE, (path, data, merge) => { notes = applyAt(notes, path, data, merge) || {}; render(); });
+setInterval(render, 60000);
+</script>
+</body>
+</html>
