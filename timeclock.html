@@ -1038,7 +1038,7 @@ function clockAction(action){
       breakStart:null,
       onLunch:false,
       onBreak:false,
-      date:new Date().toISOString().split('T')[0],
+      date:localDate(new Date(now)),
       edited:false,
       flagged:false
     };
@@ -1086,7 +1086,7 @@ function clockAction(action){
 }
 
 function renderTodaySummary(){
-  const today=new Date().toISOString().split('T')[0];
+  const today=localDate();
   const todayEntries=entries.filter(e=>e.emp===currentEmp&&e.date===today);
   const el=document.getElementById('today-summary');
   if(!todayEntries.length){el.innerHTML='<div class="today-title">Today</div><div style="font-size:12px;color:var(--text3);">No entries yet today</div>';return;}
@@ -1168,7 +1168,7 @@ function renderAdminOverview(){
     cardHtml=`<div class="summary-card" style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:12px;">No employees yet. Add them in Settings.</div>`;
   }
   emps.forEach(emp=>{
-    const empEntries=entries.filter(e=>e.emp===emp&&e.date>=week.start&&e.date<=week.end&&!e.flagged&&e.clockOut);
+    const empEntries=payableEntries(emp,week);
     const rate=empProfiles[emp]?.rate||10;
     const hrs=empEntries.reduce((s,e)=>s+calcPaidHrs(e),0);
     const pay=hrs*rate;
@@ -1231,7 +1231,7 @@ function renderAdminTimecards(){
 
     const rate=empProfiles[emp]?.rate||10;
     let totalHrs=0;
-    empEntries.filter(e=>e.clockOut).forEach(e=>totalHrs+=calcPaidHrs(e));
+    payableEntries(emp,week).forEach(e=>totalHrs+=calcPaidHrs(e));
     const pay=totalHrs*rate;
 
     let rows='';
@@ -1576,7 +1576,7 @@ function openEditModal(id){
 }
 
 function openAddEntry(){
-  openAddEntryForWeek(new Date().toISOString().split('T')[0]);
+  openAddEntryForWeek(localDate());
 }
 
 function openAddEntryForWeek(weekStart){
@@ -1676,35 +1676,38 @@ function renderPaystub(){
   const rate=profile.rate||10;
   const addrInput=(document.getElementById('paystub-addr-input')?.value||'').trim();
   const ssnInput=(document.getElementById('paystub-ssn-input')?.value||'').trim();
-  const empEntries=entries.filter(e=>e.emp===emp&&e.date>=week.start&&e.date<=week.end&&!e.flagged&&e.clockOut).sort((a,b)=>a.clockIn-b.clockIn);
+  // Same entries the Time Cards table pays on (deleted/flagged/open entries excluded)
+  const empEntries=payableEntries(emp,week);
 
-  let totalHrs=0;
-  const days={};
-  empEntries.forEach(e=>{
+  let totalHrs=0,totalLunch=0,totalBreaks=0;
+  const td='padding:7px 10px;font-size:12px;';
+  // One row per entry, same columns as the Time Cards table
+  let dailyRows=empEntries.map(e=>{
     const hrs=calcPaidHrs(e);
-    totalHrs+=hrs;
-    const d=e.date;
-    if(!days[d])days[d]=[];
-    days[d].push({...e,paidHrs:hrs});
-  });
-  const gross=totalHrs*rate;
-
-  const payDate=getPayDate(week.end);
-  let dailyRows=Object.keys(days).sort().map(date=>{
-    const dayEntries=days[date];
-    const dayHrs=dayEntries.reduce((s,e)=>s+e.paidHrs,0);
-    const cin=new Date(dayEntries[0].clockIn).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-    const cout=new Date(dayEntries[dayEntries.length-1].clockOut).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-    const lunch=dayEntries.reduce((s,e)=>s+e.lunchMinutes,0);
-    const brks=dayEntries.reduce((s,e)=>s+e.breakMinutes,0);
+    const lunch=e.lunchMinutes||0;
+    const brks=e.breakMinutes||0;
+    totalHrs+=hrs;totalLunch+=lunch;totalBreaks+=brks;
+    const cin=new Date(e.clockIn).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    const cout=new Date(e.clockOut).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
     return`<tr style="border-bottom:1px solid #e5e0d8;">
-      <td style="padding:7px 10px;font-size:12px;">${fmtDate(date)}</td>
-      <td style="padding:7px 10px;font-size:12px;">${cin}</td>
-      <td style="padding:7px 10px;font-size:12px;">${cout}</td>
-      <td style="padding:7px 10px;font-size:12px;">${lunch+brks} min</td>
-      <td style="padding:7px 10px;font-size:12px;font-weight:700;">${fmtHrs(dayHrs)}</td>
+      <td style="${td}">${fmtDate(e.date)}</td>
+      <td style="${td}">${cin}</td>
+      <td style="${td}">${cout}</td>
+      <td style="${td}">${lunch} min</td>
+      <td style="${td}">${brks} min</td>
+      <td style="${td}font-weight:700;">${fmtHrs(hrs)}</td>
     </tr>`;
   }).join('');
+  if(dailyRows){
+    dailyRows+=`<tr style="background:#f0ede8;">
+      <td style="${td}font-weight:700;" colspan="3">Week Total</td>
+      <td style="${td}font-weight:700;">${totalLunch} min</td>
+      <td style="${td}font-weight:700;">${totalBreaks} min</td>
+      <td style="${td}font-weight:800;">${fmtHrs(totalHrs)}</td>
+    </tr>`;
+  }
+  const gross=totalHrs*rate;
+  const payDate=getPayDate(week.end);
 
   const html=`
     <div style="border:2px solid var(--navy);border-radius:12px;overflow:hidden;">
@@ -1742,10 +1745,11 @@ function renderPaystub(){
             <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Date</th>
             <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">In</th>
             <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Out</th>
-            <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Unpaid</th>
+            <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Lunch</th>
+            <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Breaks</th>
             <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Paid Hrs</th>
           </tr></thead>
-          <tbody>${dailyRows||'<tr><td colspan="5" style="padding:16px;text-align:center;color:var(--text3);">No entries</td></tr>'}</tbody>
+          <tbody>${dailyRows||'<tr><td colspan="6" style="padding:16px;text-align:center;color:var(--text3);">No entries</td></tr>'}</tbody>
         </table>
       </div>
       <!-- Earnings summary -->
@@ -1781,6 +1785,25 @@ function selectLoc(loc){
 }
 
 // ── UTILITIES ──
+// Single source of truth for anything that gets PAID (overview, time cards, paystub).
+// Excludes deleted, flagged, and still-open entries so every screen and the printout match.
+function payableEntries(emp,week){
+  return entries.filter(e=>
+    e.emp===emp&&
+    e.date>=week.start&&
+    e.date<=week.end&&
+    !e.flagged&&
+    !e.deleted&&
+    e.clockOut
+  ).sort((a,b)=>a.clockIn-b.clockIn);
+}
+
+// Local calendar date (YYYY-MM-DD). toISOString() is UTC, which rolls to tomorrow after 7 PM Central.
+function localDate(d){
+  d=d||new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
 function calcPaidHrs(e){
   if(!e.clockOut)return 0;
   const totalMs=e.clockOut-e.clockIn;
@@ -1798,8 +1821,8 @@ function getWeekRange(offset){
   const saturday=new Date(monday);
   saturday.setDate(monday.getDate()+5);
   return{
-    start:monday.toISOString().split('T')[0],
-    end:saturday.toISOString().split('T')[0]
+    start:localDate(monday),
+    end:localDate(saturday)
   };
 }
 
