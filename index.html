@@ -45,6 +45,16 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 .ni-label{flex:1;overflow:hidden;}
 .ni-badge{font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:20px;background:var(--sidebar2);color:var(--text2);min-width:20px;text-align:center;}
 .ni-badge.red{background:var(--redbg);color:var(--red);}
+.park-banner{display:flex;align-items:center;gap:10px;background:#F1F5F9;border:1px solid var(--border2);border-radius:10px;padding:10px 13px;margin-bottom:16px;font-size:13px;color:var(--text2);}
+.park-banner svg{width:17px;height:17px;flex-shrink:0;color:var(--text2);}
+.park-banner b{color:var(--text);}
+.rowbtn{padding:5px 11px;font-size:12px;}
+.status-line{display:flex;align-items:center;gap:10px;}
+.status-line .pill-row{flex:1;min-width:0;margin-bottom:0;}
+.clutter-btn{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;font-size:11.5px;font-weight:700;padding:6px 12px;border-radius:20px;border:1.5px dashed var(--border2);background:#fff;color:var(--text2);white-space:nowrap;cursor:pointer;transition:all .12s;}
+.clutter-btn svg{width:14px;height:14px;}
+.clutter-btn:hover{border-style:solid;border-color:var(--text3);color:var(--text);background:#F8FAFC;}
+.clutter-btn.back{border-style:solid;border-color:var(--sky2);color:var(--sky3);background:var(--skybg);}
 .ni.linkout{color:var(--sky3);}
 .sb-bottom{padding:8px 10px;border-top:1px solid var(--border);}
 .sb-toggle{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:8px;color:var(--text3);font-size:12px;cursor:pointer;user-select:none;transition:all .12s;}
@@ -375,6 +385,7 @@ input,select,textarea{font-family:inherit;font-size:14px;}
       <div class="nsec">Main</div>
       <div class="ni active" data-view="board" onclick="switchView('board')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="ni-label">Repair Board</span><span class="ni-badge" id="nb-board">0</span></div>
       <div class="ni" data-view="pastdue" onclick="switchView('pastdue')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="ni-label">Past Due</span><span class="ni-badge red" id="nb-past">0</span></div>
+      <div class="ni" data-view="parked" onclick="switchView('parked')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 001 1h12a1 1 0 001-1V9M10 13h4"/></svg><span class="ni-label">Clutter Bin</span><span class="ni-badge" id="nb-park">0</span></div>
       <div class="ni" data-view="completed" onclick="switchView('completed')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span class="ni-label">Completed</span></div>
       <div class="nsec">Tools</div>
       <div class="ni" data-view="search" onclick="switchView('search')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg><span class="ni-label">Customers</span></div>
@@ -422,6 +433,7 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 
     <!-- SIMPLE VIEWS -->
     <div id="view-pastdue" class="hidden"><div class="topbar"><div class="tb-row"><div class="tb-title">Past Due</div></div><p style="color:var(--text2);font-size:13px;margin-bottom:8px">Ready for pickup longer than <b id="pd-days-lbl">30</b> days.</p></div><div class="listwrap" id="pastdue-list"></div></div>
+    <div id="view-parked" class="hidden"><div class="topbar"><div class="tb-row"><div class="tb-title">Clutter Bin</div></div><p style="color:var(--text2);font-size:13px;margin-bottom:8px">Off the board, not deleted. Abandoned devices, dead tickets, anything cluttering up the board. Hit <b>Back to board</b> to return one to its old column.</p></div><div class="listwrap" id="parked-list"></div></div>
     <div id="view-completed" class="hidden"><div class="topbar"><div class="tb-row"><div class="tb-title">Completed</div></div><p style="color:var(--text2);font-size:13px;margin-bottom:8px">Finished repairs, newest first.</p></div><div class="listwrap" id="completed-list"></div></div>
     <div id="view-search" class="hidden"><div class="topbar"><div class="tb-row"><div class="tb-title">Customers</div></div><div class="filters"><div class="sw" style="max-width:460px"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="rec-search" placeholder="Search customers by name, phone, or a repair…" oninput="renderRecordSearch()"/></div></div></div><div class="listwrap" id="search-list"></div></div>
     <div id="view-deleted" class="hidden"><div class="topbar"><div class="tb-row"><div class="tb-title">Recently Deleted</div></div><p style="color:var(--text2);font-size:13px;margin-bottom:8px">Deleted repairs are kept 5 days, then permanently erased.</p></div><div class="listwrap" id="deleted-list"></div></div>
@@ -513,7 +525,8 @@ input,select,textarea{font-family:inherit;font-size:14px;}
       <div class="created" id="eh-created"></div>
       <div class="hchips" id="eh-chips"></div>
     </div>
-    <div class="fld" style="margin-bottom:18px"><label>Status</label><div class="pill-row" id="status-pills"></div></div>
+    <div id="park-banner"></div>
+    <div class="fld" style="margin-bottom:18px"><label>Status</label><div class="status-line"><div class="pill-row" id="status-pills"></div><button type="button" class="clutter-btn" id="rm-park" onclick="toggleParkFromEdit()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 001 1h12a1 1 0 001-1V9M10 13h4"/></svg><span id="rm-park-lbl">Move to Clutter</span></button></div></div>
   </div>
 
   <div class="fsec" id="notes-sec">
@@ -774,7 +787,9 @@ function setEmpIcon(i,icon){if(!employees[i])return;employees[i].icon=icon;saveE
 function statusDef(id){return STATUSES.find(s=>s.id===id)||{id,short:id,color:'#64748B',bg:'#F1F5F9'};}
 
 /* ══ STATUS / PAST-DUE HELPERS ══ */
-function isActive(r){return !r.deleted && r.Status!==COMPLETED;}
+function isOpen(r){return !r.deleted && r.Status!==COMPLETED;}          // open ticket, parked or not
+function isParked(r){return isOpen(r) && !!r.Parked;}
+function isActive(r){return isOpen(r) && !r.Parked;}                     // on the board
 function readyAnchor(r){return r.ReadyDate||r.LastStatusChange||r.DropoffDate;}
 function isPastDue(r){return isActive(r)&&(r.Status==='Past Due'||(r.Status==='Ready for Pickup'&&daysSince(readyAnchor(r))>=settings.pastDueDays));}
 function pastDueSoon(r){return isActive(r)&&r.Status==='Ready for Pickup'&&daysSince(readyAnchor(r))>=settings.pastDueDays-1&&!isPastDue(r);}
@@ -857,19 +872,21 @@ function updateCounts(){
   const ready=active.filter(r=>r.Status==='Ready for Pickup'&&!isPastDue(r));
   const past=repairs.filter(isPastDue);
   const del=repairs.filter(r=>r.deleted);
+  const parked=repairs.filter(isParked);
   const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   set('st-active',active.length);set('st-ready',ready.length);set('st-past',past.length);
-  set('nb-board',active.length);set('nb-past',past.length);set('nb-del',del.length);
+  set('nb-board',active.length);set('nb-past',past.length);set('nb-del',del.length);set('nb-park',parked.length);
   set('pd-days-lbl',settings.pastDueDays);
 }
 
 /* ══ VIEW SWITCHING ══ */
-const VIEWS=['board','pastdue','completed','search','settings','deleted'];
+const VIEWS=['board','pastdue','parked','completed','search','settings','deleted'];
 function switchView(v){
   curView=v;
   VIEWS.forEach(x=>{const el=document.getElementById('view-'+x);if(el)el.classList.toggle('hidden',x!==v);});
   document.querySelectorAll('.ni[data-view]').forEach(n=>n.classList.toggle('active',n.dataset.view===v));
   if(v==='pastdue')renderPastDue();
+  if(v==='parked')renderParked();
   if(v==='completed')renderCompleted();
   if(v==='search')renderRecordSearch();
   if(v==='deleted')renderDeleted();
@@ -1106,6 +1123,7 @@ function _openRepair(id){
   document.getElementById('cust-chip').style.display=isNew?'none':'flex';
   document.getElementById('cust-pop').style.display='none';
   document.getElementById('rm-del').style.display=isNew?'none':'flex';
+  document.getElementById('rm-park').style.display='none';document.getElementById('park-banner').innerHTML='';
   document.getElementById('rm-title').textContent=isNew?'New Repair Ticket':'Edit Repair';
   document.getElementById('rm-sub').textContent=isNew?"Log the device, customer, and what they're paying":'';
   document.getElementById('rm-save').textContent=isNew?'Create Repair':'Save Repair';
@@ -1130,7 +1148,7 @@ function _openRepair(id){
     document.getElementById('f-dropoff').value=(r.DropoffDate||'').slice(0,10);
     curQuality=r.Quality||'';
     onRepairInput();
-    renderEditHead(r);renderStatusPills(r);renderNotes(r);renderActivity(r);renderCustChip(r);
+    renderEditHead(r);renderStatusPills(r);renderNotes(r);renderActivity(r);renderCustChip(r);renderParkUi(r);
   }
   document.getElementById('ov-repair').classList.add('open');
 }
@@ -1182,7 +1200,7 @@ function logAct(r,action){(r.ActivityLog=r.ActivityLog||[]).push({who:currentUse
 /* ══ HEADER CUSTOMER CHIP ══ */
 function custStats(name,phone){
   const list=repairs.filter(r=>!r.deleted&&(phoneRaw(r.Phone1)===phone||(name&&(r.CustomerName||'').toLowerCase()===(name||'').toLowerCase())));
-  return {total:list.length,open:list.filter(isActive).length};
+  return {total:list.length,open:list.filter(isOpen).length};
 }
 function renderCustChip(r){
   const phone=phoneRaw(r.Phone1),name=r.CustomerName||'';
@@ -1245,13 +1263,14 @@ function viewFullProfile(name,phone){document.getElementById('cust-pop').style.d
 function setStatus(id,newStatus){
   const r=repairs.find(x=>x.ID===id);if(!r)return;
   if(newStatus===COMPLETED){openComplete(r);return;}
-  if(r.Status===newStatus)return;
+  if(r.Status===newStatus&&!r.Parked)return;
+  if(r.Parked){delete r.Parked;delete r.ParkedAt;logAct(r,'Moved back to the board');}
   r.Status=newStatus;
   r.LastStatusChange=Date.now();
   if(newStatus==='Ready for Pickup')r.ReadyDate=new Date().toISOString();
   logAct(r,'Status changed to '+statusDef(newStatus).short);
   fbSave(r);
-  renderStatusPills(r);renderEditHead(r);renderActivity(r);
+  renderStatusPills(r);renderEditHead(r);renderActivity(r);renderParkUi(r);
 }
 
 /* ══ DRAG & DROP ══ */
@@ -1475,6 +1494,7 @@ function confirmComplete(){
   const total=card?parseNum(document.getElementById('cm-aftertax-val').value):subtotal;
   const tax=card?Math.round((total-subtotal)*100)/100:0;
   r.Status=COMPLETED;
+  delete r.Parked;delete r.ParkedAt;
   r.CompletedDate=document.getElementById('cm-date').value||new Date().toISOString().slice(0,10);
   r.PayMethod=m;
   r.Subtotal=subtotal;r.Tax=tax;r.TotalCollected=total;
@@ -1637,8 +1657,41 @@ function printDropoff(){
 function renderPastDue(){
   const rows=repairs.filter(isPastDue).sort((a,b)=>daysSince(readyAnchor(b))-daysSince(readyAnchor(a)));
   document.getElementById('pastdue-list').innerHTML=rows.length?
-    `<table class="ltable"><thead><tr><th>Repair</th><th>Customer</th><th>Phone</th><th>Location</th><th>Quote</th><th>Days ready</th></tr></thead><tbody>${rows.map(r=>`<tr onclick="openRepair('${esc(r.ID)}')"><td style="font-weight:600">${esc(r.RepairName||'—')}</td><td style="color:var(--sky3)">${esc(r.CustomerName)}</td><td class="mono" style="font-size:12px">${fmtPhoneDisp(r.Phone1)}</td><td>${esc(r.Location)}</td><td style="color:var(--green);font-weight:600">${r.Quote?money(r.Quote):'—'}</td><td><span class="spill" style="background:var(--redbg);color:var(--red)">${daysSince(readyAnchor(r))} days</span></td></tr>`).join('')}</tbody></table>`
+    `<table class="ltable"><thead><tr><th>Repair</th><th>Customer</th><th>Phone</th><th>Location</th><th>Quote</th><th>Days ready</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr onclick="openRepair('${esc(r.ID)}')"><td style="font-weight:600">${esc(r.RepairName||'—')}</td><td style="color:var(--sky3)">${esc(r.CustomerName)}</td><td class="mono" style="font-size:12px">${fmtPhoneDisp(r.Phone1)}</td><td>${esc(r.Location)}</td><td style="color:var(--green);font-weight:600">${r.Quote?money(r.Quote):'—'}</td><td><span class="spill" style="background:var(--redbg);color:var(--red)">${daysSince(readyAnchor(r))} days</span></td><td style="text-align:right"><button class="btn rowbtn" onclick="event.stopPropagation();parkRepair('${esc(r.ID)}')">Move to Clutter</button></td></tr>`).join('')}</tbody></table>`
     :emptyHtml('Nothing past due','Repairs ready over '+settings.pastDueDays+' days show here.');
+}
+function renderParked(){
+  const rows=repairs.filter(isParked).sort((a,b)=>(b.ParkedAt||0)-(a.ParkedAt||0));
+  document.getElementById('parked-list').innerHTML=rows.length?
+    `<table class="ltable"><thead><tr><th>Repair</th><th>Customer</th><th>Phone</th><th>Was in</th><th>Location</th><th>Quote</th><th>Moved here</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr onclick="openRepair('${esc(r.ID)}')"><td style="font-weight:600">${esc(r.RepairName||'—')}</td><td style="color:var(--sky3)">${esc(r.CustomerName)}</td><td class="mono" style="font-size:12px">${fmtPhoneDisp(r.Phone1)}</td><td>${statusPill(r.Status)}</td><td>${esc(r.Location)}</td><td style="color:var(--green);font-weight:600">${r.Quote?money(r.Quote):'—'}</td><td style="color:var(--text3);font-size:12px">${r.ParkedAt?fmtDate(r.ParkedAt)+' · '+daysSince(r.ParkedAt)+'d':'—'}</td><td style="text-align:right"><button class="btn rowbtn" onclick="event.stopPropagation();unparkRepair('${esc(r.ID)}')">Back to board</button></td></tr>`).join('')}</tbody></table>`
+    :emptyHtml('Clutter Bin is empty','Hit Move to Clutter on a ticket or in the Past Due list to get it off the board.');
+}
+function parkRepair(id){
+  const r=repairs.find(x=>x.ID===id);if(!r||!isOpen(r)||r.Parked)return;
+  r.Parked=true;r.ParkedAt=Date.now();
+  logAct(r,'Moved to Clutter Bin');
+  fbSave(r);
+  if(editId===id)renderParkUi(r),renderActivity(r);
+  toast('Moved to Clutter Bin ✓');
+}
+function unparkRepair(id){
+  const r=repairs.find(x=>x.ID===id);if(!r||!r.Parked)return;
+  delete r.Parked;delete r.ParkedAt;
+  logAct(r,'Moved back to the board');
+  fbSave(r);
+  if(editId===id)renderParkUi(r),renderActivity(r);
+  toast('Back on the board ✓');
+}
+function toggleParkFromEdit(){const r=repairs.find(x=>x.ID===editId);if(!r)return;if(r.Parked)unparkRepair(r.ID);else parkRepair(r.ID);}
+function renderParkUi(r){
+  const btn=document.getElementById('rm-park'),lbl=document.getElementById('rm-park-lbl'),ban=document.getElementById('park-banner');
+  if(!btn)return;
+  const open=isOpen(r);
+  btn.style.display=open?'inline-flex':'none';
+  lbl.textContent=r.Parked?'Back to Board':'Move to Clutter';
+  btn.classList.toggle('back',!!r.Parked);
+  btn.title=r.Parked?'Put back on the Repair Board':'Move off the board into the Clutter Bin';
+  ban.innerHTML=(open&&r.Parked)?`<div class="park-banner"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 001 1h12a1 1 0 001-1V9M10 13h4"/></svg><span style="flex:1"><b>In the Clutter Bin</b>${r.ParkedAt?' since '+fmtDate(r.ParkedAt):''}. Hidden from the board. Hit Back to Board or pick a status to return it.</span></div>`:'';
 }
 function renderCompleted(){
   const rows=repairs.filter(r=>!r.deleted&&r.Status===COMPLETED).sort((a,b)=>new Date(b.CompletedDate||0)-new Date(a.CompletedDate||0));
@@ -1657,7 +1710,7 @@ function renderRecordSearch(){
     if(!map[key])map[key]={name:r.CustomerName||'—',phone:r.Phone1||'',count:0,open:0,last:0};
     const m=map[key];
     m.count++;
-    if(isActive(r))m.open++;
+    if(isOpen(r))m.open++;
     const t=new Date(r.DropoffDate||r.Created||0).getTime();
     if(t>m.last)m.last=t;
     if((!m.name||m.name==='—')&&r.CustomerName)m.name=r.CustomerName;
