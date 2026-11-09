@@ -657,6 +657,21 @@ button,.emp-card,.loc-chip,.admin-tab,.edit-btn,.paystub-btn,.hdr-btn{
   </div>
 </div>
 
+<!-- PAY RATE MODAL -->
+<div class="modal-overlay" id="rate-modal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-hdr">
+      <div class="modal-title" id="rate-modal-title">Pay Rate</div>
+      <button class="modal-close" onclick="closeModal('rate-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="rate-modal-body" style="max-height:70vh;overflow-y:auto;"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('rate-modal')">Close</button>
+      <button class="btn btn-primary" onclick="addRateChange()">Save Rate Change</button>
+    </div>
+  </div>
+</div>
+
 <div id="paystub-print"></div>
 <div class="tc-toast" id="tc-toast"></div>
 
@@ -1101,7 +1116,7 @@ function renderTodaySummary(){
   const unpaidMin=lunchMin+breakMin;
   const paidMs=totalMs-(unpaidMin*60000);
   const paidHrs=Math.max(0,paidMs/3600000);
-  const rate=empProfiles[currentEmp]?.rate||10;
+  const rate=currentRate(currentEmp);
 
   el.innerHTML=`<div class="today-title">Today's Summary</div>
     <div class="today-row"><span>Total time</span><span>${fmtHrs(totalMs/3600000)}</span></div>
@@ -1119,28 +1134,24 @@ function renderTimecard(){
   const content=document.getElementById('tc-content');
   if(!empEntries.length){content.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);">No entries for this week</div>';return;}
 
-  const rate=empProfiles[currentEmp]?.rate||10;
-  let totalPaidHrs=0;
-  const days={};
-  empEntries.forEach(e=>{
-    if(!days[e.date])days[e.date]=[];
-    days[e.date].push(e);
-  });
+  const paid=payableEntries(currentEmp,week);
+  const groups=rateGroups(paid);
+  const totalPaidHrs=groups.reduce((s,g)=>s+g.hrs,0);
+  const changes=rateChangesIn(currentEmp,week);
 
-  let html='<div style="overflow-x:auto;"><table class="time-table"><thead><tr><th>Day</th><th>Clock In</th><th>Clock Out</th><th>Lunch</th><th>Breaks</th><th>Paid Hrs</th></tr></thead><tbody>';
-  Object.keys(days).sort().forEach(date=>{
-    days[date].forEach(e=>{
-      const cin=new Date(e.clockIn).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-      const cout=e.clockOut?new Date(e.clockOut).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'—';
-      const paidHrs=calcPaidHrs(e);
-      totalPaidHrs+=paidHrs;
-      html+=`<tr><td>${fmtDate(date)}</td><td>${cin}</td><td>${cout}</td><td>${e.lunchMinutes} min</td><td>${e.breakMinutes} min</td><td><strong>${fmtHrs(paidHrs)}</strong></td></tr>`;
-    });
+  let html='<div style="overflow-x:auto;"><table class="time-table"><thead><tr><th>Day</th><th>Clock In</th><th>Clock Out</th><th>Lunch</th><th>Breaks</th><th>Rate</th><th>Paid Hrs</th></tr></thead><tbody>';
+  empEntries.slice().sort((a,b)=>a.clockIn-b.clockIn).forEach(e=>{
+    const cin=new Date(e.clockIn).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    const cout=e.clockOut?new Date(e.clockOut).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'—';
+    const paidHrs=calcPaidHrs(e);
+    html+=`<tr><td>${fmtDate(e.date)}</td><td>${cin}</td><td>${cout}</td><td>${e.lunchMinutes||0} min</td><td>${e.breakMinutes||0} min</td><td>${fmtRate(rateOn(e.emp,e.date))}/hr</td><td><strong>${fmtHrs(paidHrs)}</strong></td></tr>`;
   });
   html+=`</tbody></table></div>`;
   html+=`<div class="pay-footer" style="margin-top:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);">
-    <div><div class="pay-footer-detail">Week total · $${rate}/hr</div><div class="pay-footer-detail" style="margin-top:2px;">Mon–Sat</div></div>
-    <div class="pay-footer-amount">${fmtHrs(totalPaidHrs)} · $${(totalPaidHrs*rate).toFixed(2)}</div>
+    <div><div class="pay-footer-detail">Week total · ${rateLabel(groups,currentEmp)}</div>
+      ${changes.map(c=>`<div class="pay-footer-detail" style="margin-top:2px;color:var(--green2);font-weight:600;">${rateChangeText(c)}</div>`).join('')}
+      <div class="pay-footer-detail" style="margin-top:2px;">Mon–Sat</div></div>
+    <div class="pay-footer-amount">${fmtHrs(totalPaidHrs)} · $${weekPay(paid).toFixed(2)}</div>
   </div>`;
   content.innerHTML=html;
 }
@@ -1169,9 +1180,8 @@ function renderAdminOverview(){
   }
   emps.forEach(emp=>{
     const empEntries=payableEntries(emp,week);
-    const rate=empProfiles[emp]?.rate||10;
     const hrs=empEntries.reduce((s,e)=>s+calcPaidHrs(e),0);
-    const pay=hrs*rate;
+    const pay=weekPay(empEntries);
     totalPayout+=pay;
     const status=isActive(emp)?getEmpCurrentStatus(emp):{label:'Removed',cls:'status-out'};
     cardHtml+=`<div class="summary-card"${isActive(emp)?'':' style="opacity:.7;"'}>
@@ -1229,14 +1239,15 @@ function renderAdminTimecards(){
       !e.deleted
     ).sort((a,b)=>a.clockIn-b.clockIn);
 
-    const rate=empProfiles[emp]?.rate||10;
-    let totalHrs=0;
-    payableEntries(emp,week).forEach(e=>totalHrs+=calcPaidHrs(e));
-    const pay=totalHrs*rate;
+    const paid=payableEntries(emp,week);
+    const groups=rateGroups(paid);
+    const totalHrs=groups.reduce((s,g)=>s+g.hrs,0);
+    const pay=weekPay(paid);
+    const changes=rateChangesIn(emp,week);
 
     let rows='';
     if(!empEntries.length){
-      rows=`<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:16px;">No entries this week</td></tr>`;
+      rows=`<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:16px;">No entries this week</td></tr>`;
     } else {
       empEntries.forEach(e=>{
         const cin=new Date(e.clockIn).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
@@ -1251,6 +1262,7 @@ function renderAdminTimecards(){
           <td>${cout}</td>
           <td>${e.lunchMinutes||0} min</td>
           <td>${e.breakMinutes||0} min</td>
+          <td>${fmtRate(rateOn(e.emp,e.date))}/hr</td>
           <td><strong>${e.clockOut?fmtHrs(paidHrs):'—'}</strong></td>
           <td>${badges.join(' ')}</td>
           <td><button class="edit-btn" onclick="openEditModal('${e.id}')">Edit</button></td>
@@ -1271,13 +1283,14 @@ function renderAdminTimecards(){
       </div>
       <div style="overflow-x:auto;">
         <table class="time-table">
-          <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Lunch</th><th>Breaks</th><th>Paid</th><th></th><th></th></tr></thead>
+          <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Lunch</th><th>Breaks</th><th>Rate</th><th>Paid</th><th></th><th></th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
       <div class="pay-footer">
         <div>
-          <div class="pay-footer-detail">$${rate}/hr · ${esc(emp.split(' ')[0])}</div>
+          <div class="pay-footer-detail">${rateLabel(groups,emp)} · ${esc(emp.split(' ')[0])}</div>
+          ${changes.map(c=>`<div class="pay-footer-detail" style="margin-top:2px;color:var(--green2);font-weight:600;">${rateChangeText(c)}</div>`).join('')}
           <button class="paystub-btn" onclick="openPaystub(${jsArg(emp)},${adminWeekOffset})" style="margin-top:6px;">📄 Generate Paystub</button>
         </div>
         <div class="pay-footer-amount">$${pay.toFixed(2)}</div>
@@ -1337,10 +1350,8 @@ function renderAdminSettings(){
         <div><div class="settings-label">${esc(emp)}</div><div class="settings-sub">PIN ${p.pin?'set':'not set'}</div></div>
       </div>
       <div class="emp-actions">
-        <span style="font-size:12px;color:var(--text3);">$</span>
-        <input class="settings-input" type="number" value="${p.rate||10}" min="1" step="0.5"
-          onchange="updateRate(${jsArg(emp)},this.value)" style="width:70px;"/>
-        <span style="font-size:11px;color:var(--text3);">/hr</span>
+        <span style="font-size:13px;font-weight:700;color:var(--navy);">${fmtRate(currentRate(emp))}/hr</span>
+        <button class="edit-btn" onclick="openRateModal(${jsArg(emp)})">Pay Rate / History</button>
         <input class="settings-input role-input" type="text" value="${esc(empRole(emp))}" placeholder="Role"
           onchange="updateRole(${jsArg(emp)},this.value)"/>
         <button class="edit-btn" onclick="resetPin(${jsArg(emp)})">Reset PIN</button>
@@ -1408,18 +1419,82 @@ function renderAdminSettings(){
     </div>`;
 }
 
-function updateRate(emp,val){
-  const rate=parseFloat(val);
-  if(!(rate>0)){toast('Enter a valid hourly rate');renderAdminSettings();return;}
+// ── PAY RATE MODAL ──
+let rateModalEmp=null;
+function openRateModal(emp){
+  rateModalEmp=emp;
+  renderRateModal();
+  document.getElementById('rate-modal').classList.add('open');
+}
+function renderRateModal(){
+  const emp=rateModalEmp;if(!emp)return;
+  document.getElementById('rate-modal-title').textContent='Pay Rate: '+emp;
+  const h=rateHistory(emp);
+  const today=localDate();
+  const rows=h.map((x,i)=>{
+    const isStart=x.from==='';
+    const prev=i>0?h[i-1].rate:null;
+    const diff=prev!=null?x.rate-prev:0;
+    return`<tr>
+      <td>${isStart?'<strong>Starting rate</strong>':fmtDate(x.from)}${!isStart&&x.from>today?' <span style="font-size:9px;color:var(--blue);">(upcoming)</span>':''}</td>
+      <td>${isStart
+        ?`$ <input class="settings-input" type="number" min="1" step="0.25" value="${x.rate}" style="width:80px;" onchange="updateStartRate(this.value)"/>`
+        :`<strong>${fmtRate(x.rate)}/hr</strong>`}</td>
+      <td style="color:${diff>0?'var(--green2)':diff<0?'var(--red)':'var(--text3)'};">${prev!=null?(diff>0?'+':'')+fmtRate(diff).replace('$-','-$'):''}</td>
+      <td>${isStart?'':`<button class="edit-btn edit-btn-danger" onclick="deleteRateChange('${x.from}')">Remove</button>`}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('rate-modal-body').innerHTML=`
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">Current rate: <strong style="color:var(--navy);font-size:14px;">${fmtRate(currentRate(emp))}/hr</strong></div>
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;">
+      <table class="time-table"><thead><tr><th>Effective</th><th>Rate</th><th>Change</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+    </div>
+    <div class="settings-title" style="margin-bottom:10px;">Add a rate change</div>
+    <div class="form-row">
+      <div class="form-field"><label class="form-label">New rate ($/hr)</label>
+        <input class="form-input" id="rate-new" type="number" min="1" step="0.25" placeholder="${currentRate(emp)}"/></div>
+      <div class="form-field"><label class="form-label">Effective date</label>
+        <input class="form-input" id="rate-from" type="date" value="${today}"/></div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);">Every shift on or after the effective date is paid at the new rate. Shifts before it keep the old rate. Backdate it to correct past weeks.</div>`;
+}
+function saveRateHistory(emp,h,msg){
   const prev=empProfiles[emp];
-  empProfiles[emp]={...empProfiles[emp],rate};
-  saveEmpToCloud().then(()=>{
-    toast('Rate updated for '+emp.split(' ')[0]);
+  const clean=h.map(x=>({from:x.from,rate:+x.rate,setAt:x.setAt||new Date().toISOString()}))
+    .sort((a,b)=>a.from.localeCompare(b.from));
+  empProfiles[emp]={...prev,rateHistory:clean};
+  empProfiles[emp].rate=currentRate(emp); // keep the simple field in sync for anything else reading it
+  return saveEmpToCloud().then(()=>{
+    toast(msg);
+    renderRateModal();
+    if(document.getElementById('view-admin').classList.contains('active'))renderAdminSettings();
   }).catch(()=>{
     empProfiles[emp]=prev;
-    renderAdminSettings();
+    renderRateModal();
     toast('Could not save — check your connection');
   });
+}
+function addRateChange(){
+  const emp=rateModalEmp;if(!emp)return;
+  const rate=parseFloat(document.getElementById('rate-new')?.value||'');
+  const from=document.getElementById('rate-from')?.value||'';
+  if(!(rate>0)){toast('Enter the new hourly rate');return;}
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(from)){toast('Pick an effective date');return;}
+  const h=rateHistory(emp).filter(x=>x.from!==from); // same date = replace
+  h.push({from,rate,setAt:new Date().toISOString()});
+  saveRateHistory(emp,h,`${emp.split(' ')[0]}: ${fmtRate(rate)}/hr from ${fmtDate(from)}`);
+}
+function updateStartRate(val){
+  const emp=rateModalEmp;if(!emp)return;
+  const rate=parseFloat(val);
+  if(!(rate>0)){toast('Enter a valid rate');renderRateModal();return;}
+  const h=rateHistory(emp).map(x=>x.from===''?{...x,rate}:x);
+  saveRateHistory(emp,h,'Starting rate updated');
+}
+function deleteRateChange(from){
+  const emp=rateModalEmp;if(!emp||!from)return;
+  if(!confirm(`Remove the rate change effective ${fmtDate(from)}? Shifts from that date go back to the previous rate.`))return;
+  saveRateHistory(emp,rateHistory(emp).filter(x=>x.from!==from),'Rate change removed');
 }
 
 function updateRole(emp,val){
@@ -1450,7 +1525,8 @@ function addEmployee(){
     if(confirm(clash+' was removed earlier. Restore them with their history instead of creating a duplicate?'))restoreEmployee(clash);
     return;
   }
-  empProfiles[name]={rate,role,pin:null,active:true,color:nextColor(),added:new Date().toISOString()};
+  empProfiles[name]={rate,role,pin:null,active:true,color:nextColor(),added:new Date().toISOString(),
+    rateHistory:[{from:'',rate,setAt:new Date().toISOString()}]};
   saveEmpToCloud().then(()=>{
     toast(name.split(' ')[0]+' added');
     renderAdminSettings();
@@ -1672,8 +1748,6 @@ function renderPaystub(){
   if(!paystubTarget)return;
   const{emp,weekOffset}=paystubTarget;
   const week=getWeekRange(weekOffset);
-  const profile=empProfiles[emp]||{};
-  const rate=profile.rate||10;
   const addrInput=(document.getElementById('paystub-addr-input')?.value||'').trim();
   const ssnInput=(document.getElementById('paystub-ssn-input')?.value||'').trim();
   // Same entries the Time Cards table pays on (deleted/flagged/open entries excluded)
@@ -1695,6 +1769,7 @@ function renderPaystub(){
       <td style="${td}">${cout}</td>
       <td style="${td}">${lunch} min</td>
       <td style="${td}">${brks} min</td>
+      <td style="${td}">${fmtRate(rateOn(emp,e.date))}/hr</td>
       <td style="${td}font-weight:700;">${fmtHrs(hrs)}</td>
     </tr>`;
   }).join('');
@@ -1703,10 +1778,21 @@ function renderPaystub(){
       <td style="${td}font-weight:700;" colspan="3">Week Total</td>
       <td style="${td}font-weight:700;">${totalLunch} min</td>
       <td style="${td}font-weight:700;">${totalBreaks} min</td>
+      <td style="${td}"></td>
       <td style="${td}font-weight:800;">${fmtHrs(totalHrs)}</td>
     </tr>`;
   }
-  const gross=totalHrs*rate;
+  // Pay is split by the rate each entry was earned at
+  const groups=rateGroups(empEntries);
+  const gross=weekPay(empEntries);
+  const changes=rateChangesIn(emp,week);
+  const periodRate=groups.length?groups[groups.length-1].rate:rateOn(emp,week.end);
+  const payLines=(groups.length?groups:[{rate:periodRate,hrs:0,pay:0}]).map(g=>
+    `<tr><td style="padding:5px 0;font-size:13px;color:var(--text2);">Regular Pay (${fmtHrs(g.hrs)} × ${fmtRate(g.rate)}/hr)</td><td style="text-align:right;font-size:13px;font-weight:600;">$${g.pay.toFixed(2)}</td></tr>`
+  ).join('');
+  const changeNote=changes.map(c=>
+    `<div style="font-size:11px;color:#237032;font-weight:600;margin-top:2px;">${rateChangeText(c)}</div>`
+  ).join('');
   const payDate=getPayDate(week.end);
 
   const html=`
@@ -1733,8 +1819,9 @@ function renderPaystub(){
         </div>
         <div style="text-align:right;">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px;">Pay Rate</div>
-          <div style="font-size:15px;font-weight:700;color:var(--text);">$${rate.toFixed(2)}/hr</div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);">${groups.length>1?groups.map(g=>'$'+g.rate.toFixed(2)).join(' → ')+'/hr':'$'+periodRate.toFixed(2)+'/hr'}</div>
           <div style="font-size:12px;color:var(--text3);">1099 Independent Contractor</div>
+          ${changeNote}
         </div>
       </div>
       <!-- Daily breakdown -->
@@ -1747,16 +1834,17 @@ function renderPaystub(){
             <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Out</th>
             <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Lunch</th>
             <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Breaks</th>
+            <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Rate</th>
             <th style="padding:8px 10px;font-size:11px;text-align:left;font-weight:700;color:var(--text3);text-transform:uppercase;">Paid Hrs</th>
           </tr></thead>
-          <tbody>${dailyRows||'<tr><td colspan="6" style="padding:16px;text-align:center;color:var(--text3);">No entries</td></tr>'}</tbody>
+          <tbody>${dailyRows||'<tr><td colspan="7" style="padding:16px;text-align:center;color:var(--text3);">No entries</td></tr>'}</tbody>
         </table>
       </div>
       <!-- Earnings summary -->
       <div style="padding:16px 24px;border-top:1px solid var(--border);">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px;">Earnings &amp; Deductions</div>
         <table style="width:100%;border-collapse:collapse;">
-          <tr><td style="padding:5px 0;font-size:13px;color:var(--text2);">Regular Pay (${fmtHrs(totalHrs)} × $${rate}/hr)</td><td style="text-align:right;font-size:13px;font-weight:600;">$${gross.toFixed(2)}</td></tr>
+          ${payLines}
           <tr style="color:var(--text3);"><td style="padding:5px 0;font-size:12px;">Federal Income Tax</td><td style="text-align:right;font-size:12px;">$0.00</td></tr>
           <tr style="color:var(--text3);"><td style="padding:5px 0;font-size:12px;">Social Security (FICA)</td><td style="text-align:right;font-size:12px;">$0.00</td></tr>
           <tr style="color:var(--text3);"><td style="padding:5px 0;font-size:12px;">Medicare</td><td style="text-align:right;font-size:12px;">$0.00</td></tr>
@@ -1809,6 +1897,52 @@ function calcPaidHrs(e){
   const totalMs=e.clockOut-e.clockIn;
   const unpaidMin=(e.lunchMinutes||0)+(e.breakMinutes||0);
   return Math.max(0,(totalMs/3600000)-(unpaidMin/60));
+}
+
+// ── PAY RATE HISTORY ──
+// profile.rateHistory = [{from:'YYYY-MM-DD' or '' (= since start), rate, setAt}]
+// Each entry is paid at the rate in effect on its date. profile.rate always mirrors today's rate.
+function rateHistory(emp){
+  const p=empProfiles[emp]||{};
+  let h=p.rateHistory;
+  if(h&&!Array.isArray(h))h=Object.values(h); // Firebase can hand arrays back as objects
+  h=(h||[]).filter(x=>x&&+x.rate>0).map(x=>({from:x.from||'',rate:+x.rate,setAt:x.setAt||''}));
+  if(!h.length)h=[{from:'',rate:+p.rate||10,setAt:''}]; // no history yet = one rate since start
+  if(!h.some(x=>x.from===''))h[0]={...h[0],from:''}; // earliest rate always covers everything before it
+  return h.sort((a,b)=>a.from.localeCompare(b.from));
+}
+function rateOn(emp,date){
+  let r=null;
+  for(const x of rateHistory(emp)){if(x.from<=date)r=x.rate;else break;}
+  return r;
+}
+function currentRate(emp){return rateOn(emp,localDate());}
+function fmtRate(r){r=+r;return'$'+(Number.isInteger(r)?r:r.toFixed(2));}
+function round2(n){return Math.round(n*100)/100;}
+// Groups payable entries by the rate they were earned at (keeps date order)
+function rateGroups(list){
+  const m=new Map();
+  list.forEach(e=>{
+    const r=rateOn(e.emp,e.date),h=calcPaidHrs(e);
+    if(!m.has(r))m.set(r,{rate:r,hrs:0});
+    m.get(r).hrs+=h;
+  });
+  return[...m.values()].map(g=>({...g,pay:round2(g.hrs*g.rate)}));
+}
+function weekPay(list){return round2(rateGroups(list).reduce((s,g)=>s+g.pay,0));}
+function rateLabel(groups,emp){
+  if(!groups.length)return fmtRate(currentRate(emp))+'/hr';
+  return groups.map(g=>fmtRate(g.rate)).join(' → ')+'/hr';
+}
+// Rate changes that took effect inside a week
+function rateChangesIn(emp,week){
+  const h=rateHistory(emp);
+  return h.map((x,i)=>({...x,prev:i>0?h[i-1].rate:null}))
+    .filter(x=>x.from&&x.from>=week.start&&x.from<=week.end);
+}
+function rateChangeText(c){
+  const word=c.prev==null||c.rate>c.prev?'Raise':'Rate change';
+  return`${word}: ${c.prev!=null?fmtRate(c.prev)+' → ':''}${fmtRate(c.rate)}/hr effective ${fmtDate(c.from)}`;
 }
 
 function getWeekRange(offset){
